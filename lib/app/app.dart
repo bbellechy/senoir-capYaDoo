@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../core/routing/app_router.dart';
+import 'package:capyadoo/core/routing/app_router.dart';
+import 'package:capyadoo/core/constants/app_colors.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -8,10 +9,16 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Notification Demo',
+      title: 'CapYaDoo',
+      debugShowCheckedModeBanner: false,
       onGenerateRoute: AppRouter.onGenerateRoute,
       initialRoute: AppRouter.initialRoute,
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.blue),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: AppColors.primaryBlue,
+        scaffoldBackgroundColor: AppColors.background,
+        fontFamily: 'Sarabun',
+      ),
     );
   }
 }

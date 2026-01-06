@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../core/services/notification_service.dart';
+import 'package:capyadoo/core/services/notification_service.dart';
 
 Future<void> bootstrap(Future<void> Function() runAppCallback) async {
   WidgetsFlutterBinding.ensureInitialized();

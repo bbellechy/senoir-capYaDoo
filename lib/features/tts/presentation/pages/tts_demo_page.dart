@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/services/tts_service.dart';
+import 'package:capyadoo/core/services/tts_service.dart';
 
 class TextToSpeechDemoPage extends StatefulWidget {
   const TextToSpeechDemoPage({super.key});

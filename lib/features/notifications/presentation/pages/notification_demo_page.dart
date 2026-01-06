@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/services/notification_service.dart';
-import '../../../../../core/routing/app_router.dart';
+import 'package:capyadoo/core/services/notification_service.dart';
+import 'package:capyadoo/core/routing/app_router.dart';
 
 class NotificationDemoPage extends StatelessWidget {
   const NotificationDemoPage({super.key});
