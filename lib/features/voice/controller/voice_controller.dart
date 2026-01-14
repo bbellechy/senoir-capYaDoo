@@ -9,7 +9,7 @@ class VoiceController {
 
   void handleIntent(Map<String, dynamic> res) {
     final intent = res['intent'];
-    final confidence = res['confidence']; // May be used for threshold check
+    final confidence = res['confidence'];
 
     print('Voice Command Intent: $intent');
 
