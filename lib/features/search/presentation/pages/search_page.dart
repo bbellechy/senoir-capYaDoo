@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:speech_to_text/speech_to_text.dart' as speech_to_text;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/model/medication.dart';
@@ -15,14 +15,14 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
-  late stt.SpeechToText _speech;
+
   final ImagePicker _picker = ImagePicker();
   
   bool loading = false;
   List<Medication> results = [];
   bool hasSearched = false;
   bool _isListening = false;
-  bool _speechAvailable = false;
+
 
   String displayTradeName(String? th, String? en) {
     bool hasTh = th != null && th.trim().isNotEmpty && th.trim() != '-';
@@ -39,148 +39,85 @@ class _SearchPageState extends State<SearchPage> {
     return hasTh ? th! : en!;
   }
 
+  final speech_to_text.SpeechToText _speechToText = speech_to_text.SpeechToText();
+  bool _speechEnabled = false;
+  
   @override
   void initState() {
     super.initState();
-    _speech = stt.SpeechToText();
     _initSpeech();
   }
 
   Future<void> _initSpeech() async {
     try {
-      _speechAvailable = await _speech.initialize(
-        onError: (error) {
-          print('Speech recognition error: $error');
-          setState(() => _isListening = false);
-          
-          // Show user-friendly error message
-          String errorMsg = 'เกิดข้อผิดพลาดในการรู้จำเสียง';
-          if (error.errorMsg.contains('timeout')) {
-            errorMsg = 'ไม่ได้ยินเสียง กรุณาลองใหม่อีกครั้ง';
-          } else if (error.errorMsg.contains('no-speech')) {
-            errorMsg = 'ไม่ตรวจพบเสียงพูด กรุณาพูดใหม่';
-          } else if (error.errorMsg.contains('network')) {
-            errorMsg = 'ไม่มีการเชื่อมต่ออินเทอร์เน็ต';
-          }
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(errorMsg),
-                backgroundColor: Colors.orange.shade600,
-                duration: const Duration(seconds: 2),
-              ),
-            );
+      _speechEnabled = await _speechToText.initialize(
+        onStatus: (status) {
+          print('STT Status: $status');
+          if (status == 'notListening' || status == 'done') {
+            setState(() => _isListening = false);
+            if (_searchController.text.isNotEmpty) {
+               search();
+            }
+          } else if (status == 'listening') {
+            setState(() => _isListening = true);
           }
         },
-        onStatus: (status) {
-          print('Speech status: $status');
-          if (status == 'done' || status == 'notListening') {
-            setState(() => _isListening = false);
+        onError: (errorNotification) {
+          print('STT Error: $errorNotification');
+          setState(() => _isListening = false);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('เกิดข้อผิดพลาด: ${errorNotification.errorMsg}')),
+            );
           }
         },
       );
       setState(() {});
     } catch (e) {
-      print('Failed to initialize speech recognition: $e');
-      _speechAvailable = false;
+      print('STT Init Error: $e');
     }
   }
 
   Future<void> _startListening() async {
-    if (!_speechAvailable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('การรู้จำเสียงไม่พร้อมใช้งาน'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // Request microphone permission
-    var status = await Permission.microphone.request();
-    if (!status.isGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('กรุณาอนุญาตการใช้ไมโครโฟน'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    if (!_isListening) {
-      setState(() => _isListening = true);
-      
-      try {
-      await _speech.listen(
-        onResult: (result) {
-          setState(() {
-            _searchController.text = result.recognizedWords;
-          });
-
-          if (result.finalResult) {
-            search();
-          }
-        },
-
-        localeId: 'th_TH',
-
-        listenOptions: stt.SpeechListenOptions(
-          listenMode: stt.ListenMode.confirmation,
-        ),
-
-        listenFor: const Duration(seconds: 10),
-        pauseFor: const Duration(seconds: 5),
-
-        onSoundLevelChange: (level) {
-          // optional
-        },
-      );
-
-        
-        // Show listening indicator
+    if (!_speechEnabled) {
+      await _initSpeech();
+      if (!_speechEnabled) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.mic, color: Colors.white, size: 20),
-                  const SizedBox(width: 12),
-                  const Text('กำลังฟัง... กรุณาพูดชื่อยา'),
-                ],
-              ),
-              backgroundColor: Colors.red.shade600,
-              duration: const Duration(seconds: 10),
-              behavior: SnackBarBehavior.floating,
-            ),
+            const SnackBar(content: Text('ไม่สามารถเรียกใช้งานไมโครโฟนได้')),
           );
         }
-      } catch (e) {
-        print('Error starting speech recognition: $e');
-        setState(() => _isListening = false);
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('ไม่สามารถเริ่มการรู้จำเสียงได้'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        return;
       }
-    } else {
+    }
+
+    if (_isListening) {
       await _stopListening();
+    } else {
+      try {
+        await _speechToText.listen(
+          onResult: (result) {
+            setState(() {
+              _searchController.text = result.recognizedWords;
+            });
+          },
+          localeId: 'th_TH',
+          cancelOnError: true,
+          listenMode: speech_to_text.ListenMode.dictation,
+        );
+      } catch (e) {
+        print('Start listening error: $e');
+      }
     }
   }
 
   Future<void> _stopListening() async {
-    await _speech.stop();
-    setState(() => _isListening = false);
-    
-    // Hide the listening snackbar
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    try {
+      await _speechToText.stop();
+      setState(() => _isListening = false);
+    } catch (e) {
+      print('Stop listening error: $e');
+    }
   }
 
   Future<void> _pickImageFromCamera() async {
@@ -250,7 +187,9 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void dispose() {
     _searchController.dispose();
-    _speech.stop();
+    if (_isListening) {
+      _speechToText.stop();
+    }
     super.dispose();
   }
 
