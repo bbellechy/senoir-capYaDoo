@@ -8,6 +8,7 @@ import 'package:capyadoo/features/add_data/presentation/pages/add_data_page.dart
 import 'package:capyadoo/features/profile/presentation/pages/profile_page.dart';
 import 'package:capyadoo/features/auth/presentation/pages/login_page.dart';
 import 'package:capyadoo/features/auth/presentation/pages/register_page.dart';
+import 'package:capyadoo/features/widget_showcase/widget_showcase_page.dart';
 import 'package:capyadoo/core/layouts/main_layout.dart';
 
 class AppRouter {
@@ -26,6 +27,7 @@ class AppRouter {
   // Demo routes (legacy)
   static const String notificationDemoRoute = '/notifications/demo';
   static const String ttsDemoRoute = '/tts/demo';
+  static const String widgetShowcaseRoute = '/widget';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -73,6 +75,11 @@ class AppRouter {
       case ttsDemoRoute:
         return MaterialPageRoute(
           builder: (_) => const TextToSpeechDemoPage(),
+          settings: settings,
+        );
+      case widgetShowcaseRoute:
+        return MaterialPageRoute(
+          builder: (_) => const WidgetShowcasePage(),
           settings: settings,
         );
       default:
