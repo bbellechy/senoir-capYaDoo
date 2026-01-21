@@ -7,6 +7,7 @@ import 'package:capyadoo/core/widgets/app_text_field.dart';
 import 'package:capyadoo/core/widgets/app_date_picker.dart';
 import 'package:capyadoo/core/widgets/app_slider.dart';
 import 'package:capyadoo/core/widgets/app_image_picker.dart';
+import 'package:capyadoo/core/widgets/app_searchable_dropdown.dart';
 
 class WidgetShowcasePage extends StatefulWidget {
   const WidgetShowcasePage({super.key});
@@ -37,6 +38,9 @@ class _WidgetShowcasePageState extends State<WidgetShowcasePage> {
   // Image picker state
   File? selectedImage;
   List<File> selectedImages = [];
+
+  // Searchable dropdown state
+  String? selectedProvince;
 
   @override
   void dispose() {
@@ -208,7 +212,71 @@ class _WidgetShowcasePageState extends State<WidgetShowcasePage> {
             ),
             _buildDivider(),
             _buildSection(
-              title: '11. Buttons',
+              title: '11. Searchable Dropdown',
+              child: AppSearchableDropdown<String>(
+                label: 'จังหวัด',
+                hint: 'เลือกจังหวัด',
+                value: selectedProvince,
+                items: const [
+                  SearchableDropdownItem(
+                    value: 'bkk',
+                    label: 'กรุงเทพมหานคร',
+                    subtitle: 'Bangkok',
+                    searchKeywords: ['กทม', 'bangkok', 'bkk'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'cm',
+                    label: 'เชียงใหม่',
+                    subtitle: 'Chiang Mai',
+                    searchKeywords: ['chiangmai', 'cm'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'ck',
+                    label: 'เชียงราย',
+                    subtitle: 'Chiang Rai',
+                    searchKeywords: ['chiangrai', 'ck'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'pk',
+                    label: 'ภูเก็ต',
+                    subtitle: 'Phuket',
+                    searchKeywords: ['phuket', 'pk'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'kp',
+                    label: 'กระบี่',
+                    subtitle: 'Krabi',
+                    searchKeywords: ['krabi', 'kp'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'kh',
+                    label: 'ขอนแก่น',
+                    subtitle: 'Khon Kaen',
+                    searchKeywords: ['khonkaen', 'kh'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'sr',
+                    label: 'สุราษฎร์ธานี',
+                    subtitle: 'Surat Thani',
+                    searchKeywords: ['suratthani', 'sr'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'np',
+                    label: 'นครปฐม',
+                    subtitle: 'Nakhon Pathom',
+                    searchKeywords: ['nakhonpathom', 'np'],
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    selectedProvince = value;
+                  });
+                },
+              ),
+            ),
+            _buildDivider(),
+            _buildSection(
+              title: '12. Buttons',
               child: Column(
                 children: [
                   AppButton(
@@ -295,6 +363,10 @@ class _WidgetShowcasePageState extends State<WidgetShowcasePage> {
                     _buildResultItem(
                       'Multiple Images',
                       '${selectedImages.length} รูป',
+                    ),
+                    _buildResultItem(
+                      'จังหวัดที่เลือก',
+                      selectedProvince ?? 'ไม่ได้เลือก',
                     ),
                   ],
                 ),
