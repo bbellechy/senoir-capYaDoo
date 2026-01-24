@@ -41,7 +41,7 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
     try {
       await _recorder.startRecord();
       setState(() => _isListening = true);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -49,7 +49,12 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
               children: [
                 const Icon(Icons.mic, color: Colors.white),
                 const SizedBox(width: 12),
-                const Text('กำลังฟังคำสั่ง... แตะเพื่อส่ง'),
+                const Expanded(
+                  child: Text(
+                    'กำลังฟังคำสั่ง... แตะเพื่อส่ง',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
             backgroundColor: Colors.redAccent,
@@ -70,7 +75,7 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
         _isListening = false;
         _isProcessing = true;
       });
-      
+
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       if (path != null) {
@@ -92,7 +97,7 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
           }
         } catch (e) {
           print('API Error: $e');
-           if (mounted) {
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('เกิดข้อผิดพลาดในการเชื่อมต่อ')),
             );
@@ -113,12 +118,17 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
     return FloatingActionButton(
       onPressed: _isProcessing ? null : _handleVoiceCommand,
       backgroundColor: _isListening ? Colors.red : Colors.blue,
-      child: _isProcessing 
-        ? const SizedBox(
-            width: 24, height: 24,
-            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-          )
-        : Icon(_isListening ? Icons.stop : Icons.mic, color: Colors.white),
+      child: _isProcessing
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : Icon(_isListening ? Icons.stop : Icons.mic, color: Colors.white),
+      heroTag: UniqueKey(),
     );
   }
 }

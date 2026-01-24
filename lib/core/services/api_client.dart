@@ -32,4 +32,32 @@ class ApiClient {
       body: jsonEncode(body),
     );
   }
+
+  static Future<http.Response> put(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    final token = await TokenStorage.getToken();
+
+    return http.put(
+      Uri.parse('$baseUrl$path'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(body),
+    );
+  }
+
+  static Future<http.Response> delete(String path) async {
+    final token = await TokenStorage.getToken();
+
+    return http.delete(
+      Uri.parse('$baseUrl$path'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
 }

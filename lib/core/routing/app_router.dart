@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:capyadoo/features/notifications/presentation/pages/notification_demo_page.dart';
+import 'package:capyadoo/features/notifications/presentation/pages/notification_list_page.dart';
+import 'package:capyadoo/features/notifications/presentation/pages/add_notification_page.dart';
+import 'package:capyadoo/features/notifications/presentation/pages/edit_notification_page.dart';
 import 'package:capyadoo/features/tts/presentation/pages/tts_demo_page.dart';
 import 'package:capyadoo/features/home/presentation/pages/home_page.dart';
 import 'package:capyadoo/features/search/presentation/pages/search_page.dart';
@@ -10,6 +13,7 @@ import 'package:capyadoo/features/auth/presentation/pages/login_page.dart';
 import 'package:capyadoo/features/auth/presentation/pages/register_page.dart';
 import 'package:capyadoo/features/widget_showcase/widget_showcase_page.dart';
 import 'package:capyadoo/core/layouts/main_layout.dart';
+import 'package:capyadoo/core/model/medication_notification.dart';
 
 class AppRouter {
   // Auth routes
@@ -23,6 +27,10 @@ class AppRouter {
   static const String addDataRoute = '/add-data';
   static const String notificationsRoute = '/notifications';
   static const String profileRoute = '/profile';
+
+  // Notification routes
+  static const String addNotificationRoute = '/notifications/add';
+  static const String editNotificationRoute = '/notifications/edit';
 
   // Demo routes (legacy)
   static const String notificationDemoRoute = '/notifications/demo';
@@ -62,6 +70,29 @@ class AppRouter {
           settings: settings,
         );
       case notificationsRoute:
+        return MaterialPageRoute(
+          builder: (_) => const NotificationListPage(),
+          settings: settings,
+        );
+      case addNotificationRoute:
+        return MaterialPageRoute(
+          builder: (_) => const AddNotificationPage(),
+          settings: settings,
+        );
+      case editNotificationRoute:
+        final notification = settings.arguments as MedicationNotification?;
+        if (notification == null) {
+          return MaterialPageRoute(
+            builder: (_) => const Scaffold(
+              body: Center(child: Text('Invalid notification data')),
+            ),
+            settings: settings,
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => EditNotificationPage(notification: notification),
+          settings: settings,
+        );
       case notificationDemoRoute:
         return MaterialPageRoute(
           builder: (_) => const NotificationDemoPage(),
