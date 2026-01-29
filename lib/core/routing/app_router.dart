@@ -93,11 +93,11 @@ class AppRouter {
           builder: (_) => EditNotificationPage(notification: notification),
           settings: settings,
         );
-      case notificationDemoRoute:
-        return MaterialPageRoute(
-          builder: (_) => const NotificationDemoPage(),
-          settings: settings,
-        );
+      // case notificationDemoRoute:
+      //   return MaterialPageRoute(
+      //     builder: (_) => const NotificationDemoPage(),
+      //     settings: settings,
+      //   );
       case profileRoute:
         return MaterialPageRoute(
           builder: (_) => const ProfilePage(),

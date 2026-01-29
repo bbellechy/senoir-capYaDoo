@@ -3,6 +3,8 @@ import 'package:capyadoo/core/model/medication_notification.dart';
 import 'package:capyadoo/core/services/notification_service.dart';
 import 'package:capyadoo/core/services/notification_storage_service.dart';
 import 'package:capyadoo/features/notifications/data/notification_api_service.dart';
+import 'package:capyadoo/core/services/pill_box_service.dart';
+import 'package:capyadoo/core/services/search_master_medication_api.dart';
 
 class NotificationController extends ChangeNotifier {
   List<MedicationNotification> _notifications = [];
@@ -66,10 +68,48 @@ class NotificationController extends ChangeNotifier {
     try {
       MedicationNotification notificationToSave = notification;
 
+      // Logic to find image from Pill Box if not provided
+      if (notificationToSave.imagePath == null) {
+        try {
+          final pillBoxService = PillBoxService();
+          final boxes = await pillBoxService.getAllPillBoxes();
+
+          String? foundImagePath;
+
+          // Search for medication name in boxes
+          // This is a heavy operation as we might need to fetch medication details
+          // We iterate boxes, then IDs.
+          outerLoop:
+          for (final box in boxes) {
+            if (box.medicationIds.isEmpty) continue;
+
+            // Check each medication in the box
+            for (final medId in box.medicationIds) {
+              final med = await SearchMedicationApi.getById(medId);
+              if (med != null) {
+                // Check Thai or English name
+                if (med.name.trim() == notification.medicationName.trim()) {
+                  foundImagePath = box.imagePath;
+                  break outerLoop;
+                }
+              }
+            }
+          }
+
+          if (foundImagePath != null) {
+            notificationToSave = notificationToSave.copyWith(
+              imagePath: foundImagePath,
+            );
+          }
+        } catch (e) {
+          print('Error looking up pill box image: $e');
+        }
+      }
+
       // Try to send to backend first
       try {
         final createdNotification =
-            await NotificationApiService.createNotification(notification);
+            await NotificationApiService.createNotification(notificationToSave);
         if (createdNotification != null) {
           notificationToSave = createdNotification;
         }
@@ -228,6 +268,7 @@ class NotificationController extends ChangeNotifier {
           minute: minute,
           title: 'เตือนกินยา',
           body: notification.medicationName,
+          imagePath: notification.imagePath,
         );
       }
     }

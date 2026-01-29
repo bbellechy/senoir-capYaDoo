@@ -5,6 +5,7 @@ class MedicationNotification {
   final List<String> times; // Format: "HH:mm:ss"
   final bool isEnabled;
   final int? baseNotificationId;
+  final String? imagePath;
 
   MedicationNotification({
     this.id,
@@ -13,6 +14,7 @@ class MedicationNotification {
     required this.times,
     this.isEnabled = true,
     this.baseNotificationId,
+    this.imagePath,
   });
 
   // Convert to JSON for backend API
@@ -25,6 +27,7 @@ class MedicationNotification {
       'isEnabled': isEnabled,
       'isActive': isEnabled, // Send both for compatibility
       if (baseNotificationId != null) 'baseNotificationId': baseNotificationId,
+      'imagePath': imagePath,
     };
   }
 
@@ -47,6 +50,7 @@ class MedicationNotification {
       baseNotificationId: json['baseNotificationId'] != null
           ? int.tryParse(json['baseNotificationId'].toString())
           : null,
+      imagePath: json['imagePath'] as String?,
     );
   }
 
@@ -58,6 +62,7 @@ class MedicationNotification {
     List<String>? times,
     bool? isEnabled,
     int? baseNotificationId,
+    String? imagePath,
   }) {
     return MedicationNotification(
       id: id ?? this.id,
@@ -66,6 +71,7 @@ class MedicationNotification {
       times: times ?? this.times,
       isEnabled: isEnabled ?? this.isEnabled,
       baseNotificationId: baseNotificationId ?? this.baseNotificationId,
+      imagePath: imagePath ?? this.imagePath,
     );
   }
 

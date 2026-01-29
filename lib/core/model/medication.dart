@@ -1,25 +1,54 @@
 class Medication {
-  final String tradenameTh;
-  final String tradenameEn;
-  final String categoryUse;
-  final String legislationClass;
-  final String indication;
+  final String? id;
+  final String? tradenameTh;
+  final String? tradenameEn;
+  final String? basicDoseForm;
+  final String? doseFormTh;
+  final String? doseFormEn;
+  final String? categoryUse;
+  final String? legislationClass;
+  final String? indication;
 
   Medication({
-    required this.tradenameTh,
-    required this.tradenameEn,
-    required this.categoryUse,
-    required this.legislationClass,
-    required this.indication,
+    this.id,
+    this.tradenameTh,
+    this.tradenameEn,
+    this.basicDoseForm,
+    this.doseFormTh,
+    this.doseFormEn,
+    this.categoryUse,
+    this.legislationClass,
+    this.indication,
   });
+
+  // Alias for backward compatibility or when only name is available
+  String get name => tradenameTh ?? tradenameEn ?? '-';
 
   factory Medication.fromJson(Map<String, dynamic> json) {
     return Medication(
+      id: json['id']?.toString(),
       tradenameTh: json['tradenameTh'],
       tradenameEn: json['tradenameEn'],
+      basicDoseForm: json['basicDoseForm'],
+      doseFormTh: json['doseFormTh'],
+      doseFormEn: json['doseFormEn'],
       categoryUse: json['categoryUse'],
       legislationClass: json['legislationClass'],
       indication: json['indication'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'tradenameTh': tradenameTh,
+      'tradenameEn': tradenameEn,
+      'basicDoseForm': basicDoseForm,
+      'doseFormTh': doseFormTh,
+      'doseFormEn': doseFormEn,
+      'categoryUse': categoryUse,
+      'legislationClass': legislationClass,
+      'indication': indication,
+    };
   }
 }

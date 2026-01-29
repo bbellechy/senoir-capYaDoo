@@ -7,7 +7,8 @@ import '../../../../core/services/search_master_medication_api.dart';
 import 'medication_detail_page.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+  final bool isSelectionMode;
+  const SearchPage({super.key, this.isSelectionMode = false});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -17,12 +18,11 @@ class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
 
   final ImagePicker _picker = ImagePicker();
-  
+
   bool loading = false;
   List<Medication> results = [];
   bool hasSearched = false;
   bool _isListening = false;
-
 
   String displayTradeName(String? th, String? en) {
     bool hasTh = th != null && th.trim().isNotEmpty && th.trim() != '-';
@@ -39,9 +39,10 @@ class _SearchPageState extends State<SearchPage> {
     return hasTh ? th! : en!;
   }
 
-  final speech_to_text.SpeechToText _speechToText = speech_to_text.SpeechToText();
+  final speech_to_text.SpeechToText _speechToText =
+      speech_to_text.SpeechToText();
   bool _speechEnabled = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +57,7 @@ class _SearchPageState extends State<SearchPage> {
           if (status == 'notListening' || status == 'done') {
             setState(() => _isListening = false);
             if (_searchController.text.isNotEmpty) {
-               search();
+              search();
             }
           } else if (status == 'listening') {
             setState(() => _isListening = true);
@@ -67,7 +68,9 @@ class _SearchPageState extends State<SearchPage> {
           setState(() => _isListening = false);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('เกิดข้อผิดพลาด: ${errorNotification.errorMsg}')),
+              SnackBar(
+                content: Text('เกิดข้อผิดพลาด: ${errorNotification.errorMsg}'),
+              ),
             );
           }
         },
@@ -124,9 +127,9 @@ class _SearchPageState extends State<SearchPage> {
     try {
       var status = await Permission.camera.request();
       if (!status.isGranted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('กรุณาอนุญาตการใช้กล้อง')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('กรุณาอนุญาตการใช้กล้อง')));
         return;
       }
 
@@ -134,7 +137,7 @@ class _SearchPageState extends State<SearchPage> {
         source: ImageSource.camera,
         imageQuality: 80,
       );
-      
+
       if (image != null) {
         // TODO: Process image for OCR or medication identification
         ScaffoldMessenger.of(context).showSnackBar(
@@ -145,9 +148,9 @@ class _SearchPageState extends State<SearchPage> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ไม่สามารถเปิดกล้องได้')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ไม่สามารถเปิดกล้องได้')));
     }
   }
 
@@ -202,18 +205,23 @@ class _SearchPageState extends State<SearchPage> {
           // Top Bar
           Container(
             color: const Color(0xFF2196F3),
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top,
-            ),
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
             child: Column(
               children: [
                 // Header
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                        icon: const Icon(
+                          Icons.arrow_back_ios,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                       const Spacer(),
@@ -229,13 +237,17 @@ class _SearchPageState extends State<SearchPage> {
                       CircleAvatar(
                         radius: 18,
                         backgroundColor: Colors.white,
-                        child: Icon(Icons.person, color: Colors.blue.shade400, size: 22),
+                        child: Icon(
+                          Icons.person,
+                          color: Colors.blue.shade400,
+                          size: 22,
+                        ),
                       ),
                       const SizedBox(width: 8),
                     ],
                   ),
                 ),
-                
+
                 // Search Bar
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -280,7 +292,9 @@ class _SearchPageState extends State<SearchPage> {
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _isListening ? Icons.mic : Icons.mic_none,
-                                  color: _isListening ? Colors.red : Colors.grey.shade600,
+                                  color: _isListening
+                                      ? Colors.red
+                                      : Colors.grey.shade600,
                                   size: 22,
                                 ),
                                 onPressed: _startListening,
@@ -326,9 +340,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
 
           // Content Section
-          Expanded(
-            child: _buildContent(),
-          ),
+          Expanded(child: _buildContent()),
         ],
       ),
     );
@@ -347,10 +359,7 @@ class _SearchPageState extends State<SearchPage> {
             const SizedBox(height: 16),
             Text(
               'กำลังค้นหา...',
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
             ),
           ],
         ),
@@ -365,10 +374,7 @@ class _SearchPageState extends State<SearchPage> {
           decoration: BoxDecoration(
             color: const Color(0xFFE3F2FD),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFBBDEFB),
-              width: 1.5,
-            ),
+            border: Border.all(color: const Color(0xFFBBDEFB), width: 1.5),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -399,11 +405,7 @@ class _SearchPageState extends State<SearchPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.search_off,
-              size: 64,
-              color: Colors.grey.shade300,
-            ),
+            Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
             const SizedBox(height: 16),
             Text(
               'ไม่พบข้อมูลยา',
@@ -416,10 +418,7 @@ class _SearchPageState extends State<SearchPage> {
             const SizedBox(height: 8),
             Text(
               'ลองค้นหาด้วยคำอื่น',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade500,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
             ),
           ],
         ),
@@ -446,14 +445,16 @@ class _SearchPageState extends State<SearchPage> {
         shadowColor: Colors.black.withOpacity(0.05),
         child: InkWell(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => MedicationDetailPage(
-                  medication: medication,
+            if (widget.isSelectionMode) {
+              Navigator.pop(context, medication);
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MedicationDetailPage(medication: medication),
                 ),
-              ),
-            );
+              );
+            }
           },
           borderRadius: BorderRadius.circular(12),
           child: Padding(
@@ -490,7 +491,7 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'สรรพคุณ: ${medication.indication}',
+                        'สรรพคุณ: ${medication.indication ?? "-"}',
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey.shade600,
@@ -499,7 +500,7 @@ class _SearchPageState extends State<SearchPage> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        'ข้อบ่งใช้: ${medication.categoryUse}',
+                        'ข้อบ่งใช้: ${medication.categoryUse ?? "-"}',
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey.shade600,

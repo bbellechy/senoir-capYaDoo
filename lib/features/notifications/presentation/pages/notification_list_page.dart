@@ -4,6 +4,8 @@ import 'package:capyadoo/core/model/medication_notification.dart';
 import 'package:capyadoo/features/notifications/controller/notification_controller.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/empty_notification_state.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/notification_list_item.dart';
+import 'package:capyadoo/features/notifications/presentation/pages/add_notification_page.dart';
+import 'package:capyadoo/features/notifications/presentation/pages/edit_notification_page.dart';
 
 class NotificationListPage extends StatefulWidget {
   const NotificationListPage({super.key});
@@ -67,30 +69,74 @@ class _NotificationListPageState extends State<NotificationListPage> {
   Future<void> _deleteSelected() async {
     if (_selectedIds.isEmpty) return;
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showGeneralDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('ยืนยันการลบ'),
-        content: Text(
-          'คุณต้องการลบการแจ้งเตือน ${_selectedIds.length} รายการใช่หรือไม่?',
+      barrierDismissible: true,
+      barrierLabel: '',
+      pageBuilder: (context, anim1, anim2) => Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 40),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.info, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                const Text(
+                  'ยืนยันการลบ',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text(
+                          'ยกเลิก',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'ลบ',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('ยกเลิก'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('ลบ'),
-          ),
-        ],
       ),
     );
 
     if (confirmed != true) return;
 
-    // Delete all selected notifications
     for (final id in _selectedIds.toList()) {
       await _controller.deleteNotification(id);
     }
@@ -101,79 +147,121 @@ class _NotificationListPageState extends State<NotificationListPage> {
     });
   }
 
-  Future<void> _navigateToAddNotification() async {
-    final result = await Navigator.pushNamed(context, '/notifications/add');
-
-    if (result == true) {
-      _loadNotifications();
-    }
-  }
-
-  Future<void> _navigateToEditNotification(
-    MedicationNotification notification,
-  ) async {
-    if (_isDeleteMode) return;
-
-    final result = await Navigator.pushNamed(
-      context,
-      '/notifications/edit',
-      arguments: notification,
-    );
-
-    if (result == true) {
-      _loadNotifications();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          _isDeleteMode
-              ? '${_selectedIds.length} รายการที่เลือก'
-              : 'การแจ้งเตือน',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        title: const Text(
+          'การแจ้งเตือน',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         backgroundColor: AppColors.primaryBlue,
         foregroundColor: Colors.white,
         elevation: 0,
-        leading: _controller.notifications.isNotEmpty
-            ? IconButton(
-                icon: Icon(_isDeleteMode ? Icons.close : Icons.delete_outline),
-                onPressed: _toggleDeleteMode,
-                tooltip: _isDeleteMode ? 'ยกเลิก' : 'ลบ',
-              )
-            : null,
-        actions: [
-          if (_isDeleteMode && _selectedIds.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: _deleteSelected,
-              tooltip: 'ลบที่เลือก',
-            )
-          else if (!_isDeleteMode && _controller.notifications.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: _navigateToAddNotification,
-              tooltip: 'เพิ่มการแจ้งเตือน',
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Column(
+        children: [
+          // Header Bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: _controller.notifications.isEmpty
+                      ? null
+                      : _toggleDeleteMode,
+                  child: Text(
+                    _isDeleteMode ? 'เสร็จสิ้น' : 'ลบ',
+                    style: TextStyle(
+                      color: _isDeleteMode
+                          ? AppColors.primaryBlue
+                          : Colors.grey[600],
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const Text(
+                  'การแจ้งเตือนทั้งหมด',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                TextButton(
+                  onPressed: () => _navigateToAdd(context),
+                  child: Row(
+                    children: [
+                      Text(
+                        'เพิ่ม',
+                        style: TextStyle(
+                          color: AppColors.primaryBlue,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.add_circle,
+                        color: AppColors.primaryBlue,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
+          ),
+
+          if (_isDeleteMode && _selectedIds.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: ElevatedButton.icon(
+                onPressed: _deleteSelected,
+                icon: const Icon(Icons.delete, color: Colors.white),
+                label: const Text(
+                  'ลบรายการที่เลือก',
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              ),
+            ),
+
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadNotifications,
+              color: AppColors.primaryBlue,
+              child: _buildBody(),
+            ),
+          ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadNotifications,
-        color: AppColors.primaryBlue,
-        child: _buildBody(),
-      ),
-      floatingActionButton:
-          !_isDeleteMode && _controller.notifications.isNotEmpty
-          ? FloatingActionButton(
-              onPressed: _navigateToAddNotification,
-              backgroundColor: AppColors.primaryBlue,
-              child: const Icon(Icons.add, color: Colors.white),
-            )
-          : null,
     );
+  }
+
+  void _navigateToAdd(BuildContext context) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddNotificationPage()),
+    );
+    if (result == true) _loadNotifications();
+  }
+
+  void _navigateToEdit(
+    BuildContext context,
+    MedicationNotification notification,
+  ) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditNotificationPage(notification: notification),
+      ),
+    );
+    if (result == true) _loadNotifications();
   }
 
   Widget _buildBody() {
@@ -183,169 +271,25 @@ class _NotificationListPageState extends State<NotificationListPage> {
       );
     }
 
-    if (_controller.error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                _controller.error!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadNotifications,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-              ),
-              child: const Text('ลองอีกครั้ง'),
-            ),
-          ],
-        ),
+    if (_controller.notifications.isEmpty) {
+      return EmptyNotificationState(
+        onAddPressed: () => _navigateToAdd(context),
       );
     }
 
-    if (_controller.notifications.isEmpty) {
-      return EmptyNotificationState(onAddPressed: _navigateToAddNotification);
-    }
-
     return ListView.builder(
-      padding: const EdgeInsets.only(top: 8, bottom: 80),
       itemCount: _controller.notifications.length,
       itemBuilder: (context, index) {
         final notification = _controller.notifications[index];
-        final isSelected = _selectedIds.contains(notification.id);
-
-        if (_isDeleteMode) {
-          return _buildDeleteModeItem(notification, isSelected);
-        }
-
         return NotificationListItem(
           notification: notification,
-          onToggle: (value) {
-            _controller.toggleNotification(notification);
-          },
-          onTap: () => _navigateToEditNotification(notification),
+          isDeleteMode: _isDeleteMode,
+          isSelected: _selectedIds.contains(notification.id),
+          onSelectionChanged: (val) => _toggleSelection(notification.id!),
+          onTap: () => _navigateToEdit(context, notification),
+          onToggle: (val) => _controller.toggleNotification(notification),
         );
       },
-    );
-  }
-
-  Widget _buildDeleteModeItem(
-    MedicationNotification notification,
-    bool isSelected,
-  ) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: isSelected
-            ? const BorderSide(color: AppColors.primaryBlue, width: 2)
-            : BorderSide.none,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            // Checkbox
-            Checkbox(
-              value: isSelected,
-              onChanged: (value) => _toggleSelection(notification.id!),
-              activeColor: AppColors.primaryBlue,
-            ),
-            const SizedBox(width: 12),
-
-            // Notification icon
-            GestureDetector(
-              onTap: () => _toggleSelection(notification.id!),
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.medication,
-                  color: AppColors.primaryBlue,
-                  size: 24,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-
-            // Notification details
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _toggleSelection(notification.id!),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      notification.medicationName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Days
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          notification.getDayNames().join(', '),
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Times
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            notification.getFormattedTimes().join(', '),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

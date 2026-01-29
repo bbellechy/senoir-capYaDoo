@@ -18,9 +18,9 @@ class ApiClient {
   }
 
   static Future<http.Response> post(
-    String path,
-    Map<String, dynamic> body,
-  ) async {
+    String path, [
+    Map<String, dynamic>? body,
+  ]) async {
     final token = await TokenStorage.getToken();
 
     return http.post(
@@ -29,14 +29,14 @@ class ApiClient {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(body),
+      body: body != null ? jsonEncode(body) : null,
     );
   }
 
   static Future<http.Response> put(
-    String path,
-    Map<String, dynamic> body,
-  ) async {
+    String path, [
+    Map<String, dynamic>? body,
+  ]) async {
     final token = await TokenStorage.getToken();
 
     return http.put(
@@ -45,7 +45,7 @@ class ApiClient {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(body),
+      body: body != null ? jsonEncode(body) : null,
     );
   }
 
