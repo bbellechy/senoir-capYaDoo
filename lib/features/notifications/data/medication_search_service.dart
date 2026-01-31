@@ -9,12 +9,18 @@ import 'package:capyadoo/core/services/search_master_medication_api.dart';
 class MedicationSearchService {
   final PillBoxService _pillBoxService = PillBoxService();
 
-  // Fetch user-specific medications
-  Future<List<UserMedication>> getUserMedications(String userId) async {
+  // Fetch user-specific medications with optional keyword
+  Future<List<UserMedication>> searchUserMedications(
+    String userId, [
+    String? keyword,
+  ]) async {
     try {
-      final response = await ApiClient.get(
-        '/medications/search?userId=$userId',
-      );
+      String path = '/medications/search?userId=$userId';
+      if (keyword != null && keyword.isNotEmpty) {
+        path += '&keyword=$keyword';
+      }
+
+      final response = await ApiClient.get(path);
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = json.decode(
@@ -64,6 +70,15 @@ class MedicationSearchService {
   // Search all master medications in the system
   Future<List<Medication>> searchMasterMedications(String keyword) async {
     try {
+      // Use the keyword search API if keyword is provided, otherwise get all
+      if (keyword.isEmpty) {
+        final response = await ApiClient.get('/master-medications');
+        if (response.statusCode == 200) {
+          final List data = jsonDecode(utf8.decode(response.bodyBytes));
+          return data.map((e) => Medication.fromJson(e)).toList();
+        }
+        return [];
+      }
       return await SearchMedicationApi.search(keyword);
     } catch (e) {
       print('Error searching master medications: $e');

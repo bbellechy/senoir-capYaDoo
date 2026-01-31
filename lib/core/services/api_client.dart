@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import './storage/token_storage.dart';
+import '../config/api_config.dart';
 
 class ApiClient {
-  static const String baseUrl = 'http://10.0.2.2:8080/api';
+  static String get baseUrl => '${ApiConfig.baseUrl}/api';
 
   static Future<http.Response> get(String path) async {
     final token = await TokenStorage.getToken();
@@ -29,6 +30,17 @@ class ApiClient {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
+      body: body != null ? jsonEncode(body) : null,
+    );
+  }
+
+  static Future<http.Response> postWithoutToken(
+    String path, [
+    Map<String, dynamic>? body,
+  ]) async {
+    return http.post(
+      Uri.parse('$baseUrl$path'),
+      headers: {'Content-Type': 'application/json'},
       body: body != null ? jsonEncode(body) : null,
     );
   }

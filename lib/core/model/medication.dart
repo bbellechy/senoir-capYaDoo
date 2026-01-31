@@ -22,7 +22,13 @@ class Medication {
   });
 
   // Alias for backward compatibility or when only name is available
-  String get name => tradenameTh ?? tradenameEn ?? '-';
+  // Display name format: <English Name> (<Thai Name>)
+  String get name {
+    if (tradenameEn != null && tradenameTh != null) {
+      return '$tradenameEn ($tradenameTh)';
+    }
+    return tradenameEn ?? tradenameTh ?? '-';
+  }
 
   factory Medication.fromJson(Map<String, dynamic> json) {
     return Medication(

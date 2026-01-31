@@ -6,6 +6,8 @@ import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/features/pillbox/controller/pill_box_controller.dart';
 import 'package:capyadoo/features/notifications/data/medication_search_service.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
+import 'package:capyadoo/features/notifications/presentation/widgets/unified_selection_dialog.dart';
+import 'package:capyadoo/core/services/auth_service.dart';
 
 class PillBoxDetailPage extends StatefulWidget {
   final MedicationBox pillBox;
@@ -16,29 +18,25 @@ class PillBoxDetailPage extends StatefulWidget {
   State<PillBoxDetailPage> createState() => _PillBoxDetailPageState();
 }
 
-class _PillBoxDetailPageState extends State<PillBoxDetailPage>
-    with SingleTickerProviderStateMixin {
+class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
   final PillBoxController _controller = PillBoxController();
   final PillBoxService _pillBoxService = PillBoxService();
   final MedicationSearchService _searchService = MedicationSearchService();
   late MedicationBox _currentBox;
-  late TabController _tabController;
 
   List<UserMedication> _allUserMedications = [];
   bool _isLoading = true;
-  final String _userId = 'c9905ab5-dfe0-44b7-890f-64ec92790b14'; // Demo User ID
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
     _currentBox = widget.pillBox;
-    _tabController = TabController(length: 2, vsync: this);
     _loadData();
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -50,14 +48,23 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage>
       final boxDetails = await _pillBoxService.getBoxById(widget.pillBox.id!);
 
       // 2. Fetch all user medications
-      final userMeds = await _searchService.getUserMedications(_userId);
+      if (_userId == null) {
+        final profile = await AuthService.getProfile();
+        _userId = profile?.id;
+      }
 
-      if (mounted) {
-        setState(() {
-          if (boxDetails != null) _currentBox = boxDetails;
-          _allUserMedications = userMeds;
-          _isLoading = false;
-        });
+      if (_userId != null) {
+        final userMeds = await _searchService.searchUserMedications(_userId!);
+        if (mounted) {
+          setState(() {
+            if (boxDetails != null) _currentBox = boxDetails;
+            _allUserMedications = userMeds;
+            _isLoading = false;
+          });
+        }
+      } else {
+        // Fallback or handle unauthenticated
+        if (mounted) setState(() => _isLoading = false);
       }
     } catch (e) {
       if (mounted) {
@@ -74,38 +81,6 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage>
     return _allUserMedications
         .where((m) => _currentBox.medicationIds.contains(m.id))
         .toList();
-  }
-
-  // Section 2: Available medications to add (Exclude medications already in the box)
-  List<UserMedication> get _availableMedications {
-    return _allUserMedications
-        .where((m) => !_currentBox.medicationIds.contains(m.id))
-        .toList();
-  }
-
-  Future<void> _addMedicationToBox(UserMedication med) async {
-    if (med.id == null || _currentBox.id == null) return;
-
-    final success = await _pillBoxService.addMedicationToBox(
-      _currentBox.id!,
-      med.id!,
-    );
-
-    if (success) {
-      // Refresh data to reflect changes
-      await _loadData();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('เพิ่ม ${med.name} ลงในกล่องแล้ว')),
-        );
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('ไม่สามารถเพิ่มยาได้')));
-      }
-    }
   }
 
   Future<void> _removeMedicationFromBox(UserMedication med) async {
@@ -152,25 +127,33 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F9FF),
       appBar: AppBar(
         title: Text(_currentBox.name),
         backgroundColor: AppColors.primaryBlue,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Column(
         children: [
-          // Header Section
+          // Header Section with Image
           Container(
             padding: const EdgeInsets.all(24),
-            color: Colors.white,
+            decoration: const BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+            ),
             child: Row(
               children: [
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
                     image: _currentBox.imagePath != null
                         ? DecorationImage(
                             image: FileImage(File(_currentBox.imagePath!)),
@@ -179,14 +162,14 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage>
                         : null,
                   ),
                   child: _currentBox.imagePath == null
-                      ? Icon(
+                      ? const Icon(
                           Icons.inventory_2,
-                          size: 32,
-                          color: AppColors.primaryBlue,
+                          size: 48,
+                          color: Colors.white,
                         )
                       : null,
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,20 +177,19 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage>
                       Text(
                         _currentBox.name,
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-                      if (_currentBox.description?.isNotEmpty ?? false) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          _currentBox.description!,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _currentBox.description ?? 'ไม่มีรายละเอียด',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white.withOpacity(0.8),
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
@@ -215,39 +197,51 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage>
             ),
           ),
 
-          // TabBar
-          Container(
-            color: Colors.white,
-            child: TabBar(
-              controller: _tabController,
-              labelColor: AppColors.primaryBlue,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: AppColors.primaryBlue,
-              tabs: [
-                Tab(text: 'ยาในกล่อง (${_medicationsInBox.length})'),
-                Tab(text: 'ยาที่เพิ่มได้'),
+          // Action Section: Title and Add Button
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'รายการยาในกล่อง (${_medicationsInBox.length})',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: _showAddMedicationPopup,
+                  icon: const Icon(
+                    Icons.add_circle,
+                    color: AppColors.primaryBlue,
+                  ),
+                  label: const Text(
+                    'เพิ่มยา',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
 
-          // Content
+          // Medication List Content
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildMedicationList(_medicationsInBox, true),
-                      _buildMedicationList(_availableMedications, false),
-                    ],
-                  ),
+                : _buildMedicationList(_medicationsInBox),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMedicationList(List<UserMedication> meds, bool isInBox) {
+  Widget _buildMedicationList(List<UserMedication> meds) {
     if (meds.isEmpty) {
       return Center(
         child: Padding(
@@ -255,18 +249,27 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.medication_outlined,
-                size: 48,
-                color: Colors.grey[300],
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.medication_outlined,
+                  size: 64,
+                  color: Colors.blue[200],
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Text(
-                isInBox
-                    ? 'ยังไม่มียาในกล่องนี้'
-                    : 'ไม่มียาที่สามารถเพิ่มได้แล้ว',
+                'ยังไม่มียาในกล่อง\nเพิ่มยาเพื่อจัดการกล่องยาของคุณ',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
               ),
             ],
           ),
@@ -275,45 +278,152 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       itemCount: meds.length,
       itemBuilder: (context, index) {
         final med = meds[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.grey[200]!),
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-            leading: CircleAvatar(
-              backgroundColor: Colors.blue[50],
-              child: Icon(Icons.medication, color: AppColors.primaryBlue),
-            ),
-            title: Text(
-              med.name,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            trailing: isInBox
-                ? IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    onPressed: () => _removeMedicationFromBox(med),
-                  )
-                : IconButton(
-                    icon: Icon(
-                      Icons.add_circle_outline,
-                      color: AppColors.primaryBlue,
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.medication, color: AppColors.primaryBlue),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      med.displayName,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    onPressed: () => _addMedicationToBox(med),
-                  ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${med.dosage ?? "-"} ${med.unit ?? "-"}',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 8),
+                    // Timing tags
+                    Wrap(spacing: 8, children: _buildTimingTags(med)),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                onPressed: () => _removeMedicationFromBox(med),
+              ),
+            ],
           ),
         );
       },
     );
+  }
+
+  List<Widget> _buildTimingTags(UserMedication med) {
+    if (med.intakePeriods == null || med.intakePeriods!.isEmpty) return [];
+
+    final periods = med.intakePeriods!.split(',');
+    return periods.map((p) {
+      Color color;
+      String label;
+      switch (p.trim().toLowerCase()) {
+        case 'morning':
+          color = const Color(0xFFFFF9C4);
+          label = 'เช้า';
+          break;
+        case 'afternoon':
+          color = const Color(0xFFFFE0B2);
+          label = 'กลางวัน';
+          break;
+        case 'evening':
+          color = const Color(0xFFE1F5FE);
+          label = 'เย็น';
+          break;
+        case 'night':
+          color = const Color(0xFFEDE7F6);
+          label = 'ก่อนนอน';
+          break;
+        default:
+          color = Colors.grey[200]!;
+          label = p;
+      }
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        ),
+      );
+    }).toList();
+  }
+
+  void _showAddMedicationPopup() async {
+    if (_userId == null) return;
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => UnifiedSelectionDialog(
+        userId: _userId!,
+        title: 'เพิ่มยาลงในกล่อง',
+        showMasterMedications: false,
+        allowFreeText: false,
+      ),
+    );
+
+    if (result != null) {
+      final medName = result['name'] as String;
+      final medId = result['id'] as String?;
+
+      if (medId != null) {
+        // Adding existing medication
+        setState(() => _isLoading = true);
+        final success = await _controller.addMedicationToBox(
+          _currentBox.id!,
+          medId,
+        );
+        if (success) {
+          await _loadData();
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('เพิ่ม $medName แล้ว')));
+          }
+        } else {
+          setState(() => _isLoading = false);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('ไม่สามารถเพิ่มยาได้')),
+            );
+          }
+        }
+      }
+    }
   }
 }

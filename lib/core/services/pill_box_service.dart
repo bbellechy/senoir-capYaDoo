@@ -9,7 +9,9 @@ import 'dart:async';
 
 class PillBoxService {
   // Replace with your actual backend URL
-  static const String _baseUrl = 'http://10.0.2.2:8080/api/medication-boxes';
+  // static const String _baseUrl = 'http://10.0.2.2:8080/api/medication-boxes';
+  static const String _baseUrl =
+      'http://192.168.1.106:8080/api/medication-boxes';
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   // Get token helper - use TokenStorage to match the rest of the app
@@ -279,6 +281,28 @@ class PillBoxService {
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       print('Error adding medication to box: $e');
+      return false;
+    }
+  }
+
+  // Remove medication from box using the specific DELETE endpoint
+  Future<bool> removeMedicationFromBox(
+    String boxId,
+    String medicationId,
+  ) async {
+    try {
+      final token = await _getToken();
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/$boxId/medications/$medicationId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('Error removing medication from box: $e');
       return false;
     }
   }

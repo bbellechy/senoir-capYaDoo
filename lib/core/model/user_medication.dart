@@ -25,6 +25,13 @@ class UserMedication {
     this.masterMedicationEntity,
   });
 
+  String get displayName {
+    if (masterMedicationEntity != null) {
+      return masterMedicationEntity!.name;
+    }
+    return name;
+  }
+
   factory UserMedication.fromJson(Map<String, dynamic> json) {
     return UserMedication(
       id: json['id']?.toString(),

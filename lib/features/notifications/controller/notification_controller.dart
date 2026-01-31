@@ -68,6 +68,19 @@ class NotificationController extends ChangeNotifier {
     try {
       MedicationNotification notificationToSave = notification;
 
+      // Ensure image is saved permanently if it's a temporary/camera path
+      if (notificationToSave.imagePath != null &&
+          !notificationToSave.imagePath!.contains('notification_images')) {
+        final permanentPath = await NotificationService.saveImageToAppStorage(
+          notificationToSave.imagePath!,
+        );
+        if (permanentPath != null) {
+          notificationToSave = notificationToSave.copyWith(
+            imagePath: permanentPath,
+          );
+        }
+      }
+
       // Logic to find image from Pill Box if not provided
       if (notificationToSave.imagePath == null) {
         try {
@@ -111,7 +124,11 @@ class NotificationController extends ChangeNotifier {
         final createdNotification =
             await NotificationApiService.createNotification(notificationToSave);
         if (createdNotification != null) {
-          notificationToSave = createdNotification;
+          // Preserve local imagePath if backend doesn't return it
+          notificationToSave = createdNotification.copyWith(
+            imagePath:
+                createdNotification.imagePath ?? notificationToSave.imagePath,
+          );
         }
       } catch (backendError) {
         // Backend failed, generate local ID
@@ -141,14 +158,36 @@ class NotificationController extends ChangeNotifier {
   // Update an existing notification
   Future<bool> updateNotification(MedicationNotification notification) async {
     try {
+      MedicationNotification notificationToUpdate = notification;
+
+      // Ensure image is saved permanently if it's a new temporary/camera path
+      if (notificationToUpdate.imagePath != null &&
+          !notificationToUpdate.imagePath!.contains('notification_images') &&
+          !notificationToUpdate.imagePath!.startsWith('http')) {
+        final permanentPath = await NotificationService.saveImageToAppStorage(
+          notificationToUpdate.imagePath!,
+        );
+        if (permanentPath != null) {
+          notificationToUpdate = notificationToUpdate.copyWith(
+            imagePath: permanentPath,
+          );
+        }
+      }
+
       // Update on backend
       final updatedNotification =
-          await NotificationApiService.updateNotification(notification);
+          await NotificationApiService.updateNotification(notificationToUpdate);
 
       if (updatedNotification != null) {
+        // Preserve local imagePath if backend doesn't return it
+        final notificationToStore = updatedNotification.copyWith(
+          imagePath:
+              updatedNotification.imagePath ?? notificationToUpdate.imagePath,
+        );
+
         // Update local storage
         await NotificationStorageService.updateNotification(
-          updatedNotification,
+          notificationToStore,
         );
 
         // Cancel old notifications and schedule new ones

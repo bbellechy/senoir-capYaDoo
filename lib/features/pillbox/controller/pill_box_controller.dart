@@ -5,13 +5,13 @@ import 'package:capyadoo/core/services/pill_box_service.dart';
 
 class PillBoxController extends ChangeNotifier {
   final PillBoxService _service = PillBoxService();
-  
+
   List<MedicationBox> _pillBoxes = [];
   List<MedicationBox> get pillBoxes => _pillBoxes;
-  
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
-  
+
   String? _error;
   String? get error => _error;
 
@@ -30,26 +30,29 @@ class PillBoxController extends ChangeNotifier {
     }
   }
 
-  Future<bool> addPillBox(String name, String? description, File? imageFile) async {
+  Future<bool> addPillBox(
+    String name,
+    String? description,
+    File? imageFile,
+  ) async {
     print('=== Controller: addPillBox called ===');
     print('Name: $name');
     print('Description: $description');
     print('Has image: ${imageFile != null}');
-    
+
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final newBox = MedicationBox(
-        name: name,
-        description: description,
-      );
-      
+      final newBox = MedicationBox(name: name, description: description);
+
       print('Controller: Calling service.createPillBox...');
       final created = await _service.createPillBox(newBox, imageFile);
-      print('Controller: Service returned: ${created != null ? "SUCCESS" : "NULL"}');
-      
+      print(
+        'Controller: Service returned: ${created != null ? "SUCCESS" : "NULL"}',
+      );
+
       if (created != null) {
         _pillBoxes.add(created);
         notifyListeners();
@@ -65,13 +68,15 @@ class PillBoxController extends ChangeNotifier {
       print('Exception type: ${e.runtimeType}');
       print('Exception: $e');
       print('Stack trace: $stackTrace');
-      
+
       String errorMsg = e.toString();
       // Extract meaningful error message
       if (errorMsg.contains('Exception:')) {
         errorMsg = errorMsg.split('Exception:').last.trim();
       }
-      _error = errorMsg.isNotEmpty ? errorMsg : 'ไม่สามารถสร้างกล่องยาได้ กรุณาลองใหม่อีกครั้ง';
+      _error = errorMsg.isNotEmpty
+          ? errorMsg
+          : 'ไม่สามารถสร้างกล่องยาได้ กรุณาลองใหม่อีกครั้ง';
       print('Controller: Final error message: $_error');
       return false;
     } finally {
@@ -133,26 +138,37 @@ class PillBoxController extends ChangeNotifier {
   }
 
   Future<bool> addMedicationToBox(String boxId, String medicationId) async {
-    final index = _pillBoxes.indexWhere((b) => b.id == boxId);
-    if (index == -1) return false;
-
-    final box = _pillBoxes[index];
-    if (box.medicationIds.contains(medicationId)) return true;
-
-    final updatedMedIds = List<String>.from(box.medicationIds)..add(medicationId);
-    final updatedBox = box.copyWith(medicationIds: updatedMedIds);
-
-    return await updatePillBox(updatedBox, null);
+    final success = await _service.addMedicationToBox(boxId, medicationId);
+    if (success) {
+      final index = _pillBoxes.indexWhere((b) => b.id == boxId);
+      if (index != -1) {
+        final box = _pillBoxes[index];
+        if (!box.medicationIds.contains(medicationId)) {
+          final updatedMedIds = List<String>.from(box.medicationIds)
+            ..add(medicationId);
+          _pillBoxes[index] = box.copyWith(medicationIds: updatedMedIds);
+          notifyListeners();
+        }
+      }
+    }
+    return success;
   }
 
-  Future<bool> removeMedicationFromBox(String boxId, String medicationId) async {
-    final index = _pillBoxes.indexWhere((b) => b.id == boxId);
-    if (index == -1) return false;
-
-    final box = _pillBoxes[index];
-    final updatedMedIds = List<String>.from(box.medicationIds)..remove(medicationId);
-    final updatedBox = box.copyWith(medicationIds: updatedMedIds);
-
-    return await updatePillBox(updatedBox, null);
+  Future<bool> removeMedicationFromBox(
+    String boxId,
+    String medicationId,
+  ) async {
+    final success = await _service.removeMedicationFromBox(boxId, medicationId);
+    if (success) {
+      final index = _pillBoxes.indexWhere((b) => b.id == boxId);
+      if (index != -1) {
+        final box = _pillBoxes[index];
+        final updatedMedIds = List<String>.from(box.medicationIds)
+          ..remove(medicationId);
+        _pillBoxes[index] = box.copyWith(medicationIds: updatedMedIds);
+        notifyListeners();
+      }
+    }
+    return success;
   }
 }

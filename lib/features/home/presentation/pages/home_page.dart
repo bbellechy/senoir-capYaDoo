@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/model/daily_intake.dart';
 import 'package:capyadoo/core/services/medication_schedule_service.dart';
+import 'package:capyadoo/core/services/auth_service.dart';
+import 'package:capyadoo/core/model/user.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_list_page.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -16,12 +18,38 @@ class _HomePageState extends State<HomePage> {
   DateTime _selectedDate = DateTime.now();
   List<DailyIntake> _schedule = [];
   bool _isLoading = true;
+  User? _user;
 
   @override
   void initState() {
     super.initState();
     initializeDateFormatting('th_TH', null);
-    _loadSchedule();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    await Future.wait([_loadProfile(), _loadSchedule(showLoading: false)]);
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _loadProfile() async {
+    final user = await AuthService.getProfile();
+    if (mounted) {
+      if (user != null) {
+        setState(() => _user = user);
+      } else {
+        // Token might be expired or invalid
+        _handleLogout();
+      }
+    }
+  }
+
+  void _handleLogout() async {
+    await AuthService.logout();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   Future<void> _loadSchedule({bool showLoading = true}) async {
@@ -109,7 +137,7 @@ class _HomePageState extends State<HomePage> {
 
           SafeArea(
             child: RefreshIndicator(
-              onRefresh: () => _loadSchedule(showLoading: false),
+              onRefresh: _loadData,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
@@ -149,9 +177,9 @@ class _HomePageState extends State<HomePage> {
                 'สวัสดี',
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
-              const Text(
-                'pradthana',
-                style: TextStyle(
+              Text(
+                _user?.fullName ?? '...',
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -159,22 +187,30 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          Column(
+          Row(
             children: [
-              const Icon(
-                Icons.notifications_none,
-                color: Colors.white,
-                size: 36,
+              IconButton(
+                icon: const Icon(Icons.logout, color: Colors.white),
+                onPressed: _handleLogout,
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'CAPYADOO',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
+              Column(
+                children: [
+                  const Icon(
+                    Icons.notifications_none,
+                    color: Colors.white,
+                    size: 36,
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'CAPYADOO',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

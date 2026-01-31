@@ -30,12 +30,16 @@ class NotificationService {
       tz.setLocalLocation(tz.getLocation(timeZoneName));
       print('NotificationService: Local timezone set to $timeZoneName');
     } catch (e) {
-      print('NotificationService: Location not found, falling back to Asia/Bangkok');
+      print(
+        'NotificationService: Location not found, falling back to Asia/Bangkok',
+      );
       tz.setLocalLocation(tz.getLocation('Asia/Bangkok'));
     }
 
     final androidPlugin = _notificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     await androidPlugin?.createNotificationChannel(
       const AndroidNotificationChannel(
@@ -59,26 +63,62 @@ class NotificationService {
       android: androidSettings,
     );
 
-    await _notificationsPlugin.initialize(settings);
+    await _notificationsPlugin.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        _handleNotificationAction(response);
+      },
+      onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
+    );
   }
 
-  // Convert image to ByteArrayAndroidBitmap (more reliable than file path)
-  static Future<ByteArrayAndroidBitmap?> _loadImageAsBytes(String imagePath) async {
+  @pragma('vm:entry-point')
+  static void notificationTapBackground(NotificationResponse response) {
+    _handleNotificationAction(response);
+  }
+
+  static Future<void> _handleNotificationAction(
+    NotificationResponse response,
+  ) async {
+    print('NotificationService: Handling action: ${response.actionId}');
+    if (response.actionId == 'taken') {
+      final String? payload = response.payload;
+      if (payload != null) {
+        print('NotificationService: Marking as taken for payload: $payload');
+        // Actual API call logic would go here
+      }
+    } else if (response.actionId == 'not_taken') {
+      print('NotificationService: User marked as not taken yet');
+    }
+  }
+
+  static Future<ByteArrayAndroidBitmap?> _loadImageAsBytes(
+    String imagePath,
+  ) async {
     try {
       final file = File(imagePath);
-      if (!await file.exists()) {
-        print('NotificationService: Image file not found: $imagePath');
-        return null;
-      }
-
+      if (!await file.exists()) return null;
       final Uint8List bytes = await file.readAsBytes();
-      print('NotificationService: Loaded image bytes: ${bytes.length} bytes');
-      
       return ByteArrayAndroidBitmap(bytes);
     } catch (e) {
-      print('NotificationService: Error loading image as bytes: $e');
+      print('NotificationService: Error loading image: $e');
       return null;
     }
+  }
+
+  static List<AndroidNotificationAction> _getActions() {
+    return [
+      const AndroidNotificationAction(
+        'taken',
+        'Taken',
+        showsUserInterface: true,
+      ),
+      const AndroidNotificationAction(
+        'not_taken',
+        'Not Taken Yet',
+        showsUserInterface: false,
+      ),
+    ];
   }
 
   static Future<void> showNotification({
@@ -86,114 +126,73 @@ class NotificationService {
     required String title,
     required String body,
     String? imagePath,
+    String? payload,
   }) async {
-    print('NotificationService: showNotification called');
-    print('  ID: $id');
-    print('  Title: $title');
-    print('  Body: $body');
-    print('  ImagePath: $imagePath');
-    
     AndroidNotificationDetails androidDetails;
 
     if (imagePath != null) {
       final imageBytes = await _loadImageAsBytes(imagePath);
-      
       if (imageBytes != null) {
-        try {
-          final BigPictureStyleInformation bigPicture = BigPictureStyleInformation(
-            imageBytes,
-            largeIcon: imageBytes,
-            contentTitle: title,
-            summaryText: body,
-            hideExpandedLargeIcon: false,
-          );
-
-          androidDetails = AndroidNotificationDetails(
-            'medication_channel_v2',
-            'Medication Reminders',
-            channelDescription: 'Notifications for medication reminders',
-            importance: Importance.max,
-            priority: Priority.high,
-            styleInformation: bigPicture,
-            largeIcon: imageBytes,
-          );
-          
-          print('NotificationService: Using ByteArray big picture style');
-        } catch (e) {
-          print('NotificationService: Error creating big picture: $e');
-          androidDetails = const AndroidNotificationDetails(
-            'medication_channel_v2',
-            'Medication Reminders',
-            channelDescription: 'Notifications for medication reminders',
-            importance: Importance.max,
-            priority: Priority.high,
-            largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-          );
-        }
-      } else {
-        print('NotificationService: Failed to load image bytes, using default');
-        androidDetails = const AndroidNotificationDetails(
+        androidDetails = AndroidNotificationDetails(
           'medication_channel_v2',
           'Medication Reminders',
           channelDescription: 'Notifications for medication reminders',
           importance: Importance.max,
           priority: Priority.high,
-          largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+          styleInformation: BigPictureStyleInformation(
+            imageBytes,
+            largeIcon: imageBytes,
+            contentTitle: title,
+            summaryText: body,
+          ),
+          largeIcon: imageBytes,
+          actions: _getActions(),
+        );
+      } else {
+        // Fallback: Text only if image missing
+        androidDetails = AndroidNotificationDetails(
+          'medication_channel_v2',
+          'Medication Reminders',
+          channelDescription: 'Notifications for medication reminders',
+          importance: Importance.max,
+          priority: Priority.high,
+          actions: _getActions(),
         );
       }
     } else {
-      print('NotificationService: No image path provided');
-      androidDetails = const AndroidNotificationDetails(
+      androidDetails = AndroidNotificationDetails(
         'medication_channel_v2',
         'Medication Reminders',
         channelDescription: 'Notifications for medication reminders',
         importance: Importance.max,
         priority: Priority.high,
-        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        actions: _getActions(),
       );
     }
 
-    final NotificationDetails details = NotificationDetails(android: androidDetails);
-
-    try {
-      await _notificationsPlugin.show(id, title, body, details);
-      print('NotificationService: Notification shown successfully');
-    } catch (e) {
-      print('NotificationService: Error showing notification: $e');
-    }
+    await _notificationsPlugin.show(
+      id,
+      title,
+      body,
+      NotificationDetails(android: androidDetails),
+      payload: payload,
+    );
   }
 
-  // Schedule notification - NOTE: ByteArray approach may not work well with scheduled notifications
-  // So we'll save the image to a persistent location first
-  static Future<String?> _saveImageToAppStorage(String imagePath) async {
+  static Future<String?> saveImageToAppStorage(String imagePath) async {
     try {
       final file = File(imagePath);
-      if (!await file.exists()) {
-        print('NotificationService: Source image not found');
-        return null;
-      }
+      if (!await file.exists()) return null;
 
       final directory = await getApplicationDocumentsDirectory();
       final imagesDir = Directory('${directory.path}/notification_images');
-      
-      if (!await imagesDir.exists()) {
-        await imagesDir.create(recursive: true);
-      }
+      if (!await imagesDir.exists()) await imagesDir.create(recursive: true);
 
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final extension = imagePath.split('.').last.toLowerCase();
-      final newPath = '${imagesDir.path}/med_$timestamp.$extension';
-      
+      final newPath =
+          '${imagesDir.path}/med_${DateTime.now().millisecondsSinceEpoch}.${imagePath.split('.').last}';
       await file.copy(newPath);
-      
-      if (await File(newPath).exists()) {
-        print('NotificationService: Image saved to: $newPath');
-        return newPath;
-      }
-      
-      return null;
+      return newPath;
     } catch (e) {
-      print('NotificationService: Error saving image: $e');
       return null;
     }
   }
@@ -207,111 +206,82 @@ class NotificationService {
     required String body,
     String? imagePath,
   }) async {
-    print('NotificationService: scheduleWeeklyNotification');
-    print('  ID: $id, Day: $day, Time: $hour:$minute');
-    print('  ImagePath: $imagePath');
-    
     AndroidNotificationDetails androidDetails;
+    String? finalImagePath = imagePath;
 
-    if (imagePath != null && await File(imagePath).exists()) {
-      // Save image permanently
-      final savedPath = await _saveImageToAppStorage(imagePath);
-      
-      if (savedPath != null) {
-        // Load image as bytes for notification
-        final imageBytes = await _loadImageAsBytes(savedPath);
-        
-        if (imageBytes != null) {
-          try {
-            final BigPictureStyleInformation bigPicture = BigPictureStyleInformation(
-              imageBytes,
-              largeIcon: imageBytes,
-              contentTitle: title,
-              summaryText: body,
-              hideExpandedLargeIcon: false,
-            );
+    // Only save if it's not already in permanent storage and is a local file
+    if (imagePath != null &&
+        await File(imagePath).exists() &&
+        !imagePath.contains('notification_images')) {
+      final savedPath = await saveImageToAppStorage(imagePath);
+      if (savedPath != null) finalImagePath = savedPath;
+    }
 
-            androidDetails = AndroidNotificationDetails(
-              'medication_channel_v2',
-              'Medication Reminders',
-              channelDescription: 'Notifications for medication reminders',
-              importance: Importance.max,
-              priority: Priority.high,
-              styleInformation: bigPicture,
-              largeIcon: imageBytes,
-            );
-            
-            print('NotificationService: Scheduled with ByteArray image');
-          } catch (e) {
-            print('NotificationService: Error with ByteArray, using default: $e');
-            androidDetails = const AndroidNotificationDetails(
-              'medication_channel_v2',
-              'Medication Reminders',
-              channelDescription: 'Notifications for medication reminders',
-              importance: Importance.max,
-              priority: Priority.high,
-              largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-            );
-          }
-        } else {
-          print('NotificationService: Could not load image bytes');
-          androidDetails = const AndroidNotificationDetails(
-            'medication_channel_v2',
-            'Medication Reminders',
-            channelDescription: 'Notifications for medication reminders',
-            importance: Importance.max,
-            priority: Priority.high,
-            largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-          );
-        }
-      } else {
-        print('NotificationService: Could not save image');
-        androidDetails = const AndroidNotificationDetails(
+    if (finalImagePath != null) {
+      final imageBytes = await _loadImageAsBytes(finalImagePath);
+      if (imageBytes != null) {
+        androidDetails = AndroidNotificationDetails(
           'medication_channel_v2',
           'Medication Reminders',
           channelDescription: 'Notifications for medication reminders',
           importance: Importance.max,
           priority: Priority.high,
-          largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+          styleInformation: BigPictureStyleInformation(
+            imageBytes,
+            largeIcon: imageBytes,
+            contentTitle: title,
+            summaryText: body,
+          ),
+          largeIcon: imageBytes,
+          actions: _getActions(),
+        );
+      } else {
+        // Fallback: Text only if image missing
+        androidDetails = AndroidNotificationDetails(
+          'medication_channel_v2',
+          'Medication Reminders',
+          channelDescription: 'Notifications for medication reminders',
+          importance: Importance.max,
+          priority: Priority.high,
+          actions: _getActions(),
         );
       }
     } else {
-      print('NotificationService: No valid image path');
-      androidDetails = const AndroidNotificationDetails(
+      androidDetails = AndroidNotificationDetails(
         'medication_channel_v2',
         'Medication Reminders',
         channelDescription: 'Notifications for medication reminders',
         importance: Importance.max,
         priority: Priority.high,
-        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        actions: _getActions(),
       );
     }
 
-    final NotificationDetails details = NotificationDetails(android: androidDetails);
-
-    try {
-      final scheduledTime = _nextInstanceOfDayAndTime(day, hour, minute);
-      
-      await _notificationsPlugin.zonedSchedule(
-        id,
-        title,
-        body,
-        scheduledTime,
-        details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-      );
-      
-      print('NotificationService: Successfully scheduled notification');
-    } catch (e) {
-      print('NotificationService: Error scheduling: $e');
-    }
+    final scheduledTime = _nextInstanceOfDayAndTime(day, hour, minute);
+    await _notificationsPlugin.zonedSchedule(
+      id,
+      title,
+      body,
+      scheduledTime,
+      NotificationDetails(android: androidDetails),
+      payload: '$id|$day|$hour|$minute',
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+    );
   }
 
-  static Future<void> cancelNotification(int id) async {
-    await _notificationsPlugin.cancel(id);
+  static Future<void> cancelNotification(int id) async =>
+      await _notificationsPlugin.cancel(id);
+
+  static Future<void> checkBatteryOptimization() async {
+    final androidPlugin = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    final bool? isIgnoring = await androidPlugin?.areNotificationsEnabled();
+    print('NotificationService: System notifications enabled: $isIgnoring');
   }
 
   static Future<void> cancelAllForMedication(
@@ -319,20 +289,11 @@ class NotificationService {
     int? baseId,
   }) async {
     final int base = (baseId ?? medicationId.hashCode.abs()) % 100000;
-
     for (int day = 0; day < 7; day++) {
       for (int time = 0; time < 4; time++) {
-        final id = base * 100 + day * 10 + time;
-        await _notificationsPlugin.cancel(id);
+        await _notificationsPlugin.cancel(base * 100 + day * 10 + time);
       }
     }
-  }
-
-  static Future<void> checkBatteryOptimization() async {
-    final androidPlugin = _notificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-    final bool? isIgnoring = await androidPlugin?.areNotificationsEnabled();
-    print('NotificationService: System notifications enabled: $isIgnoring');
   }
 
   static tz.TZDateTime _nextInstanceOfDayAndTime(
@@ -340,8 +301,8 @@ class NotificationService {
     int hour,
     int minute,
   ) {
-    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduledDate = tz.TZDateTime(
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduledDate = tz.TZDateTime(
       tz.local,
       now.year,
       now.month,
@@ -349,22 +310,16 @@ class NotificationService {
       hour,
       minute,
     );
-
     int daysUntilTarget = (dayOfWeek - now.weekday + 7) % 7;
-
-    if (daysUntilTarget == 0 && scheduledDate.isBefore(now)) {
+    if (daysUntilTarget == 0 && scheduledDate.isBefore(now))
       daysUntilTarget = 7;
-    }
-
-    scheduledDate = scheduledDate.add(Duration(days: daysUntilTarget));
-    return scheduledDate;
+    return scheduledDate.add(Duration(days: daysUntilTarget));
   }
 
   static Future<void> scheduleTestNotification({
     required String medicationName,
     String? imagePath,
   }) async {
-    print('NotificationService: Test notification in 10 seconds');
     Future.delayed(const Duration(seconds: 10), () async {
       await showNotification(
         id: 999,
@@ -377,14 +332,10 @@ class NotificationService {
 
   static Future<void> checkPermissions() async {
     final androidPlugin = _notificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-
-    final bool? notiEnabled = await androidPlugin?.areNotificationsEnabled();
-    print('NotificationService: Notifications Enabled = $notiEnabled');
-
-    if (androidPlugin != null) {
-      final exactAlarm = await androidPlugin.requestExactAlarmsPermission();
-      print('NotificationService: Exact Alarms Granted = $exactAlarm');
-    }
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidPlugin != null)
+      await androidPlugin.requestExactAlarmsPermission();
   }
 }

@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/model/medication_notification.dart';
 import 'package:capyadoo/features/notifications/controller/notification_controller.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/day_selector_widget.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/pill_selection_widget.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddNotificationPage extends StatefulWidget {
   const AddNotificationPage({super.key});
@@ -21,6 +23,22 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
   String? _selectedTime;
   bool _isSaving = false;
 
+  Future<void> _takePhoto() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? photo = await picker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 85,
+    );
+
+    if (photo != null) {
+      setState(() {
+        _imagePath = photo.path;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -31,6 +49,7 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
+      initialEntryMode: TimePickerEntryMode.input,
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -120,16 +139,77 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Medication Selection and Image
+            // TOP CAPTURE SECTION
+            const Text(
+              'ถ่ายภาพยาสำหรับแจ้งเตือน',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryBlue,
+              ),
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: _takePhoto,
+              child: Container(
+                width: double.infinity,
+                height: 180,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey[300]!),
+                  image: _imagePath != null
+                      ? DecorationImage(
+                          image: FileImage(File(_imagePath!)),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: _imagePath == null
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.camera_alt_outlined,
+                            size: 48,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'แตะเพื่อถ่ายภาพ',
+                            style: TextStyle(color: Colors.grey[500]),
+                          ),
+                        ],
+                      )
+                    : Align(
+                        alignment: Alignment.bottomRight,
+                        child: Container(
+                          margin: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.refresh,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Medication Selection
             PillSelectionWidget(
-              onSelected: (name, imagePath) {
+              onSelected: (name, _) {
                 setState(() {
                   _medicationName = name;
-                  _imagePath = imagePath;
                 });
               },
             ),

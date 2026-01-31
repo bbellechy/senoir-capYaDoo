@@ -21,7 +21,8 @@ class AppRouter {
   static const String registerRoute = '/register';
 
   // Main routes with bottom navigation
-  static const String initialRoute = '/';
+  static const String mainRoute = '/';
+  static const String initialRoute = '/login';
   static const String homeRoute = '/home';
   static const String searchRoute = '/search';
   static const String addDataRoute = '/add-data';
@@ -49,7 +50,7 @@ class AppRouter {
           builder: (_) => const RegisterPage(),
           settings: settings,
         );
-      case initialRoute:
+      case mainRoute:
         return MaterialPageRoute(
           builder: (_) => const MainLayout(),
           settings: settings,
