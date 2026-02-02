@@ -16,6 +16,7 @@ class AppInputText extends StatefulWidget {
   final bool readOnly;
   final String? Function(String?)? validator;
   final bool isPassword;
+  final bool isRequired;
 
   const AppInputText({
     super.key,
@@ -33,6 +34,7 @@ class AppInputText extends StatefulWidget {
     this.readOnly = false,
     this.validator,
     this.isPassword = false,
+    this.isRequired = false,
   });
 
   @override
@@ -59,12 +61,26 @@ class _AppInputTextState extends State<AppInputText> {
       onChanged: widget.onChanged,
       onTap: widget.onTap,
       readOnly: widget.readOnly,
-      validator: widget.validator,
+      validator:
+          widget.validator ??
+          (widget.isRequired
+              ? (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'กรุณากรอกข้อมูล';
+                  }
+                  return null;
+                }
+              : null),
       obscureText: widget.isPassword ? _obscureText : false,
       decoration: InputDecoration(
         hintText: widget.hintText,
         hintStyle: const TextStyle(color: AppColors.textSub),
-        labelText: widget.labelText,
+        labelText: widget.labelText != null && widget.isRequired
+            ? '${widget.labelText} *'
+            : widget.labelText,
+        labelStyle: widget.labelText != null && widget.isRequired
+            ? const TextStyle(color: AppColors.textSub)
+            : null,
         prefixIcon: widget.prefixIcon,
         suffixIcon: widget.isPassword
             ? IconButton(
@@ -76,7 +92,7 @@ class _AppInputTextState extends State<AppInputText> {
               )
             : widget.suffixIcon,
         filled: true,
-        fillColor: widget.enabled ? Colors.white : Colors.grey[100],
+        fillColor: widget.enabled ? AppColors.blueEmpty : AppColors.blueEmpty,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,

@@ -20,6 +20,7 @@ class AppTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
   final FocusNode? focusNode;
+  final bool isRequired;
 
   const AppTextField({
     super.key,
@@ -40,6 +41,7 @@ class AppTextField extends StatelessWidget {
     this.inputFormatters,
     this.validator,
     this.focusNode,
+    this.isRequired = false,
   });
 
   @override
@@ -48,9 +50,27 @@ class AppTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
-          Text(
-            label!,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          Row(
+            children: [
+              Text(
+                label!,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Sarabun',
+                ),
+              ),
+              if (isRequired)
+                const Text(
+                  ' *',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.error,
+                    fontFamily: 'Sarabun',
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
         ],
@@ -66,7 +86,16 @@ class AppTextField extends StatelessWidget {
           onTap: onTap,
           focusNode: focusNode,
           inputFormatters: inputFormatters,
-          validator: validator,
+          validator:
+              validator ??
+              (isRequired
+                  ? (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'กรุณากรอกข้อมูล';
+                      }
+                      return null;
+                    }
+                  : null),
           decoration: InputDecoration(
             hintText: hint,
             errorText: errorText,
@@ -123,6 +152,8 @@ class AppLongTextField extends StatefulWidget {
   final String? errorText;
   final ValueChanged<String>? onChanged;
   final String? Function(String?)? validator;
+  final bool isRequired;
+  final int? maxLines;
 
   const AppLongTextField({
     super.key,
@@ -132,6 +163,8 @@ class AppLongTextField extends StatefulWidget {
     this.errorText,
     this.onChanged,
     this.validator,
+    this.isRequired = false,
+    this.maxLines,
   });
 
   @override
@@ -169,11 +202,12 @@ class _AppLongTextFieldState extends State<AppLongTextField> {
       label: widget.label,
       hint: widget.hint,
       errorText: widget.errorText,
-      maxLines: 5,
+      maxLines: widget.maxLines ?? 5,
       maxLength: maxLength,
       keyboardType: TextInputType.multiline,
       onChanged: widget.onChanged,
       validator: widget.validator,
+      isRequired: widget.isRequired,
     );
   }
 }

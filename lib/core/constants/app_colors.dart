@@ -35,7 +35,7 @@ class AppColors {
 
   static const Color sleep = Color(0xFFD5D2FF);
   static const Color sleepBorder = Color(0xFFB1ACFF);
-  static const Color sleepIcon = Color(0xFFE37900);
+  static const Color sleepIcon = Color(0xFF493DF3);
   
 
   // Gradients

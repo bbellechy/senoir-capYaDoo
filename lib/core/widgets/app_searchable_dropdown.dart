@@ -10,6 +10,7 @@ class AppSearchableDropdown<T> extends StatefulWidget {
   final String? errorText;
   final bool enabled;
   final double maxDropdownHeight; // ความสูงของรายการ (~5 items)
+  final bool isRequired;
 
   const AppSearchableDropdown({
     super.key,
@@ -21,6 +22,7 @@ class AppSearchableDropdown<T> extends StatefulWidget {
     this.errorText,
     this.enabled = true,
     this.maxDropdownHeight = 320, // ประมาณ 5 รายการ
+    this.isRequired = false,
   });
 
   @override
@@ -94,9 +96,27 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.label != null) ...[
-          Text(
-            widget.label!,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          Row(
+            children: [
+              Text(
+                widget.label!,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Sarabun',
+                ),
+              ),
+              if (widget.isRequired)
+                const Text(
+                  ' *',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.error,
+                    fontFamily: 'Sarabun',
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
         ],

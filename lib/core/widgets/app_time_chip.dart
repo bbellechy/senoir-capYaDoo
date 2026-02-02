@@ -28,19 +28,6 @@ class AppTimeChip extends StatelessWidget {
     }
   }
 
-  IconData get _icon {
-    switch (timeOfDay) {
-      case TimeOfDay.morning:
-        return Icons.wb_sunny;
-      case TimeOfDay.noon:
-        return Icons.wb_sunny_outlined;
-      case TimeOfDay.evening:
-        return Icons.wb_twilight;
-      case TimeOfDay.bedtime:
-        return Icons.nightlight_round;
-    }
-  }
-
   Color get _backgroundColor {
     switch (timeOfDay) {
       case TimeOfDay.morning:
@@ -84,30 +71,25 @@ class AppTimeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
-        width: width,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        width: width ?? 72,
+        height: 24,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
           color: _backgroundColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: _borderColor, width: 1.5),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(_icon, size: 18, color: _textColor),
-            const SizedBox(width: 6),
-            Text(
-              _label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: _textColor,
-              ),
+        child: Center(
+          child: Text(
+            _label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _textColor,
             ),
-          ],
+          ),
         ),
       ),
     );
