@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import '../../../../core/constants/app_colors.dart';
 
 enum MedicineConfirmationStatus { pending, taken, overdue }
 

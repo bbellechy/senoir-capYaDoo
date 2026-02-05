@@ -13,6 +13,7 @@ import 'package:capyadoo/features/profile/presentation/pages/profile_page.dart';
 import 'package:capyadoo/features/auth/presentation/pages/login_page.dart';
 import 'package:capyadoo/features/auth/presentation/pages/register_page.dart';
 import 'package:capyadoo/features/widget_showcase/widget_showcase_page.dart';
+import 'package:capyadoo/features/caregivers/presentation/pages/caregivers_and_users_page.dart';
 import 'package:capyadoo/core/layouts/main_layout.dart';
 
 class AppRouter {
@@ -31,6 +32,7 @@ class AppRouter {
   static const String addSymptomRoute = '/symptom/add';
   static const String notificationsRoute = '/notifications';
   static const String profileRoute = '/profile';
+  static const String caregiversRoute = '/caregivers';
 
   // Demo routes (legacy)
   static const String notificationDemoRoute = '/notifications/demo';
@@ -98,6 +100,11 @@ class AppRouter {
       case profileRoute:
         return MaterialPageRoute(
           builder: (_) => const ProfilePage(),
+          settings: settings,
+        );
+      case caregiversRoute:
+        return MaterialPageRoute(
+          builder: (_) => const CaregiversAndUsersPage(),
           settings: settings,
         );
       case ttsDemoRoute:

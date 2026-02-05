@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
-import 'package:capyadoo/core/widgets/symptom_list_card.dart';
+import 'package:capyadoo/features/add_data/presentation/widgets/symptom_list_card.dart';
 
 class SymptomListPage extends StatefulWidget {
   const SymptomListPage({super.key});

@@ -8,13 +8,13 @@ import 'package:capyadoo/core/widgets/app_date_picker.dart';
 import 'package:capyadoo/core/widgets/app_slider.dart';
 import 'package:capyadoo/core/widgets/app_image_picker.dart';
 import 'package:capyadoo/core/widgets/app_searchable_dropdown.dart';
-import 'package:capyadoo/core/widgets/medicine_list_card.dart';
-import 'package:capyadoo/core/widgets/symptom_list_card.dart';
+import 'package:capyadoo/features/add_data/presentation/widgets/medicine_list_card.dart';
+import 'package:capyadoo/features/add_data/presentation/widgets/symptom_list_card.dart';
 import 'package:capyadoo/core/widgets/medicine_box_list_card.dart';
 import 'package:capyadoo/core/widgets/simple_medicine_list_card.dart';
 import 'package:capyadoo/core/widgets/app_time_chip.dart' as time_chip;
-import 'package:capyadoo/core/widgets/medicine_reminder_card.dart';
-import 'package:capyadoo/core/widgets/medicine_box_reminder_card.dart';
+import 'package:capyadoo/features/home/presentation/widgets/medicine_reminder_card.dart';
+import 'package:capyadoo/features/home/presentation/widgets/medicine_box_reminder_card.dart';
 
 class WidgetShowcasePage extends StatefulWidget {
   const WidgetShowcasePage({super.key});
