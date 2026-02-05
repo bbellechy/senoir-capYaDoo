@@ -5,6 +5,8 @@ import 'package:capyadoo/core/services/notification_storage_service.dart';
 import 'package:capyadoo/features/notifications/data/notification_api_service.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/core/services/search_master_medication_api.dart';
+import 'package:capyadoo/core/services/medication_schedule_service.dart';
+import 'package:capyadoo/core/model/daily_intake.dart';
 
 class NotificationController extends ChangeNotifier {
   List<MedicationNotification> _notifications = [];
@@ -33,8 +35,19 @@ class NotificationController extends ChangeNotifier {
         final backendNotifications =
             await NotificationApiService.getNotifications();
         if (backendNotifications.isNotEmpty) {
-          _notifications = _sortNotifications(backendNotifications);
-          // Update local storage with backend data
+          // Merge logic: preserve local imagePath if backend doesn't have it
+          final mergedNotifications = backendNotifications.map((backend) {
+            final local = _notifications.firstWhere(
+              (n) => n.id == backend.id,
+              orElse: () => backend,
+            );
+            return backend.copyWith(
+              imagePath: backend.imagePath ?? local.imagePath,
+            );
+          }).toList();
+
+          _notifications = _sortNotifications(mergedNotifications);
+          // Update local storage with merged data
           await NotificationStorageService.saveNotifications(_notifications);
           notifyListeners();
         }
@@ -42,12 +55,52 @@ class NotificationController extends ChangeNotifier {
         // Backend error is not critical, we can work with local storage
         print('Backend sync failed (working offline): $backendError');
       }
+
+      // Overdue check logic
+      await _checkOverdueMedications();
     } catch (e) {
       _error = 'เกิดข้อผิดพลาดในการโหลดข้อมูล: $e';
       print('Error loading notifications: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  // Check for medications that are late by > 15 minutes
+  Future<void> _checkOverdueMedications() async {
+    try {
+      final now = DateTime.now();
+      final todaySchedules = await MedicationScheduleService.getDailySchedule(
+        now,
+      );
+
+      for (final schedule in todaySchedules) {
+        if (schedule.status == IntakeStatus.PENDING) {
+          final timeParts = schedule.time.split(':');
+          if (timeParts.length >= 2) {
+            final hour = int.tryParse(timeParts[0]) ?? 0;
+            final minute = int.tryParse(timeParts[1]) ?? 0;
+            final scheduleTime = DateTime(
+              now.year,
+              now.month,
+              now.day,
+              hour,
+              minute,
+            );
+
+            // If more than 15 minutes late
+            if (now.difference(scheduleTime).inMinutes > 15) {
+              print(
+                'Medication ${schedule.medicationName} is overdue (>15 mins). Updating status.',
+              );
+              await MedicationScheduleService.markAsOverdue(schedule.intakeId);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('Error checking overdue medications: $e');
     }
   }
 
@@ -308,6 +361,8 @@ class NotificationController extends ChangeNotifier {
           title: 'เตือนกินยา',
           body: notification.medicationName,
           imagePath: notification.imagePath,
+          intakeId: notification
+              .id, // Using notification ID as intake ID for now, or use a more specific one if available
         );
       }
     }

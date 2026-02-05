@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:capyadoo/core/services/api_client.dart';
 import 'package:capyadoo/core/services/storage/token_storage.dart';
 import 'package:capyadoo/core/model/user.dart';
+import 'package:capyadoo/core/services/notification_storage_service.dart';
+import 'package:capyadoo/core/services/notification_service.dart';
 
 class AuthService {
   static Future<bool> login(String username, String password) async {
@@ -66,6 +68,14 @@ class AuthService {
 
   static Future<void> logout() async {
     await TokenStorage.clear();
+    // Clear local notifications data to prevent isolation issues
+    try {
+      await NotificationStorageService.clearAll();
+      await NotificationService.cancelAllNotifications();
+      print('AuthService: Local notifications cleared on logout');
+    } catch (e) {
+      print('AuthService: Error clearing notifications on logout: $e');
+    }
   }
 
   static Future<bool> isLoggedIn() async {

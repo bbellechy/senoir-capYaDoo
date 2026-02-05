@@ -1,4 +1,4 @@
-enum IntakeStatus { PENDING, TAKEN, MISSED }
+enum IntakeStatus { PENDING, TAKEN, MISSED, NOT_TAKEN, OVERDUE }
 
 class DailyIntake {
   final String intakeId;
@@ -28,6 +28,10 @@ class DailyIntake {
         return IntakeStatus.TAKEN;
       case 'MISSED':
         return IntakeStatus.MISSED;
+      case 'NOT_TAKEN':
+        return IntakeStatus.NOT_TAKEN;
+      case 'OVERDUE':
+        return IntakeStatus.OVERDUE;
       case 'PENDING':
       default:
         return IntakeStatus.PENDING;

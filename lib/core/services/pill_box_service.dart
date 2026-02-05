@@ -11,7 +11,7 @@ class PillBoxService {
   // Replace with your actual backend URL
   // static const String _baseUrl = 'http://10.0.2.2:8080/api/medication-boxes';
   static const String _baseUrl =
-      'http://192.168.1.106:8080/api/medication-boxes';
+      'http://192.168.1.43:8080/api/medication-boxes';
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   // Get token helper - use TokenStorage to match the rest of the app

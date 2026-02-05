@@ -5,6 +5,8 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:capyadoo/core/services/medication_schedule_service.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -85,10 +87,41 @@ class NotificationService {
       final String? payload = response.payload;
       if (payload != null) {
         print('NotificationService: Marking as taken for payload: $payload');
-        // Actual API call logic would go here
+        // Payload format: "$notificationId|$day|$hour|$minute|$intakeId"
+        final parts = payload.split('|');
+        if (parts.length >= 5) {
+          final intakeId = parts[4];
+          if (intakeId.isNotEmpty && intakeId != 'null') {
+            try {
+              final success = await MedicationScheduleService.markAsTaken(
+                intakeId,
+              );
+              print('NotificationService: Intake marker result: $success');
+            } catch (e) {
+              print('NotificationService: Error marking as taken: $e');
+            }
+          }
+        }
       }
     } else if (response.actionId == 'not_taken') {
       print('NotificationService: User marked as not taken yet');
+      final String? payload = response.payload;
+      if (payload != null) {
+        final parts = payload.split('|');
+        if (parts.length >= 5) {
+          final intakeId = parts[4];
+          if (intakeId.isNotEmpty && intakeId != 'null') {
+            try {
+              final success = await MedicationScheduleService.markAsMissed(
+                intakeId,
+              );
+              print('NotificationService: Not Taken marker result: $success');
+            } catch (e) {
+              print('NotificationService: Error marking as missed: $e');
+            }
+          }
+        }
+      }
     }
   }
 
@@ -96,6 +129,14 @@ class NotificationService {
     String imagePath,
   ) async {
     try {
+      if (imagePath.startsWith('http')) {
+        final response = await http.get(Uri.parse(imagePath));
+        if (response.statusCode == 200) {
+          return ByteArrayAndroidBitmap(response.bodyBytes);
+        }
+        return null;
+      }
+
       final file = File(imagePath);
       if (!await file.exists()) return null;
       final Uint8List bytes = await file.readAsBytes();
@@ -205,6 +246,7 @@ class NotificationService {
     required String title,
     required String body,
     String? imagePath,
+    String? intakeId, // Pass intakeId for confirmation logic
   }) async {
     AndroidNotificationDetails androidDetails;
     String? finalImagePath = imagePath;
@@ -264,12 +306,17 @@ class NotificationService {
       body,
       scheduledTime,
       NotificationDetails(android: androidDetails),
-      payload: '$id|$day|$hour|$minute',
+      payload: '$id|$day|$hour|$minute|$intakeId', // Expanded payload
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
     );
+  }
+
+  static Future<void> cancelAllNotifications() async {
+    await _notificationsPlugin.cancelAll();
+    print('NotificationService: All notifications canceled');
   }
 
   static Future<void> cancelNotification(int id) async =>

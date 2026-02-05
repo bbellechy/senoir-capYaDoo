@@ -58,4 +58,32 @@ class MedicationScheduleService {
       return IntakeActionResponse(success: false, statusCode: 500);
     }
   }
+
+  // Mark a medication intake as missed (Not Taken)
+  static Future<bool> markAsMissed(String intakeId) async {
+    try {
+      final response = await ApiClient.post('/daily-medication/$intakeId/miss');
+      return response.statusCode == 200 ||
+          response.statusCode == 201 ||
+          response.statusCode == 204;
+    } catch (e) {
+      print('Error marking medication as missed: $e');
+      return false;
+    }
+  }
+
+  // Mark a medication intake as overdue
+  static Future<bool> markAsOverdue(String intakeId) async {
+    try {
+      final response = await ApiClient.post(
+        '/daily-medication/$intakeId/overdue',
+      );
+      return response.statusCode == 200 ||
+          response.statusCode == 201 ||
+          response.statusCode == 204;
+    } catch (e) {
+      print('Error marking medication as overdue: $e');
+      return false;
+    }
+  }
 }

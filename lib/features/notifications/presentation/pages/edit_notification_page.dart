@@ -39,6 +39,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
       setState(() {
         _imagePath = photo.path;
       });
+      print('EditNotificationPage: New image captured: $_imagePath');
     }
   }
 
@@ -280,7 +281,8 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.refresh,
+                            Icons
+                                .camera_alt, // Changed to camera icon for "change"
                             color: Colors.white,
                             size: 20,
                           ),

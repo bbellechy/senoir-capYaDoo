@@ -4,6 +4,7 @@ import 'package:capyadoo/core/services/medication_schedule_service.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
 import 'package:capyadoo/core/model/user.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_list_page.dart';
+import 'package:capyadoo/features/care/presentation/pages/care_management_page.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -29,8 +30,48 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    await Future.wait([_loadProfile(), _loadSchedule(showLoading: false)]);
+    await Future.wait([
+      _loadProfile(),
+      _loadSchedule(showLoading: false),
+      _checkOverdueStatus(), // Check for late medications
+    ]);
     if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _checkOverdueStatus() async {
+    try {
+      final now = DateTime.now();
+      // Only check for today
+      if (DateFormat('yyyy-MM-dd').format(_selectedDate) !=
+          DateFormat('yyyy-MM-dd').format(now)) {
+        return;
+      }
+
+      for (final item in _schedule) {
+        if (item.status == IntakeStatus.PENDING) {
+          final timeParts = item.time.split(':');
+          if (timeParts.length >= 2) {
+            final hour = int.tryParse(timeParts[0]) ?? 0;
+            final minute = int.tryParse(timeParts[1]) ?? 0;
+            final scheduleTime = DateTime(
+              now.year,
+              now.month,
+              now.day,
+              hour,
+              minute,
+            );
+
+            if (now.difference(scheduleTime).inMinutes > 15) {
+              await MedicationScheduleService.markAsOverdue(item.intakeId);
+            }
+          }
+        }
+      }
+      // Reload if any changes might have happened
+      await _loadSchedule(showLoading: false);
+    } catch (e) {
+      print('Error checking overdue status: $e');
+    }
   }
 
   Future<void> _loadProfile() async {
@@ -331,7 +372,12 @@ class _HomePageState extends State<HomePage> {
                   Icons.people_outline,
                   const Color(0xFFE3F2FD),
                   const Color(0xFF2196F3),
-                  () {},
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CareManagementPage(),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -491,6 +537,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildMedicationCard(DailyIntake item) {
     final bool isTaken = item.status == IntakeStatus.TAKEN;
+    final bool isOverdue =
+        item.status == IntakeStatus.OVERDUE ||
+        item.status == IntakeStatus.MISSED;
+    final bool isNotTaken = item.status == IntakeStatus.NOT_TAKEN;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -528,6 +578,17 @@ class _HomePageState extends State<HomePage> {
                       '${item.time.substring(0, 5)} น.',
                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
+                    if (isOverdue) ...[
+                      const SizedBox(width: 8),
+                      const Text(
+                        '(เกินกำหนด)',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -558,11 +619,28 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             )
+          else if (isNotTaken)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[400],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'ไม่กินยา',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
           else
             ElevatedButton(
               onPressed: () => _markAsTaken(item.intakeId, item.medicationName),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2196F3),
+                backgroundColor: isOverdue
+                    ? Colors.orange
+                    : const Color(0xFF2196F3),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -572,9 +650,9 @@ class _HomePageState extends State<HomePage> {
                   vertical: 8,
                 ),
               ),
-              child: const Text(
-                'ยืนยันการทาน',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              child: Text(
+                isOverdue ? 'ทานล่าช้า' : 'ยืนยันการทาน',
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
         ],
