@@ -13,6 +13,8 @@ import 'package:capyadoo/core/widgets/symptom_list_card.dart';
 import 'package:capyadoo/core/widgets/medicine_box_list_card.dart';
 import 'package:capyadoo/core/widgets/simple_medicine_list_card.dart';
 import 'package:capyadoo/core/widgets/app_time_chip.dart' as time_chip;
+import 'package:capyadoo/core/widgets/medicine_reminder_card.dart';
+import 'package:capyadoo/core/widgets/medicine_box_reminder_card.dart';
 
 class WidgetShowcasePage extends StatefulWidget {
   const WidgetShowcasePage({super.key});
@@ -46,6 +48,12 @@ class _WidgetShowcasePageState extends State<WidgetShowcasePage> {
 
   // Searchable dropdown state
   String? selectedProvince;
+
+  // Medicine reminder state
+  MedicineReminderStatus singleMedicine1Status = MedicineReminderStatus.pending;
+  MedicineReminderStatus singleMedicine2Status = MedicineReminderStatus.taken;
+  MedicineBoxReminderStatus boxMedicineStatus =
+      MedicineBoxReminderStatus.pending;
 
   // List card state
   final List<Map<String, dynamic>> listItems = [
@@ -537,7 +545,84 @@ class _WidgetShowcasePageState extends State<WidgetShowcasePage> {
             ),
             _buildDivider(),
             _buildSection(
-              title: '14. Buttons',
+              title: '14. Medicine Reminder Card (ยาเดี่ยว)',
+              child: Column(
+                children: [
+                  MedicineReminderCard(
+                    medicineName: 'ชื่อยา',
+                    dosage: '1 เม็ด',
+                    scheduledTime: DateTime.now().add(const Duration(hours: 1)),
+                    status: singleMedicine1Status,
+                    onConfirm: () {
+                      setState(() {
+                        singleMedicine1Status = MedicineReminderStatus.taken;
+                      });
+                      _showSnackBar('ยืนยันการทานยาแล้ว');
+                    },
+                  ),
+                  MedicineReminderCard(
+                    medicineName: 'ชื่อยา',
+                    dosage: '1 เม็ด',
+                    scheduledTime: DateTime.now(),
+                    status: singleMedicine2Status,
+                  ),
+                  MedicineReminderCard(
+                    medicineName: 'ชื่อยา',
+                    dosage: '1 เม็ด',
+                    scheduledTime: DateTime.now().subtract(
+                      const Duration(hours: 1),
+                    ),
+                    status: MedicineReminderStatus.pending,
+                  ),
+                ],
+              ),
+            ),
+            _buildDivider(),
+            _buildSection(
+              title: '15. Medicine Box Reminder Card (กล่องยา)',
+              child: Column(
+                children: [
+                  MedicineBoxReminderCard(
+                    boxName: 'ชื่อกล่องยา',
+                    medicines: const [
+                      MedicineInBox(name: 'ชื่อยา', dosage: '1 เม็ด'),
+                      MedicineInBox(name: 'ชื่อยา', dosage: '1 เม็ด'),
+                    ],
+                    scheduledTime: DateTime.now().add(const Duration(hours: 1)),
+                    status: boxMedicineStatus,
+                    onConfirm: () {
+                      setState(() {
+                        boxMedicineStatus = MedicineBoxReminderStatus.taken;
+                      });
+                      _showSnackBar('ยืนยันการทานยาในกล่องแล้ว');
+                    },
+                  ),
+                  MedicineBoxReminderCard(
+                    boxName: 'ชื่อกล่องยา',
+                    medicines: const [
+                      MedicineInBox(name: 'ชื่อยา', dosage: '1 เม็ด'),
+                      MedicineInBox(name: 'ชื่อยา', dosage: '1 เม็ด'),
+                    ],
+                    scheduledTime: DateTime.now(),
+                    status: MedicineBoxReminderStatus.taken,
+                  ),
+                  MedicineBoxReminderCard(
+                    boxName: 'ชื่อกล่องยา',
+                    medicines: const [
+                      MedicineInBox(name: 'ชื่อยา', dosage: '1 เม็ด'),
+                      MedicineInBox(name: 'ชื่อยา', dosage: '1 เม็ด'),
+                    ],
+                    scheduledTime: DateTime.now().subtract(
+                      const Duration(hours: 1),
+                    ),
+                    status: MedicineBoxReminderStatus.pending,
+                  ),
+                ],
+              ),
+            ),
+            _buildDivider(),
+            _buildSection(
+              title: '16. Buttons',
               child: Column(
                 children: [
                   AppButton(
