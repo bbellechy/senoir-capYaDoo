@@ -12,6 +12,7 @@ class AppSlider extends StatelessWidget {
   final String? maxLabel;
   final bool enabled;
   final bool showValue;
+  final bool isRequired;
 
   const AppSlider({
     super.key,
@@ -25,6 +26,7 @@ class AppSlider extends StatelessWidget {
     this.maxLabel,
     this.enabled = true,
     this.showValue = true,
+    this.isRequired = false,
   });
 
   @override
@@ -33,16 +35,34 @@ class AppSlider extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
-          Text(
-            label!,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          Row(
+            children: [
+              Text(
+                label!,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Sarabun',
+                ),
+              ),
+              if (isRequired)
+                const Text(
+                  ' *',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.error,
+                    fontFamily: 'Sarabun',
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
         ],
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.green[100],
+            color: AppColors.offwhite,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
@@ -128,6 +148,7 @@ class AppRangeSlider extends StatelessWidget {
   final String? maxLabel;
   final bool enabled;
   final bool showValues;
+  final bool isRequired;
 
   const AppRangeSlider({
     super.key,
@@ -141,6 +162,7 @@ class AppRangeSlider extends StatelessWidget {
     this.maxLabel,
     this.enabled = true,
     this.showValues = true,
+    this.isRequired = false,
   });
 
   @override
@@ -149,9 +171,27 @@ class AppRangeSlider extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
-          Text(
-            label!,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          Row(
+            children: [
+              Text(
+                label!,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Sarabun',
+                ),
+              ),
+              if (isRequired)
+                const Text(
+                  ' *',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.error,
+                    fontFamily: 'Sarabun',
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
         ],

@@ -7,6 +7,12 @@ import 'package:capyadoo/core/widgets/app_text_field.dart';
 import 'package:capyadoo/core/widgets/app_date_picker.dart';
 import 'package:capyadoo/core/widgets/app_slider.dart';
 import 'package:capyadoo/core/widgets/app_image_picker.dart';
+import 'package:capyadoo/core/widgets/app_searchable_dropdown.dart';
+import 'package:capyadoo/core/widgets/medicine_list_card.dart';
+import 'package:capyadoo/core/widgets/symptom_list_card.dart';
+import 'package:capyadoo/core/widgets/medicine_box_list_card.dart';
+import 'package:capyadoo/core/widgets/simple_medicine_list_card.dart';
+import 'package:capyadoo/core/widgets/app_time_chip.dart' as time_chip;
 
 class WidgetShowcasePage extends StatefulWidget {
   const WidgetShowcasePage({super.key});
@@ -37,6 +43,20 @@ class _WidgetShowcasePageState extends State<WidgetShowcasePage> {
   // Image picker state
   File? selectedImage;
   List<File> selectedImages = [];
+
+  // Searchable dropdown state
+  String? selectedProvince;
+
+  // List card state
+  final List<Map<String, dynamic>> listItems = [
+    {
+      'id': 1,
+      'name': 'แก้วเสา',
+      'detail': 'ปริมาณ: 3 เม็ด\nจำนวนครั้ง: 2 ครั้ง',
+    },
+    {'id': 2, 'name': 'ทดสอบกล่องยา', 'detail': '4 รายการยา'},
+    {'id': 3, 'name': 'ซื้อกล่องยา', 'detail': '1 เม็ด'},
+  ];
 
   @override
   void dispose() {
@@ -208,7 +228,316 @@ class _WidgetShowcasePageState extends State<WidgetShowcasePage> {
             ),
             _buildDivider(),
             _buildSection(
-              title: '11. Buttons',
+              title: '11. Searchable Dropdown',
+              child: AppSearchableDropdown<String>(
+                label: 'จังหวัด',
+                hint: 'เลือกจังหวัด',
+                value: selectedProvince,
+                items: const [
+                  SearchableDropdownItem(
+                    value: 'bkk',
+                    label: 'กรุงเทพมหานคร',
+                    subtitle: 'Bangkok',
+                    searchKeywords: ['กทม', 'bangkok', 'bkk'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'cm',
+                    label: 'เชียงใหม่',
+                    subtitle: 'Chiang Mai',
+                    searchKeywords: ['chiangmai', 'cm'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'ck',
+                    label: 'เชียงราย',
+                    subtitle: 'Chiang Rai',
+                    searchKeywords: ['chiangrai', 'ck'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'pk',
+                    label: 'ภูเก็ต',
+                    subtitle: 'Phuket',
+                    searchKeywords: ['phuket', 'pk'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'kp',
+                    label: 'กระบี่',
+                    subtitle: 'Krabi',
+                    searchKeywords: ['krabi', 'kp'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'kh',
+                    label: 'ขอนแก่น',
+                    subtitle: 'Khon Kaen',
+                    searchKeywords: ['khonkaen', 'kh'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'sr',
+                    label: 'สุราษฎร์ธานี',
+                    subtitle: 'Surat Thani',
+                    searchKeywords: ['suratthani', 'sr'],
+                  ),
+                  SearchableDropdownItem(
+                    value: 'np',
+                    label: 'นครปฐม',
+                    subtitle: 'Nakhon Pathom',
+                    searchKeywords: ['nakhonpathom', 'np'],
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    selectedProvince = value;
+                  });
+                },
+              ),
+            ),
+            _buildDivider(),
+            _buildSection(
+              title: '12. List Cards',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Medicine List Card - รายการยา
+                  const Text(
+                    '1. รายการยา (MedicineListCard)',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+                  MedicineListCard(
+                    image: null,
+                    name: 'แก้อักเสบ',
+                    amount: '1 เม็ด',
+                    frequency: 2,
+                    mealTiming: 'หลังอาหาร',
+                    expiryDate: '30/10/2568',
+                    mealTimes: const ['เช้า', 'เย็น'],
+                    onEdit: () => _showSnackBar('แก้ไข: แก้อักเสบ'),
+                    onDelete: () => _showSnackBar('ลบ: แก้อักเสบ'),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 2. Symptom List Card - บันทึกอาการ
+                  const Text(
+                    '2. บันทึกอาการ (SymptomListCard)',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'แสดงการไล่สีทุกระดับ 1-10',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 12),
+                  SymptomListCard(
+                    level: 1,
+                    title: 'อาการเล็กน้อย',
+                    description: 'ระดับ 1 - สีเขียว',
+                    dateTime: 'บันทึกเมื่อ 08:00 น.',
+                    onEdit: () => _showSnackBar('แก้ไข: ระดับ 1'),
+                    onDelete: () => _showSnackBar('ลบ: ระดับ 1'),
+                  ),
+                  const SizedBox(height: 12),
+                  SymptomListCard(
+                    level: 2,
+                    title: 'อาการเล็กน้อย',
+                    description: 'ระดับ 2 - สีเขียว',
+                    dateTime: 'บันทึกเมื่อ 09:00 น.',
+                    onEdit: () => _showSnackBar('แก้ไข: ระดับ 2'),
+                    onDelete: () => _showSnackBar('ลบ: ระดับ 2'),
+                  ),
+                  const SizedBox(height: 12),
+                  SymptomListCard(
+                    level: 3,
+                    title: 'อาการเล็กน้อย',
+                    description: 'ระดับ 3 - สีเขียว',
+                    dateTime: 'บันทึกเมื่อ 10:00 น.',
+                    onEdit: () => _showSnackBar('แก้ไข: ระดับ 3'),
+                    onDelete: () => _showSnackBar('ลบ: ระดับ 3'),
+                  ),
+                  const SizedBox(height: 12),
+                  SymptomListCard(
+                    level: 4,
+                    title: 'อาการปานกลาง',
+                    description: 'ระดับ 4 - เขียว → เหลือง',
+                    dateTime: 'บันทึกเมื่อ 11:00 น.',
+                    onEdit: () => _showSnackBar('แก้ไข: ระดับ 4'),
+                    onDelete: () => _showSnackBar('ลบ: ระดับ 4'),
+                  ),
+                  const SizedBox(height: 12),
+                  SymptomListCard(
+                    level: 5,
+                    title: 'อาการปานกลาง',
+                    description: 'ระดับ 5 - สีเหลือง',
+                    dateTime: 'บันทึกเมื่อ 12:00 น.',
+                    onEdit: () => _showSnackBar('แก้ไข: ระดับ 5'),
+                    onDelete: () => _showSnackBar('ลบ: ระดับ 5'),
+                  ),
+                  const SizedBox(height: 12),
+                  SymptomListCard(
+                    level: 6,
+                    title: 'อาการปานกลาง',
+                    description: 'ระดับ 6 - เหลือง → ส้ม',
+                    dateTime: 'บันทึกเมื่อ 13:00 น.',
+                    onEdit: () => _showSnackBar('แก้ไข: ระดับ 6'),
+                    onDelete: () => _showSnackBar('ลบ: ระดับ 6'),
+                  ),
+                  const SizedBox(height: 12),
+                  SymptomListCard(
+                    level: 7,
+                    title: 'อาการรุนแรง',
+                    description: 'ระดับ 7 - สีส้ม',
+                    dateTime: 'บันทึกเมื่อ 14:00 น.',
+                    onEdit: () => _showSnackBar('แก้ไข: ระดับ 7'),
+                    onDelete: () => _showSnackBar('ลบ: ระดับ 7'),
+                  ),
+                  const SizedBox(height: 12),
+                  SymptomListCard(
+                    level: 8,
+                    title: 'อาการรุนแรง',
+                    description: 'ระดับ 8 - ส้ม → แดง',
+                    dateTime: 'บันทึกเมื่อ 15:00 น.',
+                    onEdit: () => _showSnackBar('แก้ไข: ระดับ 8'),
+                    onDelete: () => _showSnackBar('ลบ: ระดับ 8'),
+                  ),
+                  const SizedBox(height: 12),
+                  SymptomListCard(
+                    level: 9,
+                    title: 'อาการรุนแรงมาก',
+                    description: 'ระดับ 9 - สีแดง',
+                    dateTime: 'บันทึกเมื่อ 16:00 น.',
+                    onEdit: () => _showSnackBar('แก้ไข: ระดับ 9'),
+                    onDelete: () => _showSnackBar('ลบ: ระดับ 9'),
+                  ),
+                  const SizedBox(height: 12),
+                  SymptomListCard(
+                    level: 10,
+                    title: 'อาการรุนแรงมาก',
+                    description: 'ระดับ 10 - สีแดง',
+                    dateTime: 'บันทึกเมื่อ 17:00 น.',
+                    onEdit: () => _showSnackBar('แก้ไข: ระดับ 10'),
+                    onDelete: () => _showSnackBar('ลบ: ระดับ 10'),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 3. Medicine Box List Card - กล่องยา
+                  const Text(
+                    '3. กล่องยา (MedicineBoxListCard)',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+                  MedicineBoxListCard(
+                    icon: Icons.shopping_bag,
+                    iconColor: Colors.blue,
+                    iconBackgroundColor: Colors.blue[50]!,
+                    name: 'ชื่อกล่องยา',
+                    medicineCount: 0,
+                    onEdit: () => _showSnackBar('แก้ไข: กล่องยา'),
+                    onDelete: () => _showSnackBar('ลบ: กล่องยา'),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 4. Simple Medicine List Card - รายการยาแบบง่าย
+                  const Text(
+                    '4. รายการยาแบบง่าย (SimpleMedicineListCard)',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+                  SimpleMedicineListCard(
+                    icon: Icons.medication,
+                    iconColor: Colors.blue,
+                    iconBackgroundColor: Colors.blue[50]!,
+                    name: 'ชื่อยา',
+                    amount: '1 เม็ด',
+                    mealTimes: const ['เช้า', 'กลางวัน', 'เย็น'],
+                    onDelete: () => _showSnackBar('ลบ: ยา'),
+                  ),
+                  const SizedBox(height: 12),
+                  SimpleMedicineListCard(
+                    icon: Icons.medication,
+                    iconColor: Colors.blue,
+                    iconBackgroundColor: Colors.blue[50]!,
+                    name: 'ชื่อยา',
+                    amount: '1 เม็ด',
+                    mealTimes: const ['เช้า', 'ก่อนนอน'],
+                    onDelete: () => _showSnackBar('ลบ: ยา'),
+                  ),
+                  const SizedBox(height: 12),
+                  SimpleMedicineListCard(
+                    icon: Icons.medication,
+                    iconColor: Colors.blue,
+                    iconBackgroundColor: Colors.blue[50]!,
+                    name: 'ชื่อยา',
+                    amount: '1 เม็ด',
+                    mealTimes: const ['เช้า', 'เย็น'],
+                    onDelete: () => _showSnackBar('ลบ: ยา'),
+                  ),
+                  const SizedBox(height: 12),
+                  SimpleMedicineListCard(
+                    icon: Icons.medication,
+                    iconColor: Colors.blue,
+                    iconBackgroundColor: Colors.blue[50]!,
+                    name: 'ชื่อยา',
+                    amount: '1 เม็ด',
+                    mealTimes: const ['เช้า', 'กลางวัน', 'เย็น'],
+                    onDelete: () => _showSnackBar('ลบ: ยา'),
+                  ),
+                ],
+              ),
+            ),
+            _buildDivider(),
+            _buildSection(
+              title: '13. Time Chips (ช่วงเวลา)',
+              child: Column(
+                children: [
+                  const Text(
+                    'ตัวอย่างช่วงเวลา (แสดงผลอย่างเดียว):',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      time_chip.AppTimeChip(
+                        timeOfDay: time_chip.TimeOfDay.morning,
+                        onTap: () => _showSnackBar('กดเช้า'),
+                      ),
+                      time_chip.AppTimeChip(
+                        timeOfDay: time_chip.TimeOfDay.noon,
+                        onTap: () => _showSnackBar('กดกลางวัน'),
+                      ),
+                      time_chip.AppTimeChip(
+                        timeOfDay: time_chip.TimeOfDay.evening,
+                        onTap: () => _showSnackBar('กดเย็น'),
+                      ),
+                      time_chip.AppTimeChip(
+                        timeOfDay: time_chip.TimeOfDay.bedtime,
+                        onTap: () => _showSnackBar('กดก่อนนอน'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'หรือแสดงแบบไม่มี interaction:',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: const [
+                      time_chip.AppTimeChip(
+                        timeOfDay: time_chip.TimeOfDay.morning,
+                      ),
+                      time_chip.AppTimeChip(
+                        timeOfDay: time_chip.TimeOfDay.noon,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            _buildDivider(),
+            _buildSection(
+              title: '14. Buttons',
               child: Column(
                 children: [
                   AppButton(
@@ -296,6 +625,10 @@ class _WidgetShowcasePageState extends State<WidgetShowcasePage> {
                       'Multiple Images',
                       '${selectedImages.length} รูป',
                     ),
+                    _buildResultItem(
+                      'จังหวัดที่เลือก',
+                      selectedProvince ?? 'ไม่ได้เลือก',
+                    ),
                   ],
                 ),
               ),
@@ -350,6 +683,43 @@ class _WidgetShowcasePageState extends State<WidgetShowcasePage> {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+}
+
+// Helper widget สำหรับปุ่มเวลา
+class _ActionChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ActionChip({
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color, width: 1),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+      ),
     );
   }
 }

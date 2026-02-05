@@ -8,6 +8,10 @@ import 'package:capyadoo/features/tts/presentation/pages/tts_demo_page.dart';
 import 'package:capyadoo/features/home/presentation/pages/home_page.dart';
 import 'package:capyadoo/features/search/presentation/pages/search_page.dart';
 import 'package:capyadoo/features/add_data/presentation/pages/add_data_page.dart';
+import 'package:capyadoo/features/add_data/presentation/pages/add_medicine_page.dart';
+import 'package:capyadoo/features/add_data/presentation/pages/add_symptom_page.dart';
+import 'package:capyadoo/features/add_data/presentation/pages/medicine_list_page.dart';
+import 'package:capyadoo/features/add_data/presentation/pages/symptom_list_page.dart';
 import 'package:capyadoo/features/profile/presentation/pages/profile_page.dart';
 import 'package:capyadoo/features/auth/presentation/pages/login_page.dart';
 import 'package:capyadoo/features/auth/presentation/pages/register_page.dart';
@@ -26,6 +30,10 @@ class AppRouter {
   static const String homeRoute = '/home';
   static const String searchRoute = '/search';
   static const String addDataRoute = '/add-data';
+  static const String medicineListRoute = '/medicine/list';
+  static const String symptomListRoute = '/symptom/list';
+  static const String addMedicineRoute = '/medicine/add';
+  static const String addSymptomRoute = '/symptom/add';
   static const String notificationsRoute = '/notifications';
   static const String profileRoute = '/profile';
 
@@ -68,6 +76,26 @@ class AppRouter {
       case addDataRoute:
         return MaterialPageRoute(
           builder: (_) => const AddDataPage(),
+          settings: settings,
+        );
+      case medicineListRoute:
+        return MaterialPageRoute(
+          builder: (_) => const MedicineListPage(),
+          settings: settings,
+        );
+      case symptomListRoute:
+        return MaterialPageRoute(
+          builder: (_) => const SymptomListPage(),
+          settings: settings,
+        );
+      case addMedicineRoute:
+        return MaterialPageRoute(
+          builder: (_) => const AddMedicinePage(),
+          settings: settings,
+        );
+      case addSymptomRoute:
+        return MaterialPageRoute(
+          builder: (_) => const AddSymptomPage(),
           settings: settings,
         );
       case notificationsRoute:
