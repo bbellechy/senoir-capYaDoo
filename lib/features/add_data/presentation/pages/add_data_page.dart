@@ -4,6 +4,13 @@ import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/widgets/medicine_list_card.dart';
 import 'package:capyadoo/core/widgets/symptom_list_card.dart';
+import 'package:capyadoo/core/services/medication_service.dart';
+import 'package:capyadoo/core/services/symptom_service.dart';
+import 'package:capyadoo/core/services/auth_service.dart';
+import 'package:capyadoo/core/model/user_medication.dart';
+import 'package:capyadoo/core/model/symptom_record.dart';
+import 'add_medicine_page.dart';
+import 'add_symptom_page.dart';
 
 class AddDataPage extends StatefulWidget {
   const AddDataPage({super.key});
@@ -16,76 +23,10 @@ class _AddDataPageState extends State<AddDataPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Sample medicine data
-  final List<Map<String, dynamic>> _medicines = [
-    {
-      'image': null,
-      'name': 'แก้อักเสบ',
-      'amount': '1 เม็ด',
-      'frequency': 2,
-      'mealTiming': 'หลังอาหาร',
-      'expiryDate': '30/10/2568',
-      'mealTimes': ['เช้า', 'เย็น', 'ก่อนนอน'],
-    },
-    {
-      'image': null,
-      'name': 'ยาลดน้ำมูก',
-      'amount': '1 เม็ด',
-      'frequency': 3,
-      'mealTiming': 'หลังอาหาร',
-      'expiryDate': '30/10/2568',
-      'mealTimes': ['เช้า', 'กลางวัน', 'เย็น'],
-    },
-    {
-      'image': null,
-      'name': 'ยาลดน้ำมูก',
-      'amount': '1 เม็ด',
-      'frequency': 3,
-      'mealTiming': 'หลังอาหาร',
-      'expiryDate': '30/10/2568',
-      'mealTimes': ['เช้า', 'กลางวัน', 'เย็น'],
-    },
-    {
-      'image': null,
-      'name': 'แก้อักเสบ',
-      'amount': '1 เม็ด',
-      'frequency': 2,
-      'mealTiming': 'หลังอาหาร',
-      'expiryDate': '30/10/2568',
-      'mealTimes': ['เช้า', 'เย็น'],
-    },
-    {
-      'image': null,
-      'name': 'ยาลดน้ำมูก',
-      'amount': '1 เม็ด',
-      'frequency': 3,
-      'mealTiming': 'หลังอาหาร',
-      'expiryDate': '30/10/2568',
-      'mealTimes': ['เช้า', 'กลางวัน', 'เย็น'],
-    },
-  ];
-
-  // Sample symptom data
-  final List<Map<String, dynamic>> _symptoms = [
-    {
-      'level': 5,
-      'title': 'แก้อักเสบ',
-      'description': 'ปวดตรงที่ถอนฟัน',
-      'dateTime': 'บันทึกเมื่อ 15:11 น.',
-    },
-    {
-      'level': 4,
-      'title': 'ยาลดน้ำมูก',
-      'description': 'มีน้ำมูกเล็กน้อย',
-      'dateTime': 'บันทึกเมื่อ 19:22 น.',
-    },
-    {
-      'level': 9,
-      'title': 'ยาคลายกล้ามเนื้อ',
-      'description': 'ปวดกล้ามเนื้อมาก',
-      'dateTime': 'บันทึกเมื่อ 14:30 น.',
-    },
-  ];
+  List<UserMedication> _medicines = [];
+  List<SymptomRecord> _symptoms = [];
+  bool _isLoading = true;
+  String? _userId;
 
   @override
   void initState() {
@@ -94,6 +35,87 @@ class _AddDataPageState extends State<AddDataPage>
     _tabController.addListener(() {
       setState(() {}); // Rebuild to update header text
     });
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    try {
+      final profile = await AuthService.getProfile();
+      if (profile != null) {
+        _userId = profile.id;
+        final medicines = await MedicationService.getUserMedications(_userId!);
+        final symptoms = await SymptomService.getUserSymptoms(_userId!);
+        setState(() {
+          _medicines = medicines;
+          _symptoms = symptoms;
+        });
+      }
+    } catch (e) {
+      print('Error loading data: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _deleteMedicine(String id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ยืนยันการลบ'),
+        content: const Text('คุณตต้องการลบข้อมูลยานี้ใช่หรือไม่?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('ยกเลิก'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final success = await MedicationService.deleteMedication(id);
+      if (success && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('ลบข้อมูลยาสำเร็จ')));
+        _loadData();
+      }
+    }
+  }
+
+  Future<void> _deleteSymptom(String id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ยืนยันการลบ'),
+        content: const Text('คุณต้องการลบบันทึกอาการนี้ใช่หรือไม่?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('ยกเลิก'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final success = await SymptomService.deleteSymptom(id);
+      if (success && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('ลบบันทึกอาการสำเร็จ')));
+        _loadData();
+      }
+    }
   }
 
   @override
@@ -130,13 +152,6 @@ class _AddDataPageState extends State<AddDataPage>
                     ),
                     child: Row(
                       children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios,
-                            color: Colors.white,
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                        ),
                         Expanded(
                           child: Text(
                             _headerTitle,
@@ -145,10 +160,10 @@ class _AddDataPageState extends State<AddDataPage>
                               color: Colors.white,
                               fontSize: 32,
                               fontWeight: FontWeight.w500,
+                              fontFamily: 'Sarabun',
                             ),
                           ),
                         ),
-                        const SizedBox(width: 48), // Balance the back button
                       ],
                     ),
                   ),
@@ -216,8 +231,12 @@ class _AddDataPageState extends State<AddDataPage>
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
               ),
               TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRouter.addMedicineRoute);
+                onPressed: () async {
+                  final result = await Navigator.pushNamed(
+                    context,
+                    AppRouter.addMedicineRoute,
+                  );
+                  if (result == true) _loadData();
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -245,7 +264,9 @@ class _AddDataPageState extends State<AddDataPage>
 
         // Medicine list or empty state
         Expanded(
-          child: _medicines.isEmpty
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _medicines.isEmpty
               ? _buildEmptyState()
               : ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -253,24 +274,28 @@ class _AddDataPageState extends State<AddDataPage>
                   itemBuilder: (context, index) {
                     final medicine = _medicines[index];
                     return MedicineListCard(
-                      image: medicine['image'],
-                      name: medicine['name'],
-                      amount: medicine['amount'],
-                      frequency: medicine['frequency'],
-                      mealTiming: medicine['mealTiming'],
-                      expiryDate: medicine['expiryDate'],
-                      mealTimes: List<String>.from(medicine['mealTimes']),
-                      onEdit: () {
-                        Navigator.pushNamed(
+                      imagePath: medicine.imagePath,
+                      name: medicine.name,
+                      amount: '${medicine.dosage} ${medicine.unit}',
+                      frequency: medicine.timesPerDay ?? 0,
+                      mealTiming: _formatMealTiming(medicine.intakeTiming),
+                      expiryDate: medicine.expiryDate?.split('T')[0] ?? '-',
+                      mealTimes:
+                          medicine.intakePeriods
+                              ?.map((p) => _formatIntakePeriod(p))
+                              .toList() ??
+                          [],
+                      onEdit: () async {
+                        final result = await Navigator.push(
                           context,
-                          AppRouter.addMedicineRoute,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                AddMedicinePage(medicationId: medicine.id),
+                          ),
                         );
+                        if (result == true) _loadData();
                       },
-                      onDelete: () {
-                        setState(() {
-                          _medicines.removeAt(index);
-                        });
-                      },
+                      onDelete: () => _deleteMedicine(medicine.id!),
                     );
                   },
                 ),
@@ -328,8 +353,12 @@ class _AddDataPageState extends State<AddDataPage>
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
               ),
               TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRouter.addSymptomRoute);
+                onPressed: () async {
+                  final result = await Navigator.pushNamed(
+                    context,
+                    AppRouter.addSymptomRoute,
+                  );
+                  if (result == true) _loadData();
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -357,7 +386,9 @@ class _AddDataPageState extends State<AddDataPage>
 
         // Symptom list or empty state
         Expanded(
-          child: _symptoms.isEmpty
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _symptoms.isEmpty
               ? _buildEmptySymptomState()
               : ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -365,18 +396,21 @@ class _AddDataPageState extends State<AddDataPage>
                   itemBuilder: (context, index) {
                     final symptom = _symptoms[index];
                     return SymptomListCard(
-                      level: symptom['level'],
-                      title: symptom['title'],
-                      description: symptom['description'],
-                      dateTime: symptom['dateTime'],
-                      onEdit: () {
-                        Navigator.pushNamed(context, AppRouter.addSymptomRoute);
+                      level: symptom.severityLevel,
+                      title: symptom.medicationName,
+                      description: symptom.symptom ?? '',
+                      dateTime: '${symptom.date} ${symptom.time}',
+                      onEdit: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                AddSymptomPage(symptomId: symptom.id),
+                          ),
+                        );
+                        if (result == true) _loadData();
                       },
-                      onDelete: () {
-                        setState(() {
-                          _symptoms.removeAt(index);
-                        });
-                      },
+                      onDelete: () => _deleteSymptom(symptom.id!),
                     );
                   },
                 ),
@@ -418,5 +452,33 @@ class _AddDataPageState extends State<AddDataPage>
         ),
       ),
     );
+  }
+
+  String _formatMealTiming(String? timing) {
+    switch (timing) {
+      case 'BEFORE_MEAL':
+        return 'ก่อนอาหาร';
+      case 'AFTER_MEAL':
+        return 'หลังอาหาร';
+      case 'WITH_MEAL':
+        return 'ทานทันที';
+      default:
+        return timing ?? '-';
+    }
+  }
+
+  String _formatIntakePeriod(String period) {
+    switch (period) {
+      case 'MORNING':
+        return 'เช้า';
+      case 'NOON':
+        return 'กลางวัน';
+      case 'EVENING':
+        return 'เย็น';
+      case 'BEDTIME':
+        return 'ก่อนนอน';
+      default:
+        return period;
+    }
   }
 }

@@ -11,6 +11,7 @@ class AppSearchableDropdown<T> extends StatefulWidget {
   final bool enabled;
   final double maxDropdownHeight; // ความสูงของรายการ (~5 items)
   final bool isRequired;
+  final bool allowCustomInput;
 
   const AppSearchableDropdown({
     super.key,
@@ -23,6 +24,7 @@ class AppSearchableDropdown<T> extends StatefulWidget {
     this.enabled = true,
     this.maxDropdownHeight = 320, // ประมาณ 5 รายการ
     this.isRequired = false,
+    this.allowCustomInput = false,
   });
 
   @override
@@ -51,11 +53,13 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
 
   void _updateDisplayText() {
     if (widget.value != null) {
-      final selectedItem = widget.items.firstWhere(
-        (item) => item.value == widget.value,
-        orElse: () => widget.items.first,
-      );
-      _controller.text = selectedItem.label;
+      final selectedItem = widget.items
+          .cast<SearchableDropdownItem<T>?>()
+          .firstWhere(
+            (item) => item?.value == widget.value,
+            orElse: () => null,
+          );
+      _controller.text = selectedItem?.label ?? widget.value.toString();
     } else {
       _controller.text = '';
     }
@@ -74,6 +78,7 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
         searchController: _searchController,
         searchFocusNode: _searchFocusNode,
         maxHeight: widget.maxDropdownHeight,
+        allowCustomInput: widget.allowCustomInput,
       ),
     );
 
@@ -180,6 +185,7 @@ class _SearchDialog<T> extends StatefulWidget {
   final TextEditingController searchController;
   final FocusNode searchFocusNode;
   final double maxHeight;
+  final bool allowCustomInput;
 
   const _SearchDialog({
     required this.items,
@@ -187,6 +193,7 @@ class _SearchDialog<T> extends StatefulWidget {
     required this.searchController,
     required this.searchFocusNode,
     required this.maxHeight,
+    this.allowCustomInput = false,
   });
 
   @override
@@ -275,15 +282,43 @@ class _SearchDialogState<T> extends State<_SearchDialog<T>> {
             const Divider(height: 1),
 
             // List items (scroll ดูทั้งหมดได้)
-            if (_filteredItems.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  'ไม่พบรายการ',
-                  style: TextStyle(color: Colors.grey),
+            // สลับไปแสดงปุ่ม "ใช้ค่าที่พิมพ์" ถ้าไม่เจอและ allowCustomInput
+            if (_filteredItems.isEmpty) ...[
+              if (widget.allowCustomInput &&
+                  widget.searchController.text.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.add, color: AppColors.primaryBlue),
+                  title: Text('ใช้ "${widget.searchController.text}"'),
+                  onTap: () {
+                    final val = widget.searchController.text;
+                    Navigator.pop(context, val as T);
+                  },
+                )
+              else
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    'ไม่พบรายการ',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
-              )
-            else
+            ] else ...[
+              // แสดงหัวข้อ "ใช้ค่าที่พิมพ์" แม้จะมีรายการอื่น ถ้า allowCustomInput
+              if (widget.allowCustomInput &&
+                  widget.searchController.text.isNotEmpty &&
+                  !_filteredItems.any(
+                    (item) =>
+                        item.label.toLowerCase() ==
+                        widget.searchController.text.toLowerCase(),
+                  ))
+                ListTile(
+                  leading: const Icon(Icons.add, color: AppColors.primaryBlue),
+                  title: Text('ใช้ "${widget.searchController.text}"'),
+                  onTap: () {
+                    final val = widget.searchController.text;
+                    Navigator.pop(context, val as T);
+                  },
+                ),
               Flexible(
                 child: Container(
                   constraints: BoxConstraints(maxHeight: widget.maxHeight),
@@ -328,6 +363,7 @@ class _SearchDialogState<T> extends State<_SearchDialog<T>> {
                   ),
                 ),
               ),
+            ],
           ],
         ),
       ),

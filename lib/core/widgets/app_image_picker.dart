@@ -6,6 +6,7 @@ import 'package:capyadoo/core/constants/app_colors.dart';
 
 class AppImagePicker extends StatelessWidget {
   final File? imageFile;
+  final String? imageUrl;
   final ValueChanged<File?>? onImageSelected;
   final String? label;
   final String? hint;
@@ -17,6 +18,7 @@ class AppImagePicker extends StatelessWidget {
   const AppImagePicker({
     super.key,
     this.imageFile,
+    this.imageUrl,
     this.onImageSelected,
     this.label,
     this.hint,
@@ -87,7 +89,8 @@ class AppImagePicker extends StatelessWidget {
                   ),
                   onTap: () => Navigator.pop(context, ImageSource.gallery),
                 ),
-                if (imageFile != null) ...[
+                if (imageFile != null ||
+                    (imageUrl != null && imageUrl!.isNotEmpty)) ...[
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(
@@ -128,7 +131,8 @@ class AppImagePicker extends StatelessWidget {
   Future<void> _pickImage(ImageSource source) async {
     try {
       // ขอ permission ก่อน
-      if (source == ImageSource.camera) {
+      if (source == ImageSource.camera &&
+          (Platform.isAndroid || Platform.isIOS)) {
         final status = await Permission.camera.request();
         if (!status.isGranted) {
           debugPrint('Camera permission denied');
@@ -178,22 +182,7 @@ class AppImagePicker extends StatelessWidget {
                 width: errorText != null ? 2 : 1,
               ),
             ),
-            child: imageFile != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.file(imageFile!, fit: BoxFit.cover),
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.camera_alt, size: 48, color: Colors.grey[600]),
-                      const SizedBox(height: 12),
-                      Text(
-                        hint ?? 'ถ่ายรูป',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                      ),
-                    ],
-                  ),
+            child: _buildImageContent(),
           ),
         ),
         if (errorText != null) ...[
@@ -206,6 +195,65 @@ class AppImagePicker extends StatelessWidget {
             ),
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildImageContent() {
+    if (imageFile != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.file(
+          imageFile!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint(
+              'AppImagePicker File Error: $error, path: ${imageFile?.path}',
+            );
+            return _buildErrorState('ไฟล์รูปภาพไม่ถูกต้อง');
+          },
+        ),
+      );
+    }
+
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(
+          imageUrl!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint('AppImagePicker Network Error: $error, url: $imageUrl');
+            return _buildErrorState('โหลดรูปภาพไม่สำเร็จ');
+          },
+        ),
+      );
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.camera_alt, size: 48, color: Colors.grey[600]),
+        const SizedBox(height: 12),
+        Text(
+          hint ?? 'ถ่ายรูป',
+          style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.broken_image, size: 48, color: Colors.grey[400]),
+        const SizedBox(height: 12),
+        Text(message, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
       ],
     );
   }
@@ -318,7 +366,8 @@ class AppMultiImagePicker extends StatelessWidget {
   Future<void> _pickImage(ImageSource source) async {
     try {
       // ขอ permission ก่อน
-      if (source == ImageSource.camera) {
+      if (source == ImageSource.camera &&
+          (Platform.isAndroid || Platform.isIOS)) {
         final status = await Permission.camera.request();
         if (!status.isGranted) {
           debugPrint('Camera permission denied');

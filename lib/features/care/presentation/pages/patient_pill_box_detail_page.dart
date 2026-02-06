@@ -1,9 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
+import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/services/care_service.dart';
+import 'package:capyadoo/core/widgets/app_nav_bar.dart';
+import 'package:capyadoo/core/services/page_navigation_service.dart';
 
 class PatientPillBoxDetailPage extends StatefulWidget {
   final MedicationBox box;
@@ -95,7 +99,13 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
           ),
         ],
       ),
+      bottomNavigationBar: AppNavBar(currentIndex: 0, onTap: _onNavBarTap),
     );
+  }
+
+  void _onNavBarTap(int index) {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    PageNavigationService().setIndex(index);
   }
 
   Widget _buildBoxHeader() {
@@ -163,6 +173,7 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
       itemCount: _medications.length,
       itemBuilder: (context, index) {
         final med = _medications[index];
+        final resolvedPath = _resolveImagePath(med.imagePath);
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(16),
@@ -185,8 +196,18 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFE8F5E9),
                   borderRadius: BorderRadius.circular(12),
+                  image: resolvedPath != null && resolvedPath.isNotEmpty
+                      ? DecorationImage(
+                          image: resolvedPath.startsWith('http')
+                              ? NetworkImage(resolvedPath) as ImageProvider
+                              : FileImage(File(resolvedPath)),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: const Icon(Icons.medication, color: AppColors.success),
+                child: resolvedPath == null || resolvedPath.isEmpty
+                    ? const Icon(Icons.medication, color: AppColors.success)
+                    : null,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -213,5 +234,24 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
         );
       },
     );
+  }
+
+  String? _resolveImagePath(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+
+    // Check if it's an absolute local path
+    if (path.contains(':') ||
+        path.startsWith('/') ||
+        path.contains('Documents/') ||
+        path.contains('data/user/')) {
+      return path;
+    }
+
+    if (path.startsWith('uploads/')) {
+      return '${ApiConfig.baseUrl}/$path';
+    }
+
+    return '${ApiConfig.baseUrl}/$path';
   }
 }

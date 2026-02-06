@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
+import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/widgets/app_time_chip.dart' as time_chip;
 
 /// List card สำหรับรายการยา - มีรูปภาพ, หัวข้อ, รายละเอียด, time chips, ปุ่มแก้ไข/ลบ
 class MedicineListCard extends StatelessWidget {
   final File? image;
+  final String? imagePath;
   final String name;
   final String amount;
   final int frequency;
@@ -19,6 +21,7 @@ class MedicineListCard extends StatelessWidget {
   const MedicineListCard({
     super.key,
     this.image,
+    this.imagePath,
     required this.name,
     required this.amount,
     required this.frequency,
@@ -62,16 +65,7 @@ class MedicineListCard extends StatelessWidget {
                   color: AppColors.dinner,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: image != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(image!, fit: BoxFit.cover),
-                      )
-                    : Icon(
-                        Icons.medication,
-                        size: 40,
-                        color: AppColors.primaryBlue,
-                      ),
+                child: _buildImage(),
               ),
               const SizedBox(width: 16),
 
@@ -153,6 +147,53 @@ class MedicineListCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget? _buildImage() {
+    final resolvedPath = _resolveImagePath(imagePath);
+    if (resolvedPath != null && resolvedPath.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: resolvedPath.startsWith('http')
+            ? Image.network(
+                resolvedPath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.broken_image),
+              )
+            : Image.file(
+                File(resolvedPath),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.broken_image),
+              ),
+      );
+    } else if (image != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.file(image!, fit: BoxFit.cover),
+      );
+    }
+    return Icon(Icons.medication, size: 40, color: AppColors.primaryBlue);
+  }
+
+  String? _resolveImagePath(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+
+    final normalizedPath = path.replaceAll('\\', '/');
+    if (normalizedPath.contains(':') ||
+        normalizedPath.startsWith('/') ||
+        normalizedPath.contains('Documents/') ||
+        normalizedPath.contains('data/user/')) {
+      return path;
+    }
+
+    if (normalizedPath.startsWith('uploads/')) {
+      return '${ApiConfig.baseUrl}/$normalizedPath';
+    }
+
+    return '${ApiConfig.baseUrl}/$normalizedPath';
   }
 
   time_chip.TimeOfDay? _getTimeOfDay(String mealTime) {

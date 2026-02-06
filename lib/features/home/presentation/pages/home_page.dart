@@ -216,7 +216,11 @@ class _HomePageState extends State<HomePage> {
             children: [
               const Text(
                 'สวัสดี',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontFamily: 'Sarabun',
+                ),
               ),
               Text(
                 _user?.fullName ?? '...',
@@ -224,6 +228,7 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Sarabun',
                 ),
               ),
             ],

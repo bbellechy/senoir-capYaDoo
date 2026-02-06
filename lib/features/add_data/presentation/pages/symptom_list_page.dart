@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/widgets/symptom_list_card.dart';
+import 'package:capyadoo/core/services/symptom_service.dart';
+import 'package:capyadoo/core/services/auth_service.dart';
+import 'package:capyadoo/core/model/symptom_record.dart';
+import 'package:intl/intl.dart';
 
 class SymptomListPage extends StatefulWidget {
   const SymptomListPage({super.key});
@@ -11,27 +15,33 @@ class SymptomListPage extends StatefulWidget {
 }
 
 class _SymptomListPageState extends State<SymptomListPage> {
-  // Sample symptom data
-  final List<Map<String, dynamic>> _symptoms = [
-    {
-      'level': 5,
-      'title': 'แก้อักเสบ',
-      'description': 'ปวดตรงที่ถอนฟัน',
-      'dateTime': 'บันทึกเมื่อ 15:11 น.',
-    },
-    {
-      'level': 4,
-      'title': 'ยาลดน้ำมูก',
-      'description': 'มีน้ำมูกเล็กน้อย',
-      'dateTime': 'บันทึกเมื่อ 19:22 น.',
-    },
-    {
-      'level': 9,
-      'title': 'ยาคลายกล้ามเนื้อ',
-      'description': 'ปวดกล้ามเนื้อมาก',
-      'dateTime': 'บันทึกเมื่อ 14:30 น.',
-    },
-  ];
+  List<SymptomRecord> _symptoms = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    try {
+      final profile = await AuthService.getProfile();
+      if (profile != null) {
+        final data = await SymptomService.getUserSymptoms(profile.id);
+        if (mounted) {
+          setState(() {
+            _symptoms = data;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading symptoms: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,8 +97,14 @@ class _SymptomListPageState extends State<SymptomListPage> {
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
                 ),
                 TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, AppRouter.addSymptomRoute);
+                  onPressed: () async {
+                    final result = await Navigator.pushNamed(
+                      context,
+                      AppRouter.addSymptomRoute,
+                    );
+                    if (result == true) {
+                      _loadData();
+                    }
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -116,28 +132,80 @@ class _SymptomListPageState extends State<SymptomListPage> {
 
           // Symptom list or empty state
           Expanded(
-            child: _symptoms.isEmpty
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _symptoms.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     itemCount: _symptoms.length,
                     itemBuilder: (context, index) {
                       final symptom = _symptoms[index];
+                      String timeStr = 'บันทึกเมื่อ ${symptom.time.substring(0, symptom.time.length >= 5 ? 5 : symptom.time.length)} น.';
+                      if (symptom.date.isNotEmpty) {
+                        try {
+                          final dt = DateTime.parse(
+                            '${symptom.date} ${symptom.time}',
+                          );
+                          timeStr =
+                              'บันทึกเมื่อ ${DateFormat('dd/MM/yyyy HH:mm').format(dt)} น.';
+                        } catch (_) {}
+                      }
+
+                      final level = symptom.severityLevel.clamp(1, 10);
+
                       return SymptomListCard(
-                        level: symptom['level'],
-                        title: symptom['title'],
-                        description: symptom['description'],
-                        dateTime: symptom['dateTime'],
-                        onEdit: () {
-                          Navigator.pushNamed(
+                        level: level,
+                        title: (symptom.symptom?.trim().isNotEmpty ?? false)
+                            ? symptom.symptom!
+                            : (symptom.medicationName.trim().isNotEmpty
+                                ? symptom.medicationName
+                                : 'ไม่ระบุอาการ'),
+                        description: symptom.medicationName,
+                        dateTime: timeStr,
+                        onEdit: () async {
+                          final result = await Navigator.pushNamed(
                             context,
                             AppRouter.addSymptomRoute,
+                            arguments: symptom,
                           );
+                          if (result == true) {
+                            _loadData();
+                          }
                         },
-                        onDelete: () {
-                          setState(() {
-                            _symptoms.removeAt(index);
-                          });
+                        onDelete: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('ยืนยันการลบ'),
+                              content: const Text(
+                                'คุณต้องการลบบันทึกอาการนี้ใช่หรือไม่?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('ยกเลิก'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text(
+                                    'ลบ',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true && symptom.id != null) {
+                            final success = await SymptomService.deleteSymptom(
+                              symptom.id!,
+                            );
+                            if (success) {
+                              _loadData();
+                            }
+                          }
                         },
                       );
                     },

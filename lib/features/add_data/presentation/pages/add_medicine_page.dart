@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
+import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/widgets/app_image_picker.dart';
 import 'package:capyadoo/core/widgets/app_text_field.dart';
 import 'package:capyadoo/core/widgets/app_radio_button.dart';
@@ -8,9 +9,14 @@ import 'package:capyadoo/core/widgets/app_checkbox.dart';
 import 'package:capyadoo/core/widgets/app_searchable_dropdown.dart';
 import 'package:capyadoo/core/widgets/app_date_picker.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
+import 'package:capyadoo/core/services/medication_service.dart';
+import 'package:capyadoo/core/services/auth_service.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class AddMedicinePage extends StatefulWidget {
-  const AddMedicinePage({super.key});
+  final String? medicationId;
+  const AddMedicinePage({super.key, this.medicationId});
 
   @override
   State<AddMedicinePage> createState() => _AddMedicinePageState();
@@ -19,6 +25,7 @@ class AddMedicinePage extends StatefulWidget {
 class _AddMedicinePageState extends State<AddMedicinePage> {
   final _formKey = GlobalKey<FormState>();
   File? _selectedImage;
+  String? _initialImageUrl;
   String? _medicineName;
   String _amount = '';
   String _unit = '';
@@ -28,6 +35,137 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
   DateTime? _expiryDate;
   List<String> _recommendations = [];
   String _additionalNotes = '';
+  bool _isLoading = false;
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _frequencyController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
+  List<Map<String, dynamic>> _masterMedicationOptions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+    _loadMasterMedications();
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _frequencyController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadMasterMedications() async {
+    final names = await MedicationService.getAllMasterMedicationNames();
+    if (mounted) {
+      setState(() {
+        _masterMedicationOptions = names;
+      });
+    }
+  }
+
+  Future<void> _loadInitialData() async {
+    if (widget.medicationId == null) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final profile = await AuthService.getProfile();
+      if (profile == null) return;
+
+      final med = await MedicationService.getMedicationById(
+        widget.medicationId!,
+        profile.id,
+      );
+      if (med != null && mounted) {
+        String? initialName = med.name;
+        String? initialAmount = med.dosage?.toString() ?? '';
+        String? initialUnit = med.unit ?? '';
+        String? initialFrequency = med.timesPerDay?.toString() ?? '';
+        String? initialMealTiming = med.intakeTiming == 'BEFORE_MEAL'
+            ? 'ก่อนอาหาร'
+            : med.intakeTiming == 'AFTER_MEAL'
+            ? 'หลังอาหาร'
+            : 'ทานทันที';
+        List<String> initialMealTimes = (med.intakePeriods ?? []).map((t) {
+          switch (t) {
+            case 'MORNING':
+              return 'เช้า';
+            case 'NOON':
+              return 'กลางวัน';
+            case 'EVENING':
+              return 'เย็น';
+            case 'BEDTIME':
+              return 'ก่อนนอน';
+            default:
+              return t;
+          }
+        }).toList();
+        DateTime? initialExpiryDate = med.expiryDate != null
+            ? DateTime.tryParse(med.expiryDate!)
+            : null;
+        List<String> initialRecommendations =
+            med.recommendation
+                ?.split(', ')
+                .where((s) => s.isNotEmpty)
+                .toList() ??
+            [];
+        String? initialNotes = med.notes ?? '';
+
+        File? resolvedSelectedImage;
+        String? resolvedInitialImageUrl;
+
+        if (med.imagePath != null && med.imagePath!.isNotEmpty) {
+          final normalizedPath = med.imagePath!.replaceAll('\\', '/');
+          if (normalizedPath.startsWith('http')) {
+            resolvedInitialImageUrl = normalizedPath;
+          } else {
+            File file = File(med.imagePath!);
+            if (file.existsSync()) {
+              resolvedSelectedImage = file;
+            } else {
+              try {
+                final appDir = await getApplicationDocumentsDirectory();
+                final fileName = path.basename(normalizedPath);
+                final localPath = path.join(appDir.path, fileName);
+                final localFile = File(localPath);
+                if (localFile.existsSync()) {
+                  resolvedSelectedImage = localFile;
+                } else {
+                  resolvedInitialImageUrl =
+                      '${ApiConfig.baseUrl}/$normalizedPath';
+                }
+              } catch (_) {
+                resolvedInitialImageUrl =
+                    '${ApiConfig.baseUrl}/$normalizedPath';
+              }
+            }
+          }
+        }
+
+        setState(() {
+          _medicineName = initialName;
+          _amount = initialAmount;
+          _amountController.text = _amount;
+          _unit = initialUnit;
+          _frequency = initialFrequency;
+          _frequencyController.text = _frequency;
+          _mealTiming = initialMealTiming;
+          _mealTimes = initialMealTimes;
+          _expiryDate = initialExpiryDate;
+          _recommendations = initialRecommendations;
+          _additionalNotes = initialNotes;
+          _notesController.text = _additionalNotes;
+          _selectedImage = resolvedSelectedImage;
+          _initialImageUrl = resolvedInitialImageUrl;
+        });
+      }
+    } catch (e) {
+      print('Error loading medication for editing: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,9 +228,12 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                   children: [
                     // Medicine image picker
                     AppImagePicker(
+                      imageFile: _selectedImage,
+                      imageUrl: _initialImageUrl,
                       onImageSelected: (File? imageFile) {
                         setState(() {
                           _selectedImage = imageFile;
+                          _initialImageUrl = null;
                         });
                       },
                     ),
@@ -104,28 +245,18 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                       hint: 'เลือกหรือค้นหายา',
                       value: _medicineName,
                       isRequired: true,
-                      items: [
-                        SearchableDropdownItem(
-                          value: 'พาราเซตามอล',
-                          label: 'พาราเซตามอล',
-                        ),
-                        SearchableDropdownItem(
-                          value: 'ไอบูโพรเฟน',
-                          label: 'ไอบูโพรเฟน',
-                        ),
-                        SearchableDropdownItem(
-                          value: 'แอสไพริน',
-                          label: 'แอสไพริน',
-                        ),
-                        SearchableDropdownItem(
-                          value: 'อะม็อกซีซิลลิน',
-                          label: 'อะม็อกซีซิลลิน',
-                        ),
-                        SearchableDropdownItem(
-                          value: 'เซฟิกซิม',
-                          label: 'เซฟิกซิม',
-                        ),
-                      ],
+                      allowCustomInput: true,
+                      items: _masterMedicationOptions.map((m) {
+                        final th = m['tradenameTh'];
+                        final en = m['tradenameEn'];
+                        final label = (th != null && en != null)
+                            ? '$th ($en)'
+                            : (th ?? en ?? 'ไม่ระบุชื่อ');
+                        return SearchableDropdownItem<String>(
+                          value: (th ?? en ?? '').toString(),
+                          label: label.toString(),
+                        );
+                      }).toList(),
                       onChanged: (value) {
                         setState(() {
                           _medicineName = value;
@@ -139,6 +270,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                       children: [
                         Expanded(
                           child: AppTextField(
+                            controller: _amountController,
                             label: 'ปริมาณ',
                             hint: 'เช่น 1',
                             keyboardType: TextInputType.number,
@@ -152,13 +284,49 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: AppTextField(
+                          child: AppSearchableDropdown<String>(
                             label: 'หน่วย',
                             hint: 'เม็ด',
+                            value: _unit.isNotEmpty ? _unit : null,
                             isRequired: true,
+                            allowCustomInput: true,
+                            items: const [
+                              SearchableDropdownItem<String>(
+                                value: 'เม็ด',
+                                label: 'เม็ด',
+                              ),
+                              SearchableDropdownItem<String>(
+                                value: 'แคปซูล',
+                                label: 'แคปซูล',
+                              ),
+                              SearchableDropdownItem<String>(
+                                value: 'ซอง',
+                                label: 'ซอง',
+                              ),
+                              SearchableDropdownItem<String>(
+                                value: 'ขวด',
+                                label: 'ขวด',
+                              ),
+                              SearchableDropdownItem<String>(
+                                value: 'ช้อนชา',
+                                label: 'ช้อนชา',
+                              ),
+                              SearchableDropdownItem<String>(
+                                value: 'ช้อนโต๊ะ',
+                                label: 'ช้อนโต๊ะ',
+                              ),
+                              SearchableDropdownItem<String>(
+                                value: 'CC',
+                                label: 'CC/ML',
+                              ),
+                              SearchableDropdownItem<String>(
+                                value: 'หยด',
+                                label: 'หยด',
+                              ),
+                            ],
                             onChanged: (value) {
                               setState(() {
-                                _unit = value;
+                                _unit = value ?? '';
                               });
                             },
                           ),
@@ -169,6 +337,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
 
                     // Frequency per day
                     AppTextField(
+                      controller: _frequencyController,
                       label: 'จำนวนครั้งที่ทานต่อวัน',
                       hint: 'ระบุจำนวน',
                       keyboardType: TextInputType.number,
@@ -384,6 +553,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
 
                     // Additional notes
                     AppLongTextField(
+                      controller: _notesController,
                       label: 'หมายเหตุเพิ่มเติม',
                       hint: 'กรอกข้อมูลเพิ่มเติม...',
                       onChanged: (value) {
@@ -409,12 +579,8 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         Expanded(
                           child: AppButton(
                             text: 'บันทึก',
-                            onPressed: () {
-                              // TODO: Save medicine data
-                              if (_formKey.currentState?.validate() ?? false) {
-                                Navigator.pop(context);
-                              }
-                            },
+                            isLoading: _isSubmitting || _isLoading,
+                            onPressed: _submitForm,
                           ),
                         ),
                       ],
@@ -428,5 +594,90 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
         ],
       ),
     );
+  }
+
+  bool _isSubmitting = false;
+
+  Future<void> _submitForm() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final profile = await AuthService.getProfile();
+      if (profile == null) throw Exception('User not logged in');
+
+      final dosageValue = double.tryParse(_amount) ?? 0.0;
+      final timesValue = int.tryParse(_frequency) ?? 0;
+
+      // ส่ง imagePath เฉพาะเมื่อเป็น URL จาก server (backend ไม่รองรับ local path)
+      final imagePathForApi = (_selectedImage == null && _initialImageUrl != null)
+          ? _initialImageUrl
+          : null;
+
+      final request = {
+        'name': _medicineName ?? '',
+        'dosage': dosageValue,
+        'unit': _unit,
+        'timesPerDay': timesValue,
+        'intakeTiming': _mealTiming == 'ก่อนอาหาร'
+            ? 'BEFORE_MEAL'
+            : _mealTiming == 'หลังอาหาร'
+            ? 'AFTER_MEAL'
+            : 'WITH_MEAL',
+        'intakePeriods': _mealTimes.map((t) {
+          switch (t) {
+            case 'เช้า':
+              return 'MORNING';
+            case 'กลางวัน':
+              return 'NOON';
+            case 'เย็น':
+              return 'EVENING';
+            case 'ก่อนนอน':
+              return 'BEDTIME';
+            default:
+              return t;
+          }
+        }).toList(),
+        'expiryDate': _expiryDate?.toIso8601String().split('T')[0],
+        'recommendation': _recommendations.join(', '),
+        'notes': _additionalNotes,
+        'userId': profile.id,
+        if (imagePathForApi != null) 'imagePath': imagePathForApi,
+      };
+
+      final result = widget.medicationId != null
+          ? await MedicationService.updateMedication(
+              widget.medicationId!,
+              request,
+            )
+          : await MedicationService.createMedication(request);
+
+      if (result != null) {
+        if (_selectedImage != null) {
+          final medId = widget.medicationId ?? result.id!;
+          await MedicationService.saveMedicationImageLocally(
+            medId,
+            _selectedImage!,
+          );
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('บันทึกข้อมูลยาสำเร็จ')));
+          Navigator.pop(context, true);
+        }
+      } else {
+        throw Exception('Failed to save medication');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 }

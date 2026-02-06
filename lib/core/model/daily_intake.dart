@@ -5,12 +5,14 @@ class DailyIntake {
   final String medicationName;
   final String time;
   final IntakeStatus status;
+  final String? imagePath;
 
   DailyIntake({
     required this.intakeId,
     required this.medicationName,
     required this.time,
     required this.status,
+    this.imagePath,
   });
 
   factory DailyIntake.fromJson(Map<String, dynamic> json) {
@@ -19,6 +21,7 @@ class DailyIntake {
       medicationName: json['medicationName'] ?? '',
       time: json['time'] ?? '00:00:00',
       status: _parseStatus(json['status']),
+      imagePath: json['imagePath']?.toString(),
     );
   }
 
@@ -44,6 +47,7 @@ class DailyIntake {
       'medicationName': medicationName,
       'time': time,
       'status': status.name,
+      'imagePath': imagePath,
     };
   }
 }

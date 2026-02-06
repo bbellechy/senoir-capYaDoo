@@ -12,6 +12,8 @@ class UnifiedSelectionDialog extends StatefulWidget {
   final bool showMasterMedications;
   final bool showBoxes;
   final bool allowFreeText;
+  /// โหลดรายการยาทั้งหมดแสดงทันทีเมื่อเปิด dialog (เหมาะกับหน้าเพิ่มยาในกล่อง)
+  final bool loadAllMedicationsOnOpen;
 
   const UnifiedSelectionDialog({
     super.key,
@@ -20,6 +22,7 @@ class UnifiedSelectionDialog extends StatefulWidget {
     this.showMasterMedications = true,
     this.showBoxes = false,
     this.allowFreeText = true,
+    this.loadAllMedicationsOnOpen = false,
   });
 
   @override
@@ -46,6 +49,9 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
     );
     if (widget.showBoxes) {
       _loadBoxes();
+    }
+    if (widget.loadAllMedicationsOnOpen) {
+      _performSearch('');
     }
   }
 
@@ -264,10 +270,15 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
         const SizedBox(height: 12),
         Expanded(
           child:
-              _medSuggestions.isEmpty &&
-                  _searchController.text.isNotEmpty &&
-                  !_isSearching
-              ? Center(child: Text('ไม่พบยา "${_searchController.text}"'))
+              _medSuggestions.isEmpty && !_isSearching
+              ? Center(
+                  child: Text(
+                    _searchController.text.isNotEmpty
+                        ? 'ไม่พบยา "${_searchController.text}"'
+                        : 'ยังไม่มียาในรายการ\nกรุณาเพิ่มข้อมูลยาก่อน',
+                    textAlign: TextAlign.center,
+                  ),
+                )
               : ListView.builder(
                   itemCount: _medSuggestions.length,
                   itemBuilder: (context, index) {

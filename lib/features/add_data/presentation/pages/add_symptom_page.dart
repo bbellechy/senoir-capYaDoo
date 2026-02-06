@@ -5,9 +5,15 @@ import 'package:capyadoo/core/widgets/app_date_picker.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/widgets/app_searchable_dropdown.dart';
 import 'package:capyadoo/core/widgets/app_slider.dart';
+import 'package:capyadoo/core/services/symptom_service.dart';
+import 'package:capyadoo/core/services/auth_service.dart';
+import 'package:capyadoo/core/model/symptom_record.dart';
+import 'package:capyadoo/core/services/medication_service.dart';
+import 'package:intl/intl.dart';
 
 class AddSymptomPage extends StatefulWidget {
-  const AddSymptomPage({super.key});
+  final String? symptomId;
+  const AddSymptomPage({super.key, this.symptomId});
 
   @override
   State<AddSymptomPage> createState() => _AddSymptomPageState();
@@ -20,6 +26,7 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
   TimeOfDay? _selectedTime;
   String? _selectedMedicine;
   double _severityLevel = 5.0;
+  List<String> _userMedicationNames = [];
 
   @override
   void initState() {
@@ -27,6 +34,47 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
     // Set default date and time to now
     _selectedDate = DateTime.now();
     _selectedTime = TimeOfDay.now();
+    _loadUserMedications();
+    _loadSymptomData();
+  }
+
+  Future<void> _loadSymptomData() async {
+    if (widget.symptomId == null) return;
+
+    try {
+      final userId = (await AuthService.getProfile())?.id;
+      if (userId == null) return;
+
+      final symptoms = await SymptomService.getUserSymptoms(userId);
+      final symptom = symptoms.firstWhere((s) => s.id == widget.symptomId);
+
+      if (mounted) {
+        setState(() {
+          _selectedDate = DateTime.parse(symptom.date);
+          final timeParts = symptom.time.split(':');
+          _selectedTime = TimeOfDay(
+            hour: int.parse(timeParts[0]),
+            minute: int.parse(timeParts[1]),
+          );
+          _selectedMedicine = symptom.medicationName;
+          _severityLevel = symptom.severityLevel.toDouble();
+          _descriptionController.text = symptom.symptom ?? '';
+        });
+      }
+    } catch (e) {
+      print('Error loading symptom data: $e');
+    }
+  }
+
+  Future<void> _loadUserMedications() async {
+    final profile = await AuthService.getProfile();
+    if (profile == null) return;
+    final medications = await MedicationService.getUserMedications(profile.id);
+    if (mounted) {
+      setState(() {
+        _userMedicationNames = medications.map((m) => m.name).toSet().toList();
+      });
+    }
   }
 
   @override
@@ -200,28 +248,12 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                     hint: 'เลือกยาหรือค้นหาชื่อยา',
                     value: _selectedMedicine,
                     isRequired: true,
-                    items: const [
-                      SearchableDropdownItem(
-                        value: 'medicine1',
-                        label: 'แก้อักเสบ',
-                        searchKeywords: ['แก้อักเสบ'],
-                      ),
-                      SearchableDropdownItem(
-                        value: 'medicine2',
-                        label: 'ยาลดน้ำมูก',
-                        searchKeywords: ['ยาลดน้ำมูก', 'น้ำมูก'],
-                      ),
-                      SearchableDropdownItem(
-                        value: 'medicine3',
-                        label: 'ยาแก้ปวด',
-                        searchKeywords: ['ยาแก้ปวด', 'ปวด'],
-                      ),
-                      SearchableDropdownItem(
-                        value: 'medicine4',
-                        label: 'ยาลดไข้',
-                        searchKeywords: ['ยาลดไข้', 'ไข้'],
-                      ),
-                    ],
+                    items: _userMedicationNames.map((name) {
+                      return SearchableDropdownItem<String>(
+                        value: name,
+                        label: name,
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       setState(() {
                         _selectedMedicine = value;
@@ -278,18 +310,8 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                       Expanded(
                         child: AppButton(
                           text: 'บันทึก',
-                          onPressed: () {
-                            // TODO: Validate and save form
-                            if (_selectedMedicine == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('กรุณาเลือกชื่อยา'),
-                                ),
-                              );
-                              return;
-                            }
-                            Navigator.pop(context);
-                          },
+                          isLoading: _isSubmitting,
+                          onPressed: _submitForm,
                         ),
                       ),
                     ],
@@ -301,5 +323,61 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
         ],
       ),
     );
+  }
+
+  bool _isSubmitting = false;
+
+  Future<void> _submitForm() async {
+    if (_selectedMedicine == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('กรุณาเลือกชื่อยา')));
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final profile = await AuthService.getProfile();
+      if (profile == null) throw Exception('User not logged in');
+
+      final dateStr = DateFormat(
+        'yyyy-MM-dd',
+      ).format(_selectedDate ?? DateTime.now());
+      final timeStr =
+          '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}:00';
+
+      final record = SymptomRecord(
+        date: dateStr,
+        time: timeStr,
+        medicationName: _selectedMedicine!,
+        severityLevel: _severityLevel.toInt(),
+        symptom: _descriptionController.text.trim(),
+        userId: profile.id,
+      );
+
+      final result = widget.symptomId != null
+          ? await SymptomService.updateSymptom(widget.symptomId!, record)
+          : await SymptomService.createSymptom(record);
+
+      if (result != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('บันทึกอาการสำเร็จ')));
+          Navigator.pop(context, true);
+        }
+      } else {
+        throw Exception('Failed to save symptom record');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 }

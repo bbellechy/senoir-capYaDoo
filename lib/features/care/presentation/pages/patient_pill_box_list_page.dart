@@ -4,6 +4,8 @@ import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/services/care_service.dart';
 import 'package:capyadoo/features/care/presentation/pages/patient_pill_box_detail_page.dart';
+import 'package:capyadoo/core/widgets/app_nav_bar.dart';
+import 'package:capyadoo/core/services/page_navigation_service.dart';
 
 class PatientPillBoxListPage extends StatefulWidget {
   final Patient patient;
@@ -81,6 +83,7 @@ class _PatientPillBoxListPageState extends State<PatientPillBoxListPage> {
                 return _buildBoxCard(box);
               },
             ),
+      bottomNavigationBar: AppNavBar(currentIndex: 0, onTap: _onNavBarTap),
     );
   }
 
@@ -143,5 +146,10 @@ class _PatientPillBoxListPageState extends State<PatientPillBoxListPage> {
         ),
       ),
     );
+  }
+
+  void _onNavBarTap(int index) {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    PageNavigationService().setIndex(index);
   }
 }

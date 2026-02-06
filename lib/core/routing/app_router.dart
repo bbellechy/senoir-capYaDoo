@@ -89,8 +89,9 @@ class AppRouter {
           settings: settings,
         );
       case addMedicineRoute:
+        final medicationId = settings.arguments as String?;
         return MaterialPageRoute(
-          builder: (_) => const AddMedicinePage(),
+          builder: (_) => AddMedicinePage(medicationId: medicationId),
           settings: settings,
         );
       case addSymptomRoute:

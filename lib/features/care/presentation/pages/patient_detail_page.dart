@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
+import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/model/daily_intake.dart';
 import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/services/care_service.dart';
@@ -355,6 +357,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
 
   Widget _buildMedicationCard(DailyIntake item) {
     final bool isTaken = item.status == IntakeStatus.TAKEN;
+    final resolvedPath = _resolveImagePath(item.imagePath);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
@@ -364,6 +367,30 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
       ),
       child: Row(
         children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(12),
+              image: resolvedPath != null && resolvedPath.isNotEmpty
+                  ? DecorationImage(
+                      image: resolvedPath.startsWith('http')
+                          ? NetworkImage(resolvedPath) as ImageProvider
+                          : FileImage(File(resolvedPath)),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: resolvedPath == null || resolvedPath.isEmpty
+                ? Icon(
+                    Icons.medication_outlined,
+                    color: Colors.grey[400],
+                    size: 24,
+                  )
+                : null,
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,5 +453,24 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
           return false;
       }
     }).toList();
+  }
+
+  String? _resolveImagePath(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+
+    // Check if it's an absolute local path
+    if (path.contains(':') ||
+        path.startsWith('/') ||
+        path.contains('Documents/') ||
+        path.contains('data/user/')) {
+      return path;
+    }
+
+    if (path.startsWith('uploads/')) {
+      return '${ApiConfig.baseUrl}/$path';
+    }
+
+    return '${ApiConfig.baseUrl}/$path';
   }
 }

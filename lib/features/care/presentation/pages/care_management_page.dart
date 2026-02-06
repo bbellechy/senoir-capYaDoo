@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/widgets/app_input_text.dart';
+import 'package:capyadoo/core/widgets/app_nav_bar.dart';
+import 'package:capyadoo/core/services/page_navigation_service.dart';
 import 'package:capyadoo/features/care/controller/care_controller.dart';
 import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/features/care/presentation/pages/patient_detail_page.dart';
@@ -15,7 +17,7 @@ class CareManagementPage extends StatefulWidget {
 class _CareManagementPageState extends State<CareManagementPage> {
   final CareController _controller = CareController();
   final TextEditingController _searchController = TextEditingController();
-  bool _isCaregiverView = true;
+  final bool _isCaregiverView = true;
 
   @override
   void initState() {
@@ -59,38 +61,79 @@ class _CareManagementPageState extends State<CareManagementPage> {
     }
   }
 
+  void _onNavBarTap(int index) {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    PageNavigationService().setIndex(index);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAF8),
-      appBar: AppBar(
-        title: const Text(
-          'ผู้ดูแลและผู้ใช้งาน',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: AppColors.success,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+      bottomNavigationBar: AppNavBar(
+        currentIndex: 0,
+        onTap: _onNavBarTap,
       ),
-      body: _controller.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+      body: Column(
+        children: [
+          // Blue header
+          Container(
+            height: 140,
+            decoration: const BoxDecoration(color: AppColors.primaryBlue),
+            child: SafeArea(
+              bottom: false,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  _buildAddSection(),
-                  const SizedBox(height: 16),
-                  if (_controller.requests.isNotEmpty) _buildRequestsSection(),
-                  const SizedBox(height: 16),
-                  _buildListSection(),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 30,
+                      right: 30,
+                      bottom: 20,
+                    ),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'ผู้ดูแลและผู้ใช้งาน',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Sarabun',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
+          ),
+
+          // Main Content
+          Expanded(
+            child: _controller.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildAddSection(),
+                        const SizedBox(height: 16),
+                        if (_controller.requests.isNotEmpty)
+                          _buildRequestsSection(),
+                        const SizedBox(height: 16),
+                        _buildListSection(),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 

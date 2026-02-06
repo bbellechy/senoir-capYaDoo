@@ -7,10 +7,13 @@ class UserMedication {
   final String? unit;
   final int? timesPerDay;
   final String? intakeTiming;
-  final String? intakePeriods;
+  final List<String>? intakePeriods;
   final String? expiryDate;
   final String? userId;
   final Medication? masterMedicationEntity;
+  final String? imagePath;
+  final String? recommendation;
+  final String? notes;
 
   UserMedication({
     this.id,
@@ -23,6 +26,9 @@ class UserMedication {
     this.expiryDate,
     this.userId,
     this.masterMedicationEntity,
+    this.imagePath,
+    this.recommendation,
+    this.notes,
   });
 
   String get displayName {
@@ -42,12 +48,56 @@ class UserMedication {
       unit: json['unit'],
       timesPerDay: json['timesPerDay'],
       intakeTiming: json['intakeTiming'],
-      intakePeriods: json['intakePeriods'],
+      intakePeriods: json['intakePeriods'] != null
+          ? (json['intakePeriods'] is String
+                ? (json['intakePeriods'] as String)
+                    .split(RegExp(r'[,\s]+'))
+                    .map((s) => s.trim())
+                    .where((s) => s.isNotEmpty)
+                    .toList()
+                : List<String>.from(json['intakePeriods']))
+          : null,
       expiryDate: json['expiryDate'],
       userId: json['userId']?.toString(),
       masterMedicationEntity: json['masterMedicationEntity'] != null
           ? Medication.fromJson(json['masterMedicationEntity'])
           : null,
+      imagePath: (json['imagePath'] ?? json['image'])?.toString(),
+      recommendation: json['recommendation']?.toString(),
+      notes: json['notes']?.toString(),
+    );
+  }
+
+  UserMedication copyWith({
+    String? id,
+    String? name,
+    double? dosage,
+    String? unit,
+    int? timesPerDay,
+    String? intakeTiming,
+    List<String>? intakePeriods,
+    String? expiryDate,
+    String? userId,
+    Medication? masterMedicationEntity,
+    String? imagePath,
+    String? recommendation,
+    String? notes,
+  }) {
+    return UserMedication(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      dosage: dosage ?? this.dosage,
+      unit: unit ?? this.unit,
+      timesPerDay: timesPerDay ?? this.timesPerDay,
+      intakeTiming: intakeTiming ?? this.intakeTiming,
+      intakePeriods: intakePeriods ?? this.intakePeriods,
+      expiryDate: expiryDate ?? this.expiryDate,
+      userId: userId ?? this.userId,
+      masterMedicationEntity:
+          masterMedicationEntity ?? this.masterMedicationEntity,
+      imagePath: imagePath ?? this.imagePath,
+      recommendation: recommendation ?? this.recommendation,
+      notes: notes ?? this.notes,
     );
   }
 
@@ -63,6 +113,9 @@ class UserMedication {
       'expiryDate': expiryDate,
       'userId': userId,
       'masterMedicationEntity': masterMedicationEntity?.toJson(),
+      'imagePath': imagePath,
+      'recommendation': recommendation,
+      'notes': notes,
     };
   }
 }

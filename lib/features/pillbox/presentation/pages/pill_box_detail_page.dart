@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
+import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/features/pillbox/controller/pill_box_controller.dart';
@@ -8,6 +9,8 @@ import 'package:capyadoo/features/notifications/data/medication_search_service.d
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/unified_selection_dialog.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
+import 'package:capyadoo/core/widgets/app_nav_bar.dart';
+import 'package:capyadoo/core/services/page_navigation_service.dart';
 
 class PillBoxDetailPage extends StatefulWidget {
   final MedicationBox pillBox;
@@ -238,7 +241,17 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
           ),
         ],
       ),
+      bottomNavigationBar: AppNavBar(
+        currentIndex: 0, // Highlight home as it's the root for this
+        onTap: _onNavBarTap,
+      ),
     );
+  }
+
+  void _onNavBarTap(int index) {
+    // Navigate back to MainLayout and set index
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    PageNavigationService().setIndex(index);
   }
 
   Widget _buildMedicationList(List<UserMedication> meds) {
@@ -282,6 +295,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       itemCount: meds.length,
       itemBuilder: (context, index) {
         final med = meds[index];
+        final resolvedPath = _resolveImagePath(med.imagePath);
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(16),
@@ -304,8 +318,18 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
                 decoration: BoxDecoration(
                   color: Colors.blue[50],
                   borderRadius: BorderRadius.circular(12),
+                  image: resolvedPath != null && resolvedPath.isNotEmpty
+                      ? DecorationImage(
+                          image: resolvedPath.startsWith('http')
+                              ? NetworkImage(resolvedPath) as ImageProvider
+                              : FileImage(File(resolvedPath)),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: Icon(Icons.medication, color: AppColors.primaryBlue),
+                child: resolvedPath == null || resolvedPath.isEmpty
+                    ? Icon(Icons.medication, color: AppColors.primaryBlue)
+                    : null,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -344,7 +368,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
   List<Widget> _buildTimingTags(UserMedication med) {
     if (med.intakePeriods == null || med.intakePeriods!.isEmpty) return [];
 
-    final periods = med.intakePeriods!.split(',');
+    final periods = med.intakePeriods!;
     return periods.map((p) {
       Color color;
       String label;
@@ -353,7 +377,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
           color = const Color(0xFFFFF9C4);
           label = 'เช้า';
           break;
-        case 'afternoon':
+        case 'noon':
           color = const Color(0xFFFFE0B2);
           label = 'กลางวัน';
           break;
@@ -361,7 +385,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
           color = const Color(0xFFE1F5FE);
           label = 'เย็น';
           break;
-        case 'night':
+        case 'bedtime':
           color = const Color(0xFFEDE7F6);
           label = 'ก่อนนอน';
           break;
@@ -394,6 +418,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
         title: 'เพิ่มยาลงในกล่อง',
         showMasterMedications: false,
         allowFreeText: false,
+        loadAllMedicationsOnOpen: true,
       ),
     );
 
@@ -425,5 +450,24 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
         }
       }
     }
+  }
+
+  String? _resolveImagePath(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+
+    // Check if it's an absolute local path
+    if (path.contains(':') ||
+        path.startsWith('/') ||
+        path.contains('Documents/') ||
+        path.contains('data/user/')) {
+      return path;
+    }
+
+    if (path.startsWith('uploads/')) {
+      return '${ApiConfig.baseUrl}/$path';
+    }
+
+    return '${ApiConfig.baseUrl}/$path';
   }
 }
