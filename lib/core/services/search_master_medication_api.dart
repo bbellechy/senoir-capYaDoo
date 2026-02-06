@@ -14,4 +14,19 @@ class SearchMedicationApi {
     final List data = jsonDecode(response.body);
     return data.map((e) => Medication.fromJson(e)).toList();
   }
+
+  static Future<Medication?> getById(String id) async {
+    try {
+      final response = await ApiClient.get('/master-medications/$id');
+
+      if (response.statusCode == 200) {
+         final data = jsonDecode(response.body);
+         return Medication.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching medication by ID: $e');
+      return null;
+    }
+  }
 }

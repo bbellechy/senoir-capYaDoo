@@ -1,0 +1,53 @@
+enum IntakeStatus { PENDING, TAKEN, MISSED, NOT_TAKEN, OVERDUE }
+
+class DailyIntake {
+  final String intakeId;
+  final String medicationName;
+  final String time;
+  final IntakeStatus status;
+  final String? imagePath;
+
+  DailyIntake({
+    required this.intakeId,
+    required this.medicationName,
+    required this.time,
+    required this.status,
+    this.imagePath,
+  });
+
+  factory DailyIntake.fromJson(Map<String, dynamic> json) {
+    return DailyIntake(
+      intakeId: json['intakeId'] ?? '',
+      medicationName: json['medicationName'] ?? '',
+      time: json['time'] ?? '00:00:00',
+      status: _parseStatus(json['status']),
+      imagePath: json['imagePath']?.toString(),
+    );
+  }
+
+  static IntakeStatus _parseStatus(String? status) {
+    switch (status?.toUpperCase()) {
+      case 'TAKEN':
+        return IntakeStatus.TAKEN;
+      case 'MISSED':
+        return IntakeStatus.MISSED;
+      case 'NOT_TAKEN':
+        return IntakeStatus.NOT_TAKEN;
+      case 'OVERDUE':
+        return IntakeStatus.OVERDUE;
+      case 'PENDING':
+      default:
+        return IntakeStatus.PENDING;
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'intakeId': intakeId,
+      'medicationName': medicationName,
+      'time': time,
+      'status': status.name,
+      'imagePath': imagePath,
+    };
+  }
+}

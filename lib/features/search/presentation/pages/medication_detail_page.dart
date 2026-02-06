@@ -5,10 +5,7 @@ import '../../../../core/model/medication.dart';
 class MedicationDetailPage extends StatefulWidget {
   final Medication medication;
 
-  const MedicationDetailPage({
-    super.key,
-    required this.medication,
-  });
+  const MedicationDetailPage({super.key, required this.medication});
 
   @override
   State<MedicationDetailPage> createState() => _MedicationDetailPageState();
@@ -120,7 +117,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    widget.medication.tradenameTh,
+                    widget.medication.tradenameTh ?? '-',
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -130,7 +127,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    widget.medication.tradenameEn,
+                    widget.medication.tradenameEn ?? '-',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white.withOpacity(0.9),
@@ -149,21 +146,21 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                   _buildInfoCard(
                     title: 'คำอธิบาย',
                     icon: Icons.description_outlined,
-                    content: widget.medication.indication,
+                    content: widget.medication.indication ?? "-",
                     section: 'indication',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoCard(
                     title: 'การใช้ประโยชน์',
                     icon: Icons.integration_instructions_outlined,
-                    content: widget.medication.categoryUse,
+                    content: widget.medication.categoryUse ?? "-",
                     section: 'categoryUse',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoCard(
                     title: 'ข้อบ่งใช้',
                     icon: Icons.fact_check_outlined,
-                    content: widget.medication.indication,
+                    content: widget.medication.indication ?? "-",
                     section: 'indication2',
                   ),
                 ],
@@ -208,11 +205,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                     color: Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    icon,
-                    color: Colors.blue.shade600,
-                    size: 20,
-                  ),
+                  child: Icon(icon, color: Colors.blue.shade600, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -253,10 +246,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.grey.shade200,
-                  width: 1,
-                ),
+                border: Border.all(color: Colors.grey.shade200, width: 1),
               ),
               child: Text(
                 content.isNotEmpty ? content : 'ไม่มีข้อมูล',

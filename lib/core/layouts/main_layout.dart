@@ -4,7 +4,7 @@ import '../services/page_navigation_service.dart';
 import 'package:capyadoo/features/home/presentation/pages/home_page.dart';
 import 'package:capyadoo/features/search/presentation/pages/search_page.dart';
 import 'package:capyadoo/features/add_data/presentation/pages/add_data_page.dart';
-import 'package:capyadoo/features/notifications/presentation/pages/notification_demo_page.dart';
+import 'package:capyadoo/features/notifications/presentation/pages/notification_list_page.dart';
 import 'package:capyadoo/features/profile/presentation/pages/profile_page.dart';
 import '../../features/voice/presentation/widgets/voice_assistant_button.dart';
 
@@ -28,7 +28,7 @@ class _MainLayoutState extends State<MainLayout> {
       HomePage(), // 0: หน้าหลัก
       SearchPage(), // 1: ค้นหา
       AddDataPage(), // 2: เพิ่มข้อมูล
-      NotificationDemoPage(), // 3: แจ้งเตือน
+      NotificationListPage(), // 3: แจ้งเตือน
       ProfilePage(), // 4: โปรไฟล์
     ];
 

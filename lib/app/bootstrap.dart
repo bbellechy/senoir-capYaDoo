@@ -7,6 +7,7 @@ Future<void> bootstrap(Future<void> Function() runAppCallback) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await NotificationService.init();
+  await NotificationService.checkBatteryOptimization();
 
   if (await Permission.notification.isDenied) {
     await Permission.notification.request();

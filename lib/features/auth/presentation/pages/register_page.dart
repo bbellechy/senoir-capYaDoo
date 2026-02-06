@@ -3,6 +3,7 @@ import 'package:capyadoo/core/widgets/app_input_text.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/widgets/app_logo.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
+import 'package:capyadoo/core/services/auth_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -18,6 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _lastNameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -29,12 +31,29 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  void _handleRegister() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement register logic
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('กำลังลงทะเบียน...')));
+      setState(() => _isLoading = true);
+
+      final fullName =
+          '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}';
+      final success = await AuthService.register(
+        _usernameController.text.trim(),
+        fullName,
+        _passwordController.text,
+      );
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (success) {
+          // AuthService.register automatically logs in on success
+          Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่')),
+          );
+        }
+      }
     }
   }
 
@@ -215,7 +234,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     const SizedBox(height: 32),
 
                     // Register Button
-                    AppButton(text: 'ลงทะเบียน', onPressed: _handleRegister),
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : AppButton(
+                            text: 'ลงทะเบียน',
+                            onPressed: _handleRegister,
+                          ),
                     const SizedBox(height: 16),
 
                     // Login Link

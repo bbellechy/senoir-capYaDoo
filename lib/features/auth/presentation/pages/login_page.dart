@@ -3,6 +3,7 @@ import 'package:capyadoo/core/widgets/app_input_text.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/widgets/app_logo.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
+import 'package:capyadoo/core/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,6 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -23,12 +25,27 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement login logic
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('กำลังเข้าสู่ระบบ...')));
+      setState(() => _isLoading = true);
+
+      final success = await AuthService.login(
+        _usernameController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (success) {
+          Navigator.pushReplacementNamed(context, '/');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง'),
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -142,7 +159,12 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 16),
 
                     // Login Button
-                    AppButton(text: 'เข้าสู่ระบบ', onPressed: _handleLogin),
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : AppButton(
+                            text: 'เข้าสู่ระบบ',
+                            onPressed: _handleLogin,
+                          ),
                     const SizedBox(height: 16),
 
                     // Register Link
