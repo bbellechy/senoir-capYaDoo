@@ -92,7 +92,7 @@ class _AppInputTextState extends State<AppInputText> {
               )
             : widget.suffixIcon,
         filled: true,
-        fillColor: widget.enabled ? AppColors.blueEmpty : AppColors.blueEmpty,
+        fillColor: widget.enabled ? AppColors.whitelist : AppColors.whitelist,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
