@@ -18,6 +18,7 @@ class AppColors {
   static const Color textSublest = Color(0xFFD7D7D7);
 
   static const Color error = Color(0xFFFF0000);
+  static const Color red = Color(0xFFCA2525);
   static const Color success = Color(0xFF28BD5A);
   static const Color warning = Color(0xFFF57C00);
   static const Color info = Color(0xFF1976D2);

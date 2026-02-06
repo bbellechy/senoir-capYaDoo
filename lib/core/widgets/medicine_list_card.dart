@@ -38,7 +38,7 @@ class MedicineListCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.offwhite,
+        color: AppColors.whitelist,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.blueBorder, width: 1.5),
         boxShadow: [
