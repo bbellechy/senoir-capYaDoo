@@ -4,6 +4,8 @@ import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/widgets/medicine_list_card.dart';
 import 'package:capyadoo/core/widgets/symptom_list_card.dart';
+import 'package:capyadoo/core/widgets/medicine_list_card.dart';
+import 'package:capyadoo/core/widgets/symptom_list_card.dart';
 import 'package:capyadoo/core/services/medication_service.dart';
 import 'package:capyadoo/core/services/symptom_service.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
