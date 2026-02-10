@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:capyadoo/core/widgets/app_input_text.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/widgets/app_logo.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
+import 'package:capyadoo/core/providers/auth_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -37,7 +39,10 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         setState(() => _isLoading = false);
         if (success) {
-          Navigator.pushReplacementNamed(context, '/');
+          await context.read<AuthProvider>().loadProfile();
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/');
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

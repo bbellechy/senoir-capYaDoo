@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:capyadoo/core/providers/auth_provider.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().user;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -61,14 +64,17 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'ผู้ใช้งาน',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  Text(
+                    user?.fullName ?? 'ผู้ใช้งาน',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'user@example.com',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  Text(
+                    user?.username ?? '—',
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   const SizedBox(height: 30),
                   _buildProfileOption(
@@ -94,7 +100,12 @@ class ProfilePage extends StatelessWidget {
                   _buildProfileOption(
                     icon: Icons.logout,
                     title: 'ออกจากระบบ',
-                    onTap: () {},
+                    onTap: () async {
+                      await context.read<AuthProvider>().logout();
+                      if (context.mounted) {
+                        Navigator.pushReplacementNamed(context, '/login');
+                      }
+                    },
                     isDestructive: true,
                   ),
                 ],

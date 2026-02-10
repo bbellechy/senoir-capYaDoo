@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:capyadoo/core/model/daily_intake.dart';
 import 'package:capyadoo/core/services/medication_schedule_service.dart';
-import 'package:capyadoo/core/services/auth_service.dart';
 import 'package:capyadoo/core/model/user.dart';
+import 'package:capyadoo/core/providers/auth_provider.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_list_page.dart';
 import 'package:capyadoo/features/care/presentation/pages/care_management_page.dart';
 import 'package:intl/intl.dart';
@@ -19,19 +20,27 @@ class _HomePageState extends State<HomePage> {
   DateTime _selectedDate = DateTime.now();
   List<DailyIntake> _schedule = [];
   bool _isLoading = true;
-  User? _user;
 
   @override
   void initState() {
     super.initState();
     initializeDateFormatting('th_TH', null);
-    _loadData();
+    // เลื่อนโหลดข้อมูลไปหลัง build เสร็จ เพื่อไม่ให้ notifyListeners() ถูกเรียกระหว่าง build
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
   }
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
+    final auth = context.read<AuthProvider>();
+    if (auth.user == null) {
+      await auth.loadProfile();
+      if (!mounted) return;
+      if (context.read<AuthProvider>().user == null) {
+        _handleLogout();
+        return;
+      }
+    }
     await Future.wait([
-      _loadProfile(),
       _loadSchedule(showLoading: false),
       _checkOverdueStatus(), // Check for late medications
     ]);
@@ -74,20 +83,8 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _loadProfile() async {
-    final user = await AuthService.getProfile();
-    if (mounted) {
-      if (user != null) {
-        setState(() => _user = user);
-      } else {
-        // Token might be expired or invalid
-        _handleLogout();
-      }
-    }
-  }
-
-  void _handleLogout() async {
-    await AuthService.logout();
+  Future<void> _handleLogout() async {
+    await context.read<AuthProvider>().logout();
     if (mounted) {
       Navigator.pushReplacementNamed(context, '/login');
     }
@@ -160,6 +157,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().user;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9FF),
       body: Stack(
@@ -185,7 +183,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Profile & Logo Header
-                    _buildHeader(),
+                    _buildHeader(user),
                     const SizedBox(height: 20),
 
                     // Date Picker Section
@@ -205,7 +203,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(User? user) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
@@ -223,7 +221,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Text(
-                _user?.fullName ?? '...',
+                user?.fullName ?? '...',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 28,
