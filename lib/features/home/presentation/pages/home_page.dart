@@ -56,6 +56,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadBoxes() async {
     try {
       final boxes = await _pillBoxService.getAllPillBoxes();
+      print('Loaded ${boxes.length} boxes');
       if (mounted) {
         setState(() {
           _boxes = boxes;
@@ -63,10 +64,18 @@ class _HomePageState extends State<HomePage> {
         // Load daily medications for each box
         for (final box in boxes) {
           if (box.id != null) {
+            print('Loading daily medications for box: ${box.name} (${box.id})');
+            print('Box intakePeriods: ${box.intakePeriods}');
             final dailyMeds = await _pillBoxService.getDailyMedicationsForBox(
               box.id!,
               _selectedDate,
             );
+            print(
+              'Loaded ${dailyMeds.length} daily medications for box ${box.name}',
+            );
+            if (dailyMeds.isNotEmpty) {
+              print('Sample medication: ${dailyMeds.first}');
+            }
             if (mounted) {
               setState(() {
                 _boxDailyMedications[box.id!] = dailyMeds;
@@ -570,13 +579,20 @@ class _HomePageState extends State<HomePage> {
     List<DailyIntake> items,
   ) {
     // Get boxes for this period
+    // Map ภาษาไทยและภาษาอังกฤษไปยัง period
     final periodMap = {
+      // ภาษาไทย
+      'เช้า': 'MORNING',
+      'กลางวัน': 'NOON',
+      'เย็น': 'EVENING',
+      'ก่อนนอน': 'BEDTIME',
+      // ภาษาอังกฤษ (backup)
       'morning': 'MORNING',
       'afternoon': 'NOON',
       'evening': 'EVENING',
       'night': 'BEDTIME',
     };
-    final period = periodMap[title.toLowerCase()] ?? '';
+    final period = periodMap[title] ?? periodMap[title.toLowerCase()] ?? '';
 
     final boxItems = _getBoxesForPeriod(period);
     final totalCount = items.length + boxItems.length;
@@ -657,34 +673,96 @@ class _HomePageState extends State<HomePage> {
 
   List<Map<String, dynamic>> _getBoxesForPeriod(String period) {
     final result = <Map<String, dynamic>>[];
+    print('_getBoxesForPeriod called with period: $period');
+    print('Total boxes: ${_boxes.length}');
+
     for (final box in _boxes) {
-      if (box.intakePeriods.contains(period)) {
+      if (box.id != null && box.intakePeriods.contains(period)) {
+        print('Box ${box.name} matches period $period');
         final dailyMeds = _boxDailyMedications[box.id] ?? [];
-        // Filter medications by period
-        final filteredMeds = dailyMeds.where((med) {
-          final medPeriod = med['intakePeriod'] as String?;
-          return medPeriod == period;
+        print('Daily medications for ${box.name}: ${dailyMeds.length}');
+
+        // แปลง response จาก API ให้ตรงกับ format ที่โค้ดใช้
+        // API ส่ง: { id, medication: { name }, intakeTime, status }
+        // โค้ดต้องการ: { id, medicationName, scheduledTime, status }
+        final convertedMeds = dailyMeds.map((med) {
+          // ดึง medication name จาก medication object
+          final medicationObj = med['medication'] as Map<String, dynamic>?;
+          final medicationName =
+              medicationObj?['name'] as String? ??
+              med['medicationName'] as String? ??
+              'ไม่ระบุชื่อ';
+
+          // ดึง intakeTime และแปลงเป็น scheduledTime (HH:mm)
+          final intakeTime =
+              med['intakeTime'] as String? ??
+              med['scheduledTime'] as String? ??
+              _getDefaultTimeForPeriod(period);
+          final scheduledTime = _formatTime(intakeTime);
+
+          // ดึง status
+          final status = med['status'] as String? ?? 'PENDING';
+
+          // ดึง id (intakeId)
+          final intakeId = med['id'] as String? ?? '';
+
+          return {
+            'id': intakeId,
+            'medicationName': medicationName,
+            'scheduledTime': scheduledTime,
+            'status': status,
+            'dosage': med['dosage'] ?? 1,
+            'unit': med['unit'] ?? 'เม็ด',
+          };
         }).toList();
 
-        // If no daily medications, use medications from box
-        if (filteredMeds.isNotEmpty) {
-          result.add({'box': box, 'medications': filteredMeds});
+        // ถ้ามี daily medications ให้แสดง
+        if (convertedMeds.isNotEmpty) {
+          print(
+            'Adding box ${box.name} with ${convertedMeds.length} medications',
+          );
+          result.add({'box': box, 'medications': convertedMeds});
         } else if (box.medications.isNotEmpty) {
-          // Use medications from box array, create daily medication structure
+          // ถ้าไม่มี daily medications แต่มี medications ใน box ให้ใช้ข้อมูลจาก box
+          print('Using box medications for ${box.name}');
           final boxMeds = box.medications.map((med) {
             return {
               'id': med['id'] ?? '',
               'medicationName': med['name'] ?? 'ไม่ระบุชื่อ',
-              'intakePeriod': period,
+              'dosage': med['dosage'] ?? med['quantity'] ?? 1,
+              'unit': med['unit'] ?? 'เม็ด',
               'status': 'PENDING',
               'scheduledTime': _getDefaultTimeForPeriod(period),
             };
           }).toList();
           result.add({'box': box, 'medications': boxMeds});
+        } else {
+          print('Box ${box.name} has no medications to display');
+        }
+      } else {
+        if (box.id == null) {
+          print('Box ${box.name} has no id');
+        } else if (!box.intakePeriods.contains(period)) {
+          print(
+            'Box ${box.name} does not match period $period (has: ${box.intakePeriods})',
+          );
         }
       }
     }
+    print(
+      '_getBoxesForPeriod returning ${result.length} boxes for period $period',
+    );
     return result;
+  }
+
+  // แปลงเวลา format "HH:mm:ss" หรือ "HH:mm" เป็น "HH:mm"
+  String _formatTime(String timeStr) {
+    if (timeStr.isEmpty) return '08:00';
+    final parts = timeStr.split(':');
+    if (parts.length >= 2) {
+      return '${parts[0]}:${parts[1]}';
+    }
+    return timeStr;
   }
 
   String _getDefaultTimeForPeriod(String period) {
@@ -709,7 +787,13 @@ class _HomePageState extends State<HomePage> {
   ) {
     // Get time from first medication or use box default
     final firstMed = medications.isNotEmpty ? medications.first : null;
-    final timeStr = firstMed?['scheduledTime'] as String? ?? '08:00';
+    // รองรับทั้ง scheduledTime และ intakeTime
+    final timeStr =
+        firstMed?['scheduledTime'] as String? ??
+        firstMed?['intakeTime'] as String? ??
+        '08:00';
+    // แปลง format ถ้าเป็น "HH:mm:ss" เป็น "HH:mm"
+    final formattedTime = _formatTime(timeStr);
     final intakeId = firstMed?['id'] as String? ?? '';
     final status = firstMed?['status'] as String? ?? 'PENDING';
 
@@ -718,7 +802,7 @@ class _HomePageState extends State<HomePage> {
     final isMissed = status == 'MISSED';
     final isOverdue =
         status == 'OVERDUE' ||
-        (status == 'PENDING' && _isTimePassedForSelectedDate(timeStr));
+        (status == 'PENDING' && _isTimePassedForSelectedDate(formattedTime));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -739,10 +823,17 @@ class _HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.inventory_2_outlined,
-                size: 20,
-                color: Colors.blue,
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.inventory_2_outlined,
+                  size: 20,
+                  color: Colors.blue,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -769,6 +860,10 @@ class _HomePageState extends State<HomePage> {
             final medUnit = med['unit'] as String? ?? 'เม็ด';
             final medStatus = med['status'] as String? ?? 'PENDING';
             final isMedTaken = medStatus == 'TAKEN';
+            // ใช้ dosage ถ้ามี ไม่เช่นนั้นใช้ 1 เม็ด
+            final dosageText = medDosage != null
+                ? '$medDosage $medUnit'
+                : '1 $medUnit';
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -782,7 +877,7 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '$medName ${medDosage != null ? '($medDosage $medUnit)' : ''}',
+                      '$medName ($dosageText)',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[700],
@@ -808,7 +903,7 @@ class _HomePageState extends State<HomePage> {
               Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
               const SizedBox(width: 4),
               Text(
-                '${timeStr.substring(0, 5)} น.',
+                '${formattedTime.substring(0, formattedTime.length > 5 ? 5 : formattedTime.length)} น.',
                 style: TextStyle(color: Colors.grey[600], fontSize: 14),
               ),
               const Spacer(),
@@ -1011,7 +1106,8 @@ class _HomePageState extends State<HomePage> {
                     fontSize: 18,
                   ),
                 ),
-                const SizedBox(height: 4),
+
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
