@@ -14,6 +14,10 @@ class UserMedication {
   final String? imagePath;
   final String? recommendation;
   final String? notes;
+  final List<int>? days; // Days of week: 1=Monday, 2=Tuesday, ..., 7=Sunday
+  final int? remainingQuantity;
+  final String? startDate; // ISO date string
+  final String? endDate; // ISO date string
 
   UserMedication({
     this.id,
@@ -29,6 +33,10 @@ class UserMedication {
     this.imagePath,
     this.recommendation,
     this.notes,
+    this.days,
+    this.remainingQuantity,
+    this.startDate,
+    this.endDate,
   });
 
   String get displayName {
@@ -39,6 +47,17 @@ class UserMedication {
   }
 
   factory UserMedication.fromJson(Map<String, dynamic> json) {
+    List<int>? parseDays(dynamic daysData) {
+      if (daysData == null) return null;
+      if (daysData is List) {
+        return daysData.map((e) => int.tryParse(e.toString())).whereType<int>().toList();
+      }
+      if (daysData is String) {
+        return daysData.split(',').map((e) => int.tryParse(e.trim())).whereType<int>().toList();
+      }
+      return null;
+    }
+
     return UserMedication(
       id: json['id']?.toString(),
       name: json['name'] ?? '',
@@ -65,6 +84,12 @@ class UserMedication {
       imagePath: (json['imagePath'] ?? json['image'])?.toString(),
       recommendation: json['recommendation']?.toString(),
       notes: json['notes']?.toString(),
+      days: parseDays(json['days']),
+      remainingQuantity: json['remainingQuantity'] != null
+          ? int.tryParse(json['remainingQuantity'].toString())
+          : null,
+      startDate: json['startDate']?.toString(),
+      endDate: json['endDate']?.toString(),
     );
   }
 
@@ -82,6 +107,10 @@ class UserMedication {
     String? imagePath,
     String? recommendation,
     String? notes,
+    List<int>? days,
+    int? remainingQuantity,
+    String? startDate,
+    String? endDate,
   }) {
     return UserMedication(
       id: id ?? this.id,
@@ -98,6 +127,10 @@ class UserMedication {
       imagePath: imagePath ?? this.imagePath,
       recommendation: recommendation ?? this.recommendation,
       notes: notes ?? this.notes,
+      days: days ?? this.days,
+      remainingQuantity: remainingQuantity ?? this.remainingQuantity,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
     );
   }
 
@@ -116,6 +149,10 @@ class UserMedication {
       'imagePath': imagePath,
       'recommendation': recommendation,
       'notes': notes,
+      'days': days,
+      'remainingQuantity': remainingQuantity,
+      'startDate': startDate,
+      'endDate': endDate,
     };
   }
 }

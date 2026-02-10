@@ -357,7 +357,20 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
 
   Widget _buildMedicationCard(DailyIntake item) {
     final bool isTaken = item.status == IntakeStatus.TAKEN;
+    final bool isNotTaken = item.status == IntakeStatus.NOT_TAKEN;
+    final bool isMissed = item.status == IntakeStatus.MISSED;
+
+    // Check if overdue: status is OVERDUE/MISSED OR time has passed and status is PENDING
+    final bool isOverdue =
+        item.status == IntakeStatus.OVERDUE ||
+        item.status == IntakeStatus.MISSED ||
+        _isTimePassed(item.time) && item.status == IntakeStatus.PENDING;
+
     final resolvedPath = _resolveImagePath(item.imagePath);
+
+    final bool isLowQuantity =
+        item.remainingQuantity != null && item.remainingQuantity! < 7;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
@@ -403,38 +416,136 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${item.time.substring(0, 5)} น.',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
+
+                if (item.remainingQuantity != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.medication_liquid,
+                        size: 14,
+                        color: isLowQuantity ? Colors.red : Colors.grey[600],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'เหลือ ${item.remainingQuantity} เม็ด',
+                        style: TextStyle(
+                          color: isLowQuantity ? Colors.red : Colors.grey[600],
+                          fontSize: 13,
+                          fontWeight: isLowQuantity
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
           if (isTaken)
-            const Chip(
-              label: Text(
-                'ทานแล้ว',
-                style: TextStyle(color: Colors.white, fontSize: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2ECC71),
+                borderRadius: BorderRadius.circular(20),
               ),
-              backgroundColor: AppColors.success,
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'ทานแล้ว',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (isNotTaken)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[400],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'ไม่กินยา',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          else if (isMissed)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.cancel_outlined, color: Colors.white, size: 18),
+                  SizedBox(width: 4),
+                  Text(
+                    'Missed',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             )
           else
-            Chip(
-              label: Text(
-                'ยังไม่ทาน',
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isOverdue ? Colors.red : Colors.orange,
+                borderRadius: BorderRadius.circular(20),
               ),
-              backgroundColor: Colors.grey[200],
+              child: Text(
+                // ผู้ดูแล: Pending = "รอทาน" สีส้ม, ถ้าเลยเวลา = "เกินกำหนด" สีแดง
+                isOverdue ? 'เกินกำหนด' : 'รอทาน',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
         ],
       ),
     );
+  }
+
+  // Check if the scheduled time has passed
+  bool _isTimePassed(String time) {
+    try {
+      final now = DateTime.now();
+      final timeParts = time.split(':');
+      if (timeParts.length >= 2) {
+        final hour = int.tryParse(timeParts[0]) ?? 0;
+        final minute = int.tryParse(timeParts[1]) ?? 0;
+        final scheduleTime = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          hour,
+          minute,
+        );
+        return now.isAfter(scheduleTime);
+      }
+    } catch (e) {
+      print('Error checking time passed: $e');
+    }
+    return false;
   }
 
   List<DailyIntake> _getFilteredSchedule(String period) {

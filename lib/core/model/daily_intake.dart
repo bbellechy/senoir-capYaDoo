@@ -6,6 +6,8 @@ class DailyIntake {
   final String time;
   final IntakeStatus status;
   final String? imagePath;
+  final int? remainingQuantity;
+  final String? medicationId; // For matching with backend
 
   DailyIntake({
     required this.intakeId,
@@ -13,15 +15,69 @@ class DailyIntake {
     required this.time,
     required this.status,
     this.imagePath,
+    this.remainingQuantity,
+    this.medicationId,
   });
 
   factory DailyIntake.fromJson(Map<String, dynamic> json) {
+    // Backend sends 'id' instead of 'intakeId'
+    final intakeId = json['intakeId'] ?? json['id'] ?? '';
+
+    // Backend sends 'intakeTime' instead of 'time'
+    final time = json['time'] ?? json['intakeTime'] ?? '00:00:00';
+
+    // Get medicationId from medication object or medicationId field
+    String? medicationId;
+    if (json['medicationId'] != null) {
+      medicationId = json['medicationId'].toString();
+    } else if (json['medication'] != null) {
+      final medication = json['medication'];
+      if (medication is Map) {
+        medicationId = medication['id']?.toString();
+      }
+    }
+
+    // Backend may have medication object or medicationName directly
+    String medicationName = '';
+    if (json['medicationName'] != null) {
+      medicationName = json['medicationName'].toString();
+    } else if (json['medication'] != null) {
+      final medication = json['medication'];
+      if (medication is Map) {
+        medicationName = medication['name']?.toString() ?? '';
+      }
+    }
+
+    // Get remainingQuantity from medication if available
+    int? remainingQuantity;
+    if (json['remainingQuantity'] != null) {
+      remainingQuantity = int.tryParse(json['remainingQuantity'].toString());
+    } else if (json['medication'] != null && json['medication'] is Map) {
+      final medication = json['medication'] as Map;
+      if (medication['remainingQuantity'] != null) {
+        remainingQuantity = int.tryParse(
+          medication['remainingQuantity'].toString(),
+        );
+      }
+    }
+
+    // Get imagePath from medication if available
+    String? imagePath = json['imagePath']?.toString();
+    if (imagePath == null &&
+        json['medication'] != null &&
+        json['medication'] is Map) {
+      final medication = json['medication'] as Map;
+      imagePath = medication['imagePath']?.toString();
+    }
+
     return DailyIntake(
-      intakeId: json['intakeId'] ?? '',
-      medicationName: json['medicationName'] ?? '',
-      time: json['time'] ?? '00:00:00',
+      intakeId: intakeId,
+      medicationName: medicationName,
+      time: time,
       status: _parseStatus(json['status']),
-      imagePath: json['imagePath']?.toString(),
+      imagePath: imagePath,
+      remainingQuantity: remainingQuantity,
+      medicationId: medicationId,
     );
   }
 
@@ -48,6 +104,8 @@ class DailyIntake {
       'time': time,
       'status': status.name,
       'imagePath': imagePath,
+      'remainingQuantity': remainingQuantity,
+      'medicationId': medicationId,
     };
   }
 }

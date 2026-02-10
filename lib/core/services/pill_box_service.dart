@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/services/storage/token_storage.dart';
+import 'package:intl/intl.dart';
 import 'dart:async';
 
 class PillBoxService {
@@ -93,6 +94,9 @@ class PillBoxService {
         'name': box.name,
         'description': box.description ?? '',
         'medicationIds': box.medicationIds,
+        'days': box.days,
+        'intakePeriods': box.intakePeriods,
+        if (box.intakeTiming != null) 'intakeTiming': box.intakeTiming,
       };
 
       print('Request body: ${json.encode(body)}');
@@ -181,6 +185,9 @@ class PillBoxService {
         'name': box.name,
         'description': box.description,
         'medicationIds': box.medicationIds,
+        'days': box.days,
+        'intakePeriods': box.intakePeriods,
+        if (box.intakeTiming != null) 'intakeTiming': box.intakeTiming,
       };
 
       final response = await http.put(
@@ -267,18 +274,55 @@ class PillBoxService {
   }
 
   // Add medication to box using the specific POST endpoint
-  Future<bool> addMedicationToBox(String boxId, String medicationId) async {
+  // Supports: masterMedicationId, medicationName, or medicationId (user medication)
+  Future<bool> addMedicationToBox(
+    String boxId, {
+    String? masterMedicationId,
+    String? medicationName,
+    String? medicationId,
+  }) async {
     try {
       final token = await _getToken();
+
+      // Build query parameters
+      final queryParams = <String, String>{};
+      if (masterMedicationId != null) {
+        queryParams['masterMedicationId'] = masterMedicationId;
+      } else if (medicationName != null) {
+        queryParams['medicationName'] = medicationName;
+      } else if (medicationId != null) {
+        queryParams['medicationId'] = medicationId;
+      } else {
+        print('Error: No medication identifier provided');
+        return false;
+      }
+
+      final uri = Uri.parse(
+        '$_baseUrl/$boxId/medications',
+      ).replace(queryParameters: queryParams);
+
+      print('Adding medication to box: $uri');
+      print('Query params: $queryParams');
+
       final response = await http.post(
-        Uri.parse('$_baseUrl/$boxId/medications/$medicationId'),
+        uri,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
-      return response.statusCode == 200 || response.statusCode == 201;
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        print(
+          'Failed to add medication: ${response.statusCode} - ${response.body}',
+        );
+        return false;
+      }
     } catch (e) {
       print('Error adding medication to box: $e');
       return false;
@@ -355,6 +399,33 @@ class PillBoxService {
       return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  // Get daily medications for a specific box
+  Future<List<Map<String, dynamic>>> getDailyMedicationsForBox(
+    String boxId,
+    DateTime date,
+  ) async {
+    try {
+      final token = await _getToken();
+      final dateStr = DateFormat('yyyy-MM-dd').format(date);
+      final response = await http.get(
+        Uri.parse('$_baseUrl/$boxId/daily?date=$dateStr'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+        return data.map((e) => e as Map<String, dynamic>).toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching daily medications for box: $e');
+      return [];
     }
   }
 }

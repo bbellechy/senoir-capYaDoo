@@ -47,7 +47,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Fetch latest box contents from specific API
+      // 1. Fetch latest box contents from specific API (this will include updated medications)
       final boxDetails = await _pillBoxService.getBoxById(widget.pillBox.id!);
 
       // 2. Fetch all user medications
@@ -57,11 +57,21 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       }
 
       if (_userId != null) {
+        // Refresh user medications to get latest data
         final userMeds = await _searchService.searchUserMedications(_userId!);
         if (mounted) {
           setState(() {
-            if (boxDetails != null) _currentBox = boxDetails;
+            if (boxDetails != null) {
+              _currentBox = boxDetails;
+              print('Box medications: ${_currentBox.medicationIds}');
+            }
             _allUserMedications = userMeds;
+            print(
+              'All user medications: ${_allUserMedications.map((m) => m.id).toList()}',
+            );
+            print(
+              'Medications in box: ${_medicationsInBox.map((m) => m['name'] ?? 'ไม่ระบุชื่อ').toList()}',
+            );
             _isLoading = false;
           });
         }
@@ -80,10 +90,20 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
   }
 
   // Section 1: Medications in this box
-  List<UserMedication> get _medicationsInBox {
-    return _allUserMedications
+  // Use medications from box directly, or match with user medications if available
+  List<Map<String, dynamic>> get _medicationsInBox {
+    // If box has medications array, use it directly
+    if (_currentBox.medications.isNotEmpty) {
+      return _currentBox.medications;
+    }
+
+    // Otherwise, try to match with user medications
+    final matchedMeds = _allUserMedications
         .where((m) => _currentBox.medicationIds.contains(m.id))
+        .map((m) => {'id': m.id, 'name': m.displayName})
         .toList();
+
+    return matchedMeds;
   }
 
   Future<void> _removeMedicationFromBox(UserMedication med) async {
@@ -254,7 +274,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     PageNavigationService().setIndex(index);
   }
 
-  Widget _buildMedicationList(List<UserMedication> meds) {
+  Widget _buildMedicationList(List<Map<String, dynamic>> meds) {
     if (meds.isEmpty) {
       return Center(
         child: Padding(
@@ -295,7 +315,25 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       itemCount: meds.length,
       itemBuilder: (context, index) {
         final med = meds[index];
-        final resolvedPath = _resolveImagePath(med.imagePath);
+        final medId = med['id'] as String? ?? '';
+        final medName = med['name'] as String? ?? 'ไม่ระบุชื่อ';
+
+        // Try to find matching user medication for image
+        UserMedication? userMed;
+        try {
+          userMed = _allUserMedications.firstWhere((m) => m.id == medId);
+        } catch (e) {
+          try {
+            userMed = _allUserMedications.firstWhere(
+              (m) => m.displayName == medName,
+            );
+          } catch (e2) {
+            userMed = null;
+          }
+        }
+        final resolvedPath = userMed != null
+            ? _resolveImagePath(userMed.imagePath)
+            : null;
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(16),
@@ -337,26 +375,52 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      med.displayName,
+                      medName,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${med.dosage ?? "-"} ${med.unit ?? "-"}',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 8),
-                    // Timing tags
-                    Wrap(spacing: 8, children: _buildTimingTags(med)),
+                    if (userMed != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '${userMed.dosage ?? "-"} ${userMed.unit ?? "-"}',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      const SizedBox(height: 8),
+                      // Timing tags
+                      Wrap(spacing: 8, children: _buildTimingTags(userMed)),
+                    ],
                   ],
                 ),
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
-                onPressed: () => _removeMedicationFromBox(med),
+                onPressed: () {
+                  // Find user medication to remove
+                  UserMedication? userMedToRemove;
+                  try {
+                    userMedToRemove = _allUserMedications.firstWhere(
+                      (m) => m.id == medId,
+                    );
+                  } catch (e) {
+                    try {
+                      userMedToRemove = _allUserMedications.firstWhere(
+                        (m) => m.displayName == medName,
+                      );
+                    } catch (e2) {
+                      userMedToRemove = null;
+                    }
+                  }
+                  if (userMedToRemove != null) {
+                    _removeMedicationFromBox(userMedToRemove);
+                  } else {
+                    // If no user medication found, try to remove by ID directly
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('ไม่พบข้อมูลยา $medName')),
+                    );
+                  }
+                },
               ),
             ],
           ),
@@ -416,37 +480,55 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       builder: (context) => UnifiedSelectionDialog(
         userId: _userId!,
         title: 'เพิ่มยาลงในกล่อง',
-        showMasterMedications: false,
-        allowFreeText: false,
-        loadAllMedicationsOnOpen: true,
+        showMasterMedications: true,
+        showBoxes: false,
+        allowFreeText: true,
+        loadAllMedicationsOnOpen: false,
       ),
     );
 
     if (result != null) {
       final medName = result['name'] as String;
       final medId = result['id'] as String?;
+      final type = result['type'] as String?;
 
-      if (medId != null) {
-        // Adding existing medication
-        setState(() => _isLoading = true);
-        final success = await _controller.addMedicationToBox(
+      setState(() => _isLoading = true);
+
+      bool success = false;
+
+      if (type == 'user_medication' && medId != null) {
+        // Already a user medication - use medicationId parameter
+        success = await _controller.addMedicationToBox(
           _currentBox.id!,
-          medId,
+          medicationId: medId,
         );
-        if (success) {
-          await _loadData();
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('เพิ่ม $medName แล้ว')));
-          }
-        } else {
-          setState(() => _isLoading = false);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('ไม่สามารถเพิ่มยาได้')),
-            );
-          }
+      } else if (type == 'medication' && medId != null) {
+        // Master medication - use masterMedicationId parameter
+        success = await _controller.addMedicationToBox(
+          _currentBox.id!,
+          masterMedicationId: medId,
+        );
+      } else if (type == 'manual' || (type == null && medId == null)) {
+        // Manual input - use medicationName parameter
+        success = await _controller.addMedicationToBox(
+          _currentBox.id!,
+          medicationName: medName,
+        );
+      }
+
+      if (success) {
+        await _loadData();
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('เพิ่ม $medName แล้ว')));
+        }
+      } else {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(_controller.error ?? 'ไม่สามารถเพิ่มยาได้')),
+          );
         }
       }
     }

@@ -4,8 +4,6 @@ import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/features/pillbox/controller/pill_box_controller.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_add_page.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_detail_page.dart';
-import 'package:capyadoo/core/widgets/app_nav_bar.dart';
-import 'package:capyadoo/core/services/page_navigation_service.dart';
 
 class PillBoxListPage extends StatefulWidget {
   const PillBoxListPage({super.key});
@@ -99,42 +97,25 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryBlue,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'กล่องยา',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Sarabun',
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Column(
         children: [
-          // Blue header
-          Container(
-            height: 140,
-            decoration: const BoxDecoration(color: AppColors.primaryBlue),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 30,
-                      right: 30,
-                      bottom: 20,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'กล่องยา',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'Sarabun',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -295,12 +276,6 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
           ),
         ],
       ),
-      bottomNavigationBar: AppNavBar(currentIndex: 0, onTap: _onNavBarTap),
     );
-  }
-
-  void _onNavBarTap(int index) {
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    PageNavigationService().setIndex(index);
   }
 }

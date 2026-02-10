@@ -6,6 +6,8 @@ import 'package:capyadoo/core/model/user.dart';
 import 'package:capyadoo/core/providers/auth_provider.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_list_page.dart';
 import 'package:capyadoo/features/care/presentation/pages/care_management_page.dart';
+import 'package:capyadoo/core/services/pill_box_service.dart';
+import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -19,6 +21,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   DateTime _selectedDate = DateTime.now();
   List<DailyIntake> _schedule = [];
+  List<MedicationBox> _boxes = [];
+  Map<String, List<Map<String, dynamic>>> _boxDailyMedications = {};
+  final PillBoxService _pillBoxService = PillBoxService();
   bool _isLoading = true;
 
   @override
@@ -42,9 +47,37 @@ class _HomePageState extends State<HomePage> {
     }
     await Future.wait([
       _loadSchedule(showLoading: false),
+      _loadBoxes(),
       _checkOverdueStatus(), // Check for late medications
     ]);
     if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _loadBoxes() async {
+    try {
+      final boxes = await _pillBoxService.getAllPillBoxes();
+      if (mounted) {
+        setState(() {
+          _boxes = boxes;
+        });
+        // Load daily medications for each box
+        for (final box in boxes) {
+          if (box.id != null) {
+            final dailyMeds = await _pillBoxService.getDailyMedicationsForBox(
+              box.id!,
+              _selectedDate,
+            );
+            if (mounted) {
+              setState(() {
+                _boxDailyMedications[box.id!] = dailyMeds;
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('Error loading boxes: $e');
+    }
   }
 
   Future<void> _checkOverdueStatus() async {
@@ -56,8 +89,12 @@ class _HomePageState extends State<HomePage> {
         return;
       }
 
+      bool hasChanges = false;
       for (final item in _schedule) {
-        if (item.status == IntakeStatus.PENDING) {
+        // Only check items with valid UUID intakeId (from backend)
+        if (item.status == IntakeStatus.PENDING &&
+            !item.intakeId.contains('_') &&
+            item.intakeId.isNotEmpty) {
           final timeParts = item.time.split(':');
           if (timeParts.length >= 2) {
             final hour = int.tryParse(timeParts[0]) ?? 0;
@@ -70,14 +107,18 @@ class _HomePageState extends State<HomePage> {
               minute,
             );
 
-            if (now.difference(scheduleTime).inMinutes > 15) {
+            // If current time has passed the scheduled time, mark as overdue
+            if (now.isAfter(scheduleTime)) {
               await MedicationScheduleService.markAsOverdue(item.intakeId);
+              hasChanges = true;
             }
           }
         }
       }
       // Reload if any changes might have happened
-      await _loadSchedule(showLoading: false);
+      if (hasChanges) {
+        await _loadSchedule(showLoading: false);
+      }
     } catch (e) {
       print('Error checking overdue status: $e');
     }
@@ -99,9 +140,11 @@ class _HomePageState extends State<HomePage> {
       if (mounted) {
         setState(() {
           _schedule = data;
-          _isLoading = false;
+          if (!showLoading) _isLoading = false;
         });
       }
+      // Reload boxes for the new date
+      await _loadBoxes();
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -138,10 +181,16 @@ class _HomePageState extends State<HomePage> {
       _loadSchedule(showLoading: false);
     } else {
       if (mounted) {
+        final extraMsg =
+            (result.message != null && result.message!.trim().isNotEmpty)
+            ? ' - ${result.message}'
+            : '';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'ไม่สามารถบันทึกข้อมูลได้ (Status: ${result.statusCode})',
+              result.statusCode == 403
+                  ? 'ไม่มีสิทธิ์ดำเนินการ (403)$extraMsg'
+                  : 'ไม่สามารถบันทึกข้อมูลได้ (Status: ${result.statusCode})$extraMsg',
             ),
             backgroundColor: Colors.red,
             action: SnackBarAction(
@@ -153,6 +202,52 @@ class _HomePageState extends State<HomePage> {
         );
       }
     }
+  }
+
+  Future<void> _markAsTakenSmart(DailyIntake item) async {
+    // ถ้าเป็น id แบบ generated (medId_date_time) ให้พยายาม resolve UUID จาก backend ก่อน
+    String intakeId = item.intakeId;
+
+    if (intakeId.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ข้อมูลไม่ถูกต้อง (Missing ID)'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (intakeId.contains('_')) {
+      final medicationId = item.medicationId;
+      final resolved = await MedicationScheduleService.resolveBackendIntakeId(
+        medicationId: medicationId,
+        medicationName: item.medicationName,
+        date: _selectedDate,
+        time: item.time,
+      );
+      if (resolved != null && resolved.isNotEmpty) {
+        intakeId = resolved;
+      }
+    }
+
+    // ถ้ายัง resolve ไม่ได้ ให้แจ้งผู้ใช้ และรีเฟรชตารางอีกครั้ง
+    if (intakeId.contains('_')) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ระบบยังไม่สร้างรายการวันนี้ กรุณาลองใหม่อีกครั้ง'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      _loadSchedule(showLoading: false);
+      return;
+    }
+
+    await _markAsTaken(intakeId, item.medicationName);
   }
 
   @override
@@ -299,7 +394,7 @@ class _HomePageState extends State<HomePage> {
                   setState(() {
                     _selectedDate = date;
                   });
-                  _loadSchedule();
+                  _loadData();
                 },
                 child: Container(
                   width: 50,
@@ -474,6 +569,18 @@ class _HomePageState extends State<HomePage> {
     IconData icon,
     List<DailyIntake> items,
   ) {
+    // Get boxes for this period
+    final periodMap = {
+      'morning': 'MORNING',
+      'afternoon': 'NOON',
+      'evening': 'EVENING',
+      'night': 'BEDTIME',
+    };
+    final period = periodMap[title.toLowerCase()] ?? '';
+
+    final boxItems = _getBoxesForPeriod(period);
+    final totalCount = items.length + boxItems.length;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -506,7 +613,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   Text(
-                    count,
+                    '$totalCount รายการ',
                     style: TextStyle(color: Colors.grey[600], fontSize: 13),
                   ),
                 ],
@@ -514,7 +621,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 16),
-          if (items.isEmpty)
+          if (items.isEmpty && boxItems.isEmpty)
             Center(
               child: Column(
                 children: [
@@ -531,19 +638,351 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             )
-          else
+          else ...[
             ...items.map((item) => _buildMedicationCard(item)).toList(),
+            ...boxItems
+                .map(
+                  (boxItem) => _buildBoxCard(
+                    boxItem['box'] as MedicationBox,
+                    boxItem['medications'] as List<Map<String, dynamic>>,
+                    period,
+                  ),
+                )
+                .toList(),
+          ],
         ],
       ),
     );
   }
 
+  List<Map<String, dynamic>> _getBoxesForPeriod(String period) {
+    final result = <Map<String, dynamic>>[];
+    for (final box in _boxes) {
+      if (box.intakePeriods.contains(period)) {
+        final dailyMeds = _boxDailyMedications[box.id] ?? [];
+        // Filter medications by period
+        final filteredMeds = dailyMeds.where((med) {
+          final medPeriod = med['intakePeriod'] as String?;
+          return medPeriod == period;
+        }).toList();
+
+        // If no daily medications, use medications from box
+        if (filteredMeds.isNotEmpty) {
+          result.add({'box': box, 'medications': filteredMeds});
+        } else if (box.medications.isNotEmpty) {
+          // Use medications from box array, create daily medication structure
+          final boxMeds = box.medications.map((med) {
+            return {
+              'id': med['id'] ?? '',
+              'medicationName': med['name'] ?? 'ไม่ระบุชื่อ',
+              'intakePeriod': period,
+              'status': 'PENDING',
+              'scheduledTime': _getDefaultTimeForPeriod(period),
+            };
+          }).toList();
+          result.add({'box': box, 'medications': boxMeds});
+        }
+      }
+    }
+    return result;
+  }
+
+  String _getDefaultTimeForPeriod(String period) {
+    switch (period) {
+      case 'MORNING':
+        return '08:00';
+      case 'NOON':
+        return '12:00';
+      case 'EVENING':
+        return '18:00';
+      case 'BEDTIME':
+        return '22:00';
+      default:
+        return '08:00';
+    }
+  }
+
+  Widget _buildBoxCard(
+    MedicationBox box,
+    List<Map<String, dynamic>> medications,
+    String period,
+  ) {
+    // Get time from first medication or use box default
+    final firstMed = medications.isNotEmpty ? medications.first : null;
+    final timeStr = firstMed?['scheduledTime'] as String? ?? '08:00';
+    final intakeId = firstMed?['id'] as String? ?? '';
+    final status = firstMed?['status'] as String? ?? 'PENDING';
+
+    final isTaken = status == 'TAKEN';
+    final isNotTaken = status == 'NOT_TAKEN';
+    final isMissed = status == 'MISSED';
+    final isOverdue =
+        status == 'OVERDUE' ||
+        (status == 'PENDING' && _isTimePassedForSelectedDate(timeStr));
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.inventory_2_outlined,
+                size: 20,
+                color: Colors.blue,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  box.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+              const CircleAvatar(
+                radius: 16,
+                backgroundColor: Colors.grey,
+                child: Icon(Icons.person, size: 16, color: Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // List medications in box
+          ...medications.map((med) {
+            final medName = med['medicationName'] as String? ?? 'ไม่ระบุชื่อ';
+            final medDosage = med['dosage'] as num?;
+            final medUnit = med['unit'] as String? ?? 'เม็ด';
+            final medStatus = med['status'] as String? ?? 'PENDING';
+            final isMedTaken = medStatus == 'TAKEN';
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.medication_outlined,
+                    size: 16,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '$medName ${medDosage != null ? '($medDosage $medUnit)' : ''}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                        decoration: isMedTaken
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                    ),
+                  ),
+                  if (isMedTaken)
+                    const Icon(
+                      Icons.check_circle,
+                      size: 16,
+                      color: Colors.green,
+                    ),
+                ],
+              ),
+            );
+          }),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+              const SizedBox(width: 4),
+              Text(
+                '${timeStr.substring(0, 5)} น.',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              ),
+              const Spacer(),
+              if (isTaken)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2ECC71),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'ทานแล้ว',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (isNotTaken)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'ไม่กินยา',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              else if (isMissed)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.cancel_outlined,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'Missed',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ElevatedButton(
+                  onPressed: isOverdue
+                      ? null
+                      : () => _markBoxAsTaken(intakeId, box.name),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isOverdue
+                        ? Colors.red
+                        : const Color(0xFF2196F3),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                  ),
+                  child: Text(
+                    isOverdue ? 'เกินกำหนด' : 'ยืนยันการทาน',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _markBoxAsTaken(String intakeId, String boxName) async {
+    if (intakeId.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ข้อมูลไม่ถูกต้อง (Missing ID)'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    final result = await MedicationScheduleService.markAsTakenWithResponse(
+      intakeId,
+    );
+
+    if (result.success) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('บันทึกการทาน $boxName เรียบร้อยแล้ว'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      _loadData();
+    } else {
+      if (mounted) {
+        final extraMsg =
+            (result.message != null && result.message!.trim().isNotEmpty)
+            ? ' - ${result.message}'
+            : '';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result.statusCode == 403
+                  ? 'ไม่มีสิทธิ์ดำเนินการ (403)$extraMsg'
+                  : 'ไม่สามารถบันทึกข้อมูลได้ (Status: ${result.statusCode})$extraMsg',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildMedicationCard(DailyIntake item) {
     final bool isTaken = item.status == IntakeStatus.TAKEN;
-    final bool isOverdue =
-        item.status == IntakeStatus.OVERDUE ||
-        item.status == IntakeStatus.MISSED;
     final bool isNotTaken = item.status == IntakeStatus.NOT_TAKEN;
+    final bool isMissed = item.status == IntakeStatus.MISSED;
+
+    // Check if overdue: only for today and only if time has passed and status is PENDING
+    // Don't mark as overdue if already TAKEN or NOT_TAKEN
+    final bool isOverdue =
+        !isTaken &&
+        !isNotTaken &&
+        (item.status == IntakeStatus.OVERDUE ||
+            item.status == IntakeStatus.MISSED ||
+            (_isTimePassedForSelectedDate(item.time) &&
+                item.status == IntakeStatus.PENDING));
+
+    final bool isLowQuantity =
+        item.remainingQuantity != null && item.remainingQuantity! < 7;
+
+    // (เดิมเคยใช้ตรวจ intakeId แบบ UUID แต่ตอนนี้ Pending ต้องแสดงปุ่มยืนยันเสมอ)
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -581,19 +1020,31 @@ class _HomePageState extends State<HomePage> {
                       '${item.time.substring(0, 5)} น.',
                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
-                    if (isOverdue) ...[
-                      const SizedBox(width: 8),
-                      const Text(
-                        '(เกินกำหนด)',
+                  ],
+                ),
+                if (item.remainingQuantity != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.medication_liquid,
+                        size: 14,
+                        color: isLowQuantity ? Colors.red : Colors.grey[600],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'เหลือ ${item.remainingQuantity} เม็ด',
                         style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          color: isLowQuantity ? Colors.red : Colors.grey[600],
+                          fontSize: 13,
+                          fontWeight: isLowQuantity
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     ],
-                  ],
-                ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -637,12 +1088,37 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             )
+          else if (isMissed)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.cancel_outlined, color: Colors.white, size: 18),
+                  SizedBox(width: 4),
+                  Text(
+                    'Missed',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            )
           else
             ElevatedButton(
-              onPressed: () => _markAsTaken(item.intakeId, item.medicationName),
+              // Pending = ปุ่มฟ้า "ยืนยันการทาน"
+              // ถ้าเลยเวลา = แดง "เกินกำหนด" และปิดกด
+              onPressed: isOverdue ? null : () => _markAsTakenSmart(item),
               style: ElevatedButton.styleFrom(
+                // Pending = ปุ่มสีฟ้า "ยืนยันการทาน"
+                // ถ้าเลยเวลา/เกินกำหนด = สีแดง
                 backgroundColor: isOverdue
-                    ? Colors.orange
+                    ? Colors.red
                     : const Color(0xFF2196F3),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
@@ -654,13 +1130,49 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               child: Text(
-                isOverdue ? 'ทานล่าช้า' : 'ยืนยันการทาน',
+                isOverdue ? 'เกินกำหนด' : 'ยืนยันการทาน',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
         ],
       ),
     );
+  }
+
+  // Check if the scheduled time has passed
+  // Check if time has passed for the selected date (not today)
+  bool _isTimePassedForSelectedDate(String time) {
+    try {
+      final now = DateTime.now();
+      final selectedDateOnly = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+      );
+      final todayOnly = DateTime(now.year, now.month, now.day);
+
+      // Only check overdue if selected date is today
+      if (selectedDateOnly != todayOnly) {
+        return false;
+      }
+
+      final timeParts = time.split(':');
+      if (timeParts.length >= 2) {
+        final hour = int.tryParse(timeParts[0]) ?? 0;
+        final minute = int.tryParse(timeParts[1]) ?? 0;
+        final scheduleTime = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          hour,
+          minute,
+        );
+        return now.isAfter(scheduleTime);
+      }
+    } catch (e) {
+      print('Error checking time passed: $e');
+    }
+    return false;
   }
 
   List<DailyIntake> _getFilteredSchedule(String period) {

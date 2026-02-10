@@ -6,11 +6,13 @@ import 'package:capyadoo/core/widgets/app_image_picker.dart';
 import 'package:capyadoo/core/widgets/app_text_field.dart';
 import 'package:capyadoo/core/widgets/app_radio_button.dart';
 import 'package:capyadoo/core/widgets/app_checkbox.dart';
-import 'package:capyadoo/core/widgets/app_searchable_dropdown.dart';
 import 'package:capyadoo/core/widgets/app_date_picker.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/services/medication_service.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
+import 'package:capyadoo/core/widgets/app_searchable_dropdown.dart';
+import 'package:capyadoo/features/notifications/presentation/widgets/day_selector_widget.dart';
+import 'package:capyadoo/features/notifications/presentation/widgets/unified_selection_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
@@ -39,13 +41,54 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _frequencyController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
-  List<Map<String, dynamic>> _masterMedicationOptions = [];
+  final TextEditingController _quantityController = TextEditingController();
+  List<int> _selectedDays = [];
+  DateTime? _startDate;
+  DateTime? _endDate;
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
     _loadInitialData();
-    _loadMasterMedications();
+    _loadUserId();
+  }
+
+  Future<void> _loadUserId() async {
+    final profile = await AuthService.getProfile();
+    if (mounted) {
+      setState(() {
+        _userId = profile?.id;
+      });
+    }
+  }
+
+  Future<void> _showMedicationSelectionDialog() async {
+    if (_userId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ไม่พบข้อมูลผู้ใช้')));
+      return;
+    }
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => UnifiedSelectionDialog(
+        userId: _userId!,
+        title: 'เลือกยา',
+        showMasterMedications: true,
+        showBoxes: false,
+        allowFreeText: true,
+        loadAllMedicationsOnOpen: false,
+      ),
+    );
+
+    if (result != null) {
+      final medName = result['name'] as String;
+      setState(() {
+        _medicineName = medName;
+      });
+    }
   }
 
   @override
@@ -53,16 +96,8 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
     _amountController.dispose();
     _frequencyController.dispose();
     _notesController.dispose();
+    _quantityController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadMasterMedications() async {
-    final names = await MedicationService.getAllMasterMedicationNames();
-    if (mounted) {
-      setState(() {
-        _masterMedicationOptions = names;
-      });
-    }
   }
 
   Future<void> _loadInitialData() async {
@@ -111,6 +146,14 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                 .toList() ??
             [];
         String? initialNotes = med.notes ?? '';
+        List<int> initialDays = med.days ?? [];
+        int? initialQuantity = med.remainingQuantity;
+        DateTime? initialStartDate = med.startDate != null
+            ? DateTime.tryParse(med.startDate!)
+            : null;
+        DateTime? initialEndDate = med.endDate != null
+            ? DateTime.tryParse(med.endDate!)
+            : null;
 
         File? resolvedSelectedImage;
         String? resolvedInitialImageUrl;
@@ -158,6 +201,10 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
           _notesController.text = _additionalNotes;
           _selectedImage = resolvedSelectedImage;
           _initialImageUrl = resolvedInitialImageUrl;
+          _selectedDays = initialDays;
+          _quantityController.text = initialQuantity?.toString() ?? '';
+          _startDate = initialStartDate;
+          _endDate = initialEndDate;
         });
       }
     } catch (e) {
@@ -239,29 +286,78 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Medicine name
-                    AppSearchableDropdown<String>(
-                      label: 'ชื่อยา',
-                      hint: 'เลือกหรือค้นหายา',
-                      value: _medicineName,
-                      isRequired: true,
-                      allowCustomInput: true,
-                      items: _masterMedicationOptions.map((m) {
-                        final th = m['tradenameTh'];
-                        final en = m['tradenameEn'];
-                        final label = (th != null && en != null)
-                            ? '$th ($en)'
-                            : (th ?? en ?? 'ไม่ระบุชื่อ');
-                        return SearchableDropdownItem<String>(
-                          value: (th ?? en ?? '').toString(),
-                          label: label.toString(),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _medicineName = value;
-                        });
-                      },
+                    // Medicine name with popup
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text(
+                              'ชื่อยา',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Text(
+                              ' *',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: _showMedicationSelectionDialog,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _medicineName == null
+                                    ? Colors.grey[300]!
+                                    : AppColors.primaryBlue,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    _medicineName ?? 'เลือกหรือค้นหายา',
+                                    style: TextStyle(
+                                      color: _medicineName != null
+                                          ? Colors.black87
+                                          : Colors.grey[500],
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.grey[600],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (_medicineName == null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4, left: 12),
+                            child: Text(
+                              'กรุณาระบุชื่อยา',
+                              style: TextStyle(
+                                color: Colors.red[700],
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 24),
 
@@ -344,6 +440,83 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                       onChanged: (value) {
                         setState(() {
                           _frequency = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Days of week selector
+                    Row(
+                      children: [
+                        const Text(
+                          'วันที่ต้องทานยา',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Text(
+                          ' *',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    DaySelectorWidget(
+                      selectedDays: _selectedDays,
+                      onDaysChanged: (days) {
+                        setState(() {
+                          _selectedDays = days;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Total quantity
+                    AppTextField(
+                      controller: _quantityController,
+                      label: 'จำนวนยาทั้งหมด',
+                      hint: 'ระบุจำนวน (เช่น 30)',
+                      keyboardType: TextInputType.number,
+                      isRequired: true,
+                      onChanged: (value) {
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Start date
+                    AppDatePicker(
+                      label: 'วันที่เริ่มทานยา',
+                      hint: 'เลือกวันที่',
+                      selectedDate: _startDate,
+                      firstDate: DateTime.now().subtract(
+                        const Duration(days: 365),
+                      ),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                      isRequired: true,
+                      onDateSelected: (date) {
+                        setState(() {
+                          _startDate = date;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    // End date (optional)
+                    AppDatePicker(
+                      label: 'วันที่สิ้นสุดการทานยา (ไม่บังคับ)',
+                      hint: 'เลือกวันที่ (ถ้ามี)',
+                      selectedDate: _endDate,
+                      firstDate: _startDate ?? DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 3650)),
+                      onDateSelected: (date) {
+                        setState(() {
+                          _endDate = date;
                         });
                       },
                     ),
@@ -607,11 +780,46 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
       final profile = await AuthService.getProfile();
       if (profile == null) throw Exception('User not logged in');
 
+      // Validation
+      if (_medicineName == null || _medicineName!.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('กรุณาเลือกหรือระบุชื่อยา')),
+        );
+        setState(() => _isSubmitting = false);
+        return;
+      }
+
+      if (_selectedDays.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('กรุณาเลือกวันที่ต้องทานยา')),
+        );
+        setState(() => _isSubmitting = false);
+        return;
+      }
+
+      final quantityValue = int.tryParse(_quantityController.text);
+      if (quantityValue == null || quantityValue <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('กรุณาระบุจำนวนยาทั้งหมด')),
+        );
+        setState(() => _isSubmitting = false);
+        return;
+      }
+
+      if (_startDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('กรุณาเลือกวันที่เริ่มทานยา')),
+        );
+        setState(() => _isSubmitting = false);
+        return;
+      }
+
       final dosageValue = double.tryParse(_amount) ?? 0.0;
       final timesValue = int.tryParse(_frequency) ?? 0;
 
       // ส่ง imagePath เฉพาะเมื่อเป็น URL จาก server (backend ไม่รองรับ local path)
-      final imagePathForApi = (_selectedImage == null && _initialImageUrl != null)
+      final imagePathForApi =
+          (_selectedImage == null && _initialImageUrl != null)
           ? _initialImageUrl
           : null;
 
@@ -643,6 +851,11 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
         'recommendation': _recommendations.join(', '),
         'notes': _additionalNotes,
         'userId': profile.id,
+        'days': _selectedDays,
+        'remainingQuantity': quantityValue,
+        'startDate': _startDate!.toIso8601String().split('T')[0],
+        if (_endDate != null)
+          'endDate': _endDate!.toIso8601String().split('T')[0],
         if (imagePathForApi != null) 'imagePath': imagePathForApi,
       };
 

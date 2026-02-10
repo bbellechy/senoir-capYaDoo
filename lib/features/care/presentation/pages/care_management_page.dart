@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/widgets/app_input_text.dart';
-import 'package:capyadoo/core/widgets/app_nav_bar.dart';
-import 'package:capyadoo/core/services/page_navigation_service.dart';
 import 'package:capyadoo/features/care/controller/care_controller.dart';
 import 'package:capyadoo/core/model/care_models.dart';
+import 'package:capyadoo/core/services/care_service.dart';
 import 'package:capyadoo/features/care/presentation/pages/patient_detail_page.dart';
 
 class CareManagementPage extends StatefulWidget {
@@ -37,6 +36,47 @@ class _CareManagementPageState extends State<CareManagementPage> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _removePatient(Patient patient) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ยืนยันการลบ'),
+        content: Text('คุณต้องการลบ ${patient.fullName} ออกจากรายการผู้ดูแลใช่หรือไม่?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('ยกเลิก'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final success = await CareService.removePatient(patient.patientId);
+      if (success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('ลบผู้ดูแลเรียบร้อยแล้ว')),
+          );
+          _controller.loadData();
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('ไม่สามารถลบผู้ดูแลได้'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _sendRequest() async {
     final username = _searchController.text.trim();
     if (username.isEmpty) return;
@@ -61,58 +101,29 @@ class _CareManagementPageState extends State<CareManagementPage> {
     }
   }
 
-  void _onNavBarTap(int index) {
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    PageNavigationService().setIndex(index);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAF8),
-      bottomNavigationBar: AppNavBar(
-        currentIndex: 0,
-        onTap: _onNavBarTap,
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryBlue,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'ผู้ดูแลและผู้ใช้งาน',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Sarabun',
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Column(
         children: [
-          // Blue header
-          Container(
-            height: 140,
-            decoration: const BoxDecoration(color: AppColors.primaryBlue),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 30,
-                      right: 30,
-                      bottom: 20,
-                    ),
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'ผู้ดูแลและผู้ใช้งาน',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'Sarabun',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
           // Main Content
           Expanded(
             child: _controller.isLoading
@@ -435,9 +446,7 @@ class _CareManagementPageState extends State<CareManagementPage> {
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: AppColors.error),
-            onPressed: () {
-              // Unlink logic (TBD)
-            },
+            onPressed: () => _removePatient(patient),
           ),
         ],
       ),

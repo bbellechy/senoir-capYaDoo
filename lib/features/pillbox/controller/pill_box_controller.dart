@@ -34,18 +34,30 @@ class PillBoxController extends ChangeNotifier {
     String name,
     String? description,
     File? imageFile,
+    List<int> days,
+    List<String> intakePeriods,
+    String intakeTiming,
   ) async {
     print('=== Controller: addPillBox called ===');
     print('Name: $name');
     print('Description: $description');
     print('Has image: ${imageFile != null}');
+    print('Days: $days');
+    print('IntakePeriods: $intakePeriods');
+    print('IntakeTiming: $intakeTiming');
 
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final newBox = MedicationBox(name: name, description: description);
+      final newBox = MedicationBox(
+        name: name,
+        description: description,
+        days: days,
+        intakePeriods: intakePeriods,
+        intakeTiming: intakeTiming,
+      );
 
       print('Controller: Calling service.createPillBox...');
       final created = await _service.createPillBox(newBox, imageFile);
@@ -137,19 +149,21 @@ class PillBoxController extends ChangeNotifier {
     }
   }
 
-  Future<bool> addMedicationToBox(String boxId, String medicationId) async {
-    final success = await _service.addMedicationToBox(boxId, medicationId);
+  Future<bool> addMedicationToBox(
+    String boxId, {
+    String? masterMedicationId,
+    String? medicationName,
+    String? medicationId,
+  }) async {
+    final success = await _service.addMedicationToBox(
+      boxId,
+      masterMedicationId: masterMedicationId,
+      medicationName: medicationName,
+      medicationId: medicationId,
+    );
     if (success) {
-      final index = _pillBoxes.indexWhere((b) => b.id == boxId);
-      if (index != -1) {
-        final box = _pillBoxes[index];
-        if (!box.medicationIds.contains(medicationId)) {
-          final updatedMedIds = List<String>.from(box.medicationIds)
-            ..add(medicationId);
-          _pillBoxes[index] = box.copyWith(medicationIds: updatedMedIds);
-          notifyListeners();
-        }
-      }
+      // Reload boxes to get updated medication list
+      await loadPillBoxes();
     }
     return success;
   }
