@@ -97,13 +97,14 @@ class AppRouter {
           builder: (_) => AddMedicinePage(medicationId: medicationId),
           settings: settings,
         );
-      case addSymptomRoute: {
-        final symptom = settings.arguments as SymptomRecord?;
-        return MaterialPageRoute(
-          builder: (_) => AddSymptomPage(symptomId: symptom?.id),
-          settings: settings,
-        );
-      }
+      case addSymptomRoute:
+        {
+          final symptom = settings.arguments as SymptomRecord?;
+          return MaterialPageRoute(
+            builder: (_) => AddSymptomPage(symptomId: symptom?.id),
+            settings: settings,
+          );
+        }
       case notificationsRoute:
         return MaterialPageRoute(
           builder: (_) => const NotificationListPage(),

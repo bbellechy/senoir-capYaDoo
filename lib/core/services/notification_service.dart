@@ -45,12 +45,14 @@ class NotificationService {
 
     await androidPlugin?.createNotificationChannel(
       const AndroidNotificationChannel(
-        'medication_channel_v2',
-        'Medication Reminders',
-        description: 'Notifications for medication reminders',
+        'alarm_channel_v1',
+        'Alarm Notifications',
+        description: 'Notifications for alarms and reminders',
         importance: Importance.max,
         playSound: true,
+        sound: RawResourceAndroidNotificationSound('alarm_sound'),
         enableVibration: true,
+        enableLights: true,
       ),
     );
 
@@ -76,23 +78,26 @@ class NotificationService {
 
   @pragma('vm:entry-point')
   static void notificationTapBackground(NotificationResponse response) {
+    // Background isolate needs its own timezone initialization
+    tz.initializeTimeZones();
     _handleNotificationAction(response);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> _handleNotificationAction(
     NotificationResponse response,
   ) async {
     print('NotificationService: Handling action: ${response.actionId}');
-    if (response.actionId == 'taken') {
+    if (response.actionId == 'stop') {
       final String? payload = response.payload;
       if (payload != null) {
-        print('NotificationService: Marking as taken for payload: $payload');
-        // Payload format: "$notificationId|$day|$hour|$minute|$intakeId"
+        print('NotificationService: Stop requested for payload: $payload');
         final parts = payload.split('|');
         if (parts.length >= 5) {
           final intakeId = parts[4];
           if (intakeId.isNotEmpty && intakeId != 'null') {
             try {
+              // Marking as taken when "Stop" is pressed, per common alarm/medication flow
               final success = await MedicationScheduleService.markAsTaken(
                 intakeId,
               );
@@ -101,25 +106,45 @@ class NotificationService {
               print('NotificationService: Error marking as taken: $e');
             }
           }
+          final id = int.tryParse(parts[0]) ?? 0;
+          await _notificationsPlugin.cancel(id);
         }
       }
-    } else if (response.actionId == 'not_taken') {
-      print('NotificationService: User marked as not taken yet');
+    } else if (response.actionId == 'snooze') {
+      print('NotificationService: Snooze requested');
       final String? payload = response.payload;
       if (payload != null) {
+        // payload: "$notificationId|$day|$hour|$minute|$intakeId"
         final parts = payload.split('|');
         if (parts.length >= 5) {
-          final intakeId = parts[4];
-          if (intakeId.isNotEmpty && intakeId != 'null') {
-            try {
-              final success = await MedicationScheduleService.markAsMissed(
-                intakeId,
-              );
-              print('NotificationService: Not Taken marker result: $success');
-            } catch (e) {
-              print('NotificationService: Error marking as missed: $e');
-            }
-          }
+          final id = int.tryParse(parts[0]) ?? 0;
+
+          // Reschedule in 10 minutes
+          final snoozeTime = tz.TZDateTime.now(
+            tz.local,
+          ).add(const Duration(minutes: 10));
+
+          print('NotificationService: Scheduling snooze for $snoozeTime');
+
+          await _notificationsPlugin.zonedSchedule(
+            id + 2000, // Use a higher offset for snooze to avoid collisions
+            'เตือนใหม่: เตือนกินยา',
+            'รบกวนรับประทานยาที่คุณตั้งค่าไว้ (เลื่อนมา 10 นาที)',
+            snoozeTime,
+            NotificationDetails(
+              android: _getAlarmAndroidDetails(
+                'เตือนใหม่: เตือนกินยา',
+                'รบกวนรับประทานยาที่คุณตั้งค่าไว้ (เลื่อนมา 10 นาที)',
+              ),
+            ),
+            payload: payload,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+          );
+
+          await _notificationsPlugin.cancel(id);
+          print('NotificationService: Snoozed successfully. Canceled ID: $id');
         }
       }
     }
@@ -150,16 +175,46 @@ class NotificationService {
   static List<AndroidNotificationAction> _getActions() {
     return [
       const AndroidNotificationAction(
-        'taken',
-        'Taken',
+        'stop',
+        'หยุด (Stop)',
         showsUserInterface: true,
       ),
       const AndroidNotificationAction(
-        'not_taken',
-        'Not Taken Yet',
+        'snooze',
+        'เตือนใหม่ในอีก 10 นาที (Snooze)',
         showsUserInterface: false,
       ),
     ];
+  }
+
+  static AndroidNotificationDetails _getAlarmAndroidDetails(
+    String title,
+    String body, {
+    ByteArrayAndroidBitmap? imageBytes,
+  }) {
+    return AndroidNotificationDetails(
+      'alarm_channel_v1',
+      'Alarm Notifications',
+      channelDescription: 'Notifications for alarms and reminders',
+      importance: Importance.max,
+      priority: Priority.max,
+      fullScreenIntent: true,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      category: AndroidNotificationCategory.alarm,
+      ongoing: true,
+      autoCancel: false,
+      sound: const RawResourceAndroidNotificationSound('alarm_sound'),
+      styleInformation: imageBytes != null
+          ? BigPictureStyleInformation(
+              imageBytes,
+              largeIcon: imageBytes,
+              contentTitle: title,
+              summaryText: body,
+            )
+          : null,
+      largeIcon: imageBytes,
+      actions: _getActions(),
+    );
   }
 
   static Future<void> showNotification({
@@ -169,47 +224,14 @@ class NotificationService {
     String? imagePath,
     String? payload,
   }) async {
-    AndroidNotificationDetails androidDetails;
-
-    if (imagePath != null) {
-      final imageBytes = await _loadImageAsBytes(imagePath);
-      if (imageBytes != null) {
-        androidDetails = AndroidNotificationDetails(
-          'medication_channel_v2',
-          'Medication Reminders',
-          channelDescription: 'Notifications for medication reminders',
-          importance: Importance.max,
-          priority: Priority.high,
-          styleInformation: BigPictureStyleInformation(
-            imageBytes,
-            largeIcon: imageBytes,
-            contentTitle: title,
-            summaryText: body,
-          ),
-          largeIcon: imageBytes,
-          actions: _getActions(),
-        );
-      } else {
-        // Fallback: Text only if image missing
-        androidDetails = AndroidNotificationDetails(
-          'medication_channel_v2',
-          'Medication Reminders',
-          channelDescription: 'Notifications for medication reminders',
-          importance: Importance.max,
-          priority: Priority.high,
-          actions: _getActions(),
-        );
-      }
-    } else {
-      androidDetails = AndroidNotificationDetails(
-        'medication_channel_v2',
-        'Medication Reminders',
-        channelDescription: 'Notifications for medication reminders',
-        importance: Importance.max,
-        priority: Priority.high,
-        actions: _getActions(),
-      );
-    }
+    final imageBytes = imagePath != null
+        ? await _loadImageAsBytes(imagePath)
+        : null;
+    final androidDetails = _getAlarmAndroidDetails(
+      title,
+      body,
+      imageBytes: imageBytes,
+    );
 
     await _notificationsPlugin.show(
       id,
@@ -248,7 +270,6 @@ class NotificationService {
     String? imagePath,
     String? intakeId, // Pass intakeId for confirmation logic
   }) async {
-    AndroidNotificationDetails androidDetails;
     String? finalImagePath = imagePath;
 
     // Only save if it's not already in permanent storage and is a local file
@@ -259,45 +280,14 @@ class NotificationService {
       if (savedPath != null) finalImagePath = savedPath;
     }
 
-    if (finalImagePath != null) {
-      final imageBytes = await _loadImageAsBytes(finalImagePath);
-      if (imageBytes != null) {
-        androidDetails = AndroidNotificationDetails(
-          'medication_channel_v2',
-          'Medication Reminders',
-          channelDescription: 'Notifications for medication reminders',
-          importance: Importance.max,
-          priority: Priority.high,
-          styleInformation: BigPictureStyleInformation(
-            imageBytes,
-            largeIcon: imageBytes,
-            contentTitle: title,
-            summaryText: body,
-          ),
-          largeIcon: imageBytes,
-          actions: _getActions(),
-        );
-      } else {
-        // Fallback: Text only if image missing
-        androidDetails = AndroidNotificationDetails(
-          'medication_channel_v2',
-          'Medication Reminders',
-          channelDescription: 'Notifications for medication reminders',
-          importance: Importance.max,
-          priority: Priority.high,
-          actions: _getActions(),
-        );
-      }
-    } else {
-      androidDetails = AndroidNotificationDetails(
-        'medication_channel_v2',
-        'Medication Reminders',
-        channelDescription: 'Notifications for medication reminders',
-        importance: Importance.max,
-        priority: Priority.high,
-        actions: _getActions(),
-      );
-    }
+    final imageBytes = finalImagePath != null
+        ? await _loadImageAsBytes(finalImagePath)
+        : null;
+    final androidDetails = _getAlarmAndroidDetails(
+      title,
+      body,
+      imageBytes: imageBytes,
+    );
 
     final scheduledTime = _nextInstanceOfDayAndTime(day, hour, minute);
     await _notificationsPlugin.zonedSchedule(

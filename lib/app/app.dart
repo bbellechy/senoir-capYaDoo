@@ -6,7 +6,8 @@ import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/providers/providers.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  final String initialRoute;
+  const App({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class App extends StatelessWidget {
         title: 'CapYaDoo',
         debugShowCheckedModeBanner: false,
         onGenerateRoute: AppRouter.onGenerateRoute,
-        initialRoute: AppRouter.initialRoute,
+        initialRoute: initialRoute,
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
