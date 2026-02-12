@@ -78,8 +78,12 @@ class NotificationService {
 
   @pragma('vm:entry-point')
   static void notificationTapBackground(NotificationResponse response) {
-    // Background isolate needs its own timezone initialization
     tz.initializeTimeZones();
+    try {
+      tz.setLocalLocation(tz.getLocation('Asia/Bangkok'));
+    } catch (e) {
+      print('NotificationService: Background timezone fallback: $e');
+    }
     _handleNotificationAction(response);
   }
 
@@ -87,66 +91,69 @@ class NotificationService {
   static Future<void> _handleNotificationAction(
     NotificationResponse response,
   ) async {
-    print('NotificationService: Handling action: ${response.actionId}');
-    if (response.actionId == 'stop') {
-      final String? payload = response.payload;
-      if (payload != null) {
-        print('NotificationService: Stop requested for payload: $payload');
-        final parts = payload.split('|');
-        if (parts.length >= 5) {
-          final intakeId = parts[4];
-          if (intakeId.isNotEmpty && intakeId != 'null') {
-            try {
-              // Marking as taken when "Stop" is pressed, per common alarm/medication flow
-              final success = await MedicationScheduleService.markAsTaken(
-                intakeId,
-              );
-              print('NotificationService: Intake marker result: $success');
-            } catch (e) {
-              print('NotificationService: Error marking as taken: $e');
+    try {
+      print('NotificationService: Handling action: ${response.actionId}, payload: ${response.payload}');
+      if (response.actionId == 'stop') {
+        final String? payload = response.payload;
+        if (payload != null) {
+          print('NotificationService: Stop requested for payload: $payload');
+          final parts = payload.split('|');
+          if (parts.length >= 5) {
+            final intakeId = parts[4];
+            if (intakeId.isNotEmpty && intakeId != 'null') {
+              try {
+                final success = await MedicationScheduleService.markAsTaken(
+                  intakeId,
+                );
+                print('NotificationService: Intake marker result: $success');
+              } catch (e) {
+                print('NotificationService: Error marking as taken: $e');
+              }
             }
+            final id = int.tryParse(parts[0]) ?? 0;
+            await _notificationsPlugin.cancel(id);
           }
-          final id = int.tryParse(parts[0]) ?? 0;
-          await _notificationsPlugin.cancel(id);
         }
-      }
-    } else if (response.actionId == 'snooze') {
-      print('NotificationService: Snooze requested');
-      final String? payload = response.payload;
-      if (payload != null) {
-        // payload: "$notificationId|$day|$hour|$minute|$intakeId"
+      } else if (response.actionId == 'snooze') {
+        print('NotificationService: Snooze requested, payload: ${response.payload}');
+        final String? payload = response.payload;
+        if (payload == null || payload.isEmpty) {
+          print('NotificationService: Snooze failed - payload is null or empty');
+          return;
+        }
         final parts = payload.split('|');
-        if (parts.length >= 5) {
-          final id = int.tryParse(parts[0]) ?? 0;
-
-          // Reschedule in 10 minutes
-          final snoozeTime = tz.TZDateTime.now(
-            tz.local,
-          ).add(const Duration(minutes: 10));
-
-          print('NotificationService: Scheduling snooze for $snoozeTime');
-
-          await _notificationsPlugin.zonedSchedule(
-            id + 2000, // Use a higher offset for snooze to avoid collisions
-            'เตือนใหม่: เตือนกินยา',
-            'รบกวนรับประทานยาที่คุณตั้งค่าไว้ (เลื่อนมา 10 นาที)',
-            snoozeTime,
-            NotificationDetails(
-              android: _getAlarmAndroidDetails(
-                'เตือนใหม่: เตือนกินยา',
-                'รบกวนรับประทานยาที่คุณตั้งค่าไว้ (เลื่อนมา 10 นาที)',
-              ),
-            ),
-            payload: payload,
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-            uiLocalNotificationDateInterpretation:
-                UILocalNotificationDateInterpretation.absoluteTime,
-          );
-
-          await _notificationsPlugin.cancel(id);
-          print('NotificationService: Snoozed successfully. Canceled ID: $id');
+        if (parts.length < 5) {
+          print('NotificationService: Snooze failed - payload parts < 5: $parts');
+          return;
         }
+        final id = int.tryParse(parts[0]) ?? 0;
+
+        final snoozeTime = tz.TZDateTime.now(tz.local).add(const Duration(minutes: 10));
+        print('NotificationService: Scheduling snooze for $snoozeTime, id: ${id + 2000}');
+
+        await _notificationsPlugin.zonedSchedule(
+          id + 2000,
+          'เตือนใหม่: เตือนกินยา',
+          'รบกวนรับประทานยาที่คุณตั้งค่าไว้ (เลื่อนมา 10 นาที)',
+          snoozeTime,
+          NotificationDetails(
+            android: _getAlarmAndroidDetails(
+              'เตือนใหม่: เตือนกินยา',
+              'รบกวนรับประทานยาที่คุณตั้งค่าไว้ (เลื่อนมา 10 นาที)',
+            ),
+          ),
+          payload: payload,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+        );
+
+        await _notificationsPlugin.cancel(id);
+        print('NotificationService: Snoozed successfully. Canceled ID: $id');
       }
+    } catch (e, stack) {
+      print('NotificationService: _handleNotificationAction error: $e');
+      print('NotificationService: stack: $stack');
     }
   }
 
@@ -182,10 +189,12 @@ class NotificationService {
       const AndroidNotificationAction(
         'snooze',
         'เตือนใหม่ในอีก 10 นาที (Snooze)',
-        showsUserInterface: false,
+        showsUserInterface: true,
       ),
     ];
   }
+
+  static const int _flagInsistent = 4;
 
   static AndroidNotificationDetails _getAlarmAndroidDetails(
     String title,
@@ -204,6 +213,7 @@ class NotificationService {
       ongoing: true,
       autoCancel: false,
       sound: const RawResourceAndroidNotificationSound('alarm_sound'),
+      additionalFlags: Int32List.fromList([_flagInsistent]),
       styleInformation: imageBytes != null
           ? BigPictureStyleInformation(
               imageBytes,
