@@ -41,7 +41,9 @@ class _CareManagementPageState extends State<CareManagementPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('ยืนยันการลบ'),
-        content: Text('คุณต้องการลบ ${patient.fullName} ออกจากรายการผู้ดูแลใช่หรือไม่?'),
+        content: Text(
+          'คุณต้องการลบ ${patient.fullName} ออกจากรายการผู้ดูแลใช่หรือไม่?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -80,6 +82,32 @@ class _CareManagementPageState extends State<CareManagementPage> {
   Future<void> _sendRequest() async {
     final username = _searchController.text.trim();
     if (username.isEmpty) return;
+
+    // Show confirmation dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ยืนยันการเพิ่มผู้ดูแล'),
+        content: Text(
+          'คุณต้องการเพิ่ม $username เป็น${_isCaregiverView ? 'ผู้ใช้งาน' : 'ผู้ดูแล'}ใช่หรือไม่?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('ยกเลิก'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'ยืนยัน',
+              style: TextStyle(color: AppColors.primaryBlue),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
 
     final success = await _controller.sendRequest(username);
     if (success) {
@@ -135,9 +163,14 @@ class _CareManagementPageState extends State<CareManagementPage> {
                       children: [
                         _buildAddSection(),
                         const SizedBox(height: 16),
+                        if (_controller.sentRequests.isNotEmpty)
+                          _buildSentRequestsSection(),
+                        if (_controller.sentRequests.isNotEmpty)
+                          const SizedBox(height: 16),
                         if (_controller.requests.isNotEmpty)
                           _buildRequestsSection(),
-                        const SizedBox(height: 16),
+                        if (_controller.requests.isNotEmpty)
+                          const SizedBox(height: 16),
                         _buildListSection(),
                       ],
                     ),
@@ -216,6 +249,170 @@ class _CareManagementPageState extends State<CareManagementPage> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSentRequestsSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF4E5), // Light orange background
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.access_time,
+                  color: Colors.orange,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'คำขอที่รอดำเนินการ (${_controller.sentRequests.length})',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_controller.sentRequests.isEmpty)
+            Center(
+              child: Text(
+                'ไม่มีคำขอที่รอดำเนินการ',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              ),
+            )
+          else
+            ..._controller.sentRequests.map((request) => _buildSentRequestCard(request)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSentRequestCard(SentCareRequest request) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: Colors.orange.withOpacity(0.2),
+            child: const Icon(Icons.person, color: Colors.orange),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  request.patientUsername,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '@${request.patientUsername}',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'รอการยอมรับจากผู้ใช้งาน...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: TextButton.icon(
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('ยืนยันการยกเลิก'),
+                    content: Text(
+                      'คุณต้องการยกเลิกคำขอที่ส่งไปหา ${request.patientUsername} ใช่หรือไม่?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('ยกเลิก'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          'ยืนยัน',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  final success = await _controller.cancelSentRequest(request.id);
+                  if (success && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('ยกเลิกคำขอเรียบร้อยแล้ว')),
+                    );
+                  } else if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('ไม่สามารถยกเลิกคำขอได้'),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                  }
+                }
+              },
+              icon: const Icon(Icons.close, size: 16, color: Colors.black),
+              label: const Text(
+                'ยกเลิก',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
           ),
         ],
       ),

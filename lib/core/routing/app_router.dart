@@ -19,6 +19,7 @@ import 'package:capyadoo/features/widget_showcase/widget_showcase_page.dart';
 import 'package:capyadoo/features/caregivers/presentation/pages/caregivers_and_users_page.dart';
 import 'package:capyadoo/core/layouts/main_layout.dart';
 import 'package:capyadoo/core/model/medication_notification.dart';
+import 'package:capyadoo/core/model/symptom_record.dart';
 
 class AppRouter {
   // Auth routes
@@ -96,11 +97,13 @@ class AppRouter {
           builder: (_) => AddMedicinePage(medicationId: medicationId),
           settings: settings,
         );
-      case addSymptomRoute:
+      case addSymptomRoute: {
+        final symptom = settings.arguments as SymptomRecord?;
         return MaterialPageRoute(
-          builder: (_) => const AddSymptomPage(),
+          builder: (_) => AddSymptomPage(symptomId: symptom?.id),
           settings: settings,
         );
+      }
       case notificationsRoute:
         return MaterialPageRoute(
           builder: (_) => const NotificationListPage(),

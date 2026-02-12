@@ -27,7 +27,7 @@ class AppDatePicker extends StatelessWidget {
     this.lastDate,
     this.enabled = true,
     this.dateFormat,
-    this.isRequired = false,
+    this.isRequired = true,
   });
 
   Future<void> _selectDate(BuildContext context) async {
@@ -168,22 +168,9 @@ class AppDatePicker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
-          Row(
-            children: [
-              Text(
-                label!,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              if (isRequired)
-                const Text(
-                  ' *',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red,
-                  ),
-                ),
-            ],
+          Text(
+            label!,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
         ],

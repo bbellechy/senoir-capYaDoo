@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/unified_selection_dialog.dart';
+import 'package:capyadoo/core/services/auth_service.dart';
 
 class PillSelectionWidget extends StatefulWidget {
   final String? initialValue;
@@ -20,21 +21,41 @@ class PillSelectionWidget extends StatefulWidget {
 class _PillSelectionWidgetState extends State<PillSelectionWidget> {
   String? _selectedName;
   String? _selectedImagePath;
-  final String _userId =
-      'c9905ab5-dfe0-44b7-890f-64ec92790b14'; // From user request
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
     _selectedName = widget.initialValue;
     _selectedImagePath = widget.initialImagePath;
+    _loadUserId();
+  }
+
+  Future<void> _loadUserId() async {
+    try {
+      final profile = await AuthService.getProfile();
+      if (!mounted) return;
+      setState(() {
+        _userId = profile?.id;
+      });
+    } catch (_) {
+      // ignore
+    }
   }
 
   void _showSelectionDialog() async {
+    if (_userId == null || _userId!.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('ไม่พบข้อมูลผู้ใช้ กรุณาลองใหม่')),
+        );
+      }
+      return;
+    }
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => UnifiedSelectionDialog(
-        userId: _userId,
+        userId: _userId!,
         title: 'เลือกยาหรือกล่องยา',
         showBoxes: true,
       ),
@@ -94,7 +115,10 @@ class _PillSelectionWidgetState extends State<PillSelectionWidget> {
                         children: [
                           Expanded(
                             child: Text(
-                              _selectedName ?? 'เลือกยาหรือกล่องยา',
+                              _selectedName ??
+                                  (_userId == null
+                                      ? 'กำลังโหลดข้อมูล...'
+                                      : 'เลือกยาหรือกล่องยา'),
                               style: TextStyle(
                                 color: _selectedName != null
                                     ? Colors.black87

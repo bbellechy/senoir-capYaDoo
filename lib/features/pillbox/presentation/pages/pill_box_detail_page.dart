@@ -106,18 +106,33 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     return matchedMeds;
   }
 
-  Future<void> _removeMedicationFromBox(UserMedication med) async {
-    // Current backend doesn't seem to have a specific DELETE /medications/{id} for boxes provided in requirements
-    // but the controller was using removeMedicationFromBox. We'll stick to controller for removal if needed,
-    // or assume the PUT update is the way for removal for now unless requirements specify otherwise.
-    // Given Requirement 3 says "Allow users to add... using POST", but doesn't mention delete endpoint,
-    // I'll keep the previous removal logic via controller if it worked.
+  Future<void> _removeMedicationFromBox(dynamic med) async {
+    // med can be either UserMedication or Map<String, dynamic> from medications array
+    String? medicationId;
+    String medName;
+
+    if (med is UserMedication) {
+      medicationId = med.id;
+      medName = med.name;
+    } else if (med is Map<String, dynamic>) {
+      medicationId = med['id']?.toString();
+      medName = med['name']?.toString() ?? 'ไม่ระบุชื่อ';
+    } else {
+      return;
+    }
+
+    if (medicationId == null || medicationId.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ไม่พบข้อมูลยา')));
+      return;
+    }
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('ลบยาออกจากกล่อง'),
-        content: Text('คุณต้องการลบ ${med.name} ออกจากกล่องยานี้ใช่หรือไม่?'),
+        content: Text('คุณต้องการลบ $medName ออกจากกล่องยานี้ใช่หรือไม่?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -131,18 +146,42 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       ),
     );
 
-    if (confirm == true && med.id != null) {
-      final success = await _controller.removeMedicationFromBox(
-        _currentBox.id!,
-        med.id!,
+    if (confirm == true && _currentBox.id != null) {
+      final boxId = _currentBox.id!;
+      print('Removing medication id=$medicationId from box id=$boxId');
+      final success = await _pillBoxService.removeMedicationFromBox(
+        boxId,
+        medicationId,
       );
 
       if (success) {
+        // อัปเดต UI ทันที (optimistic): ลบยาออกจาก _currentBox เพื่อไม่ให้รายการค้างอยู่แม้ backend อาจยังไม่ลบจริง
+        final newMedications = _currentBox.medications
+            .where((m) => m['id']?.toString() != medicationId)
+            .toList();
+        final newIds = _currentBox.medicationIds
+            .where((id) => id != medicationId)
+            .toList();
+        if (mounted) {
+          setState(() {
+            _currentBox = _currentBox.copyWith(
+              medications: newMedications,
+              medicationIds: newIds,
+            );
+          });
+        }
         await _loadData();
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('ลบ $medName เรียบร้อยแล้ว')));
+        }
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('ไม่สามารถลบยาได้')));
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('ไม่สามารถลบยาได้')));
+        }
       }
     }
   }
@@ -296,7 +335,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
               ),
               const SizedBox(height: 24),
               Text(
-                'ยังไม่มียาในกล่อง\nเพิ่มยาเพื่อจัดการกล่องยาของคุณ',
+                'กรุณาค้นหาชื่อยาหรือพิมพ์ชื่อยาที่ต้องการเพิ่ม',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
@@ -397,29 +436,8 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
                 onPressed: () {
-                  // Find user medication to remove
-                  UserMedication? userMedToRemove;
-                  try {
-                    userMedToRemove = _allUserMedications.firstWhere(
-                      (m) => m.id == medId,
-                    );
-                  } catch (e) {
-                    try {
-                      userMedToRemove = _allUserMedications.firstWhere(
-                        (m) => m.displayName == medName,
-                      );
-                    } catch (e2) {
-                      userMedToRemove = null;
-                    }
-                  }
-                  if (userMedToRemove != null) {
-                    _removeMedicationFromBox(userMedToRemove);
-                  } else {
-                    // If no user medication found, try to remove by ID directly
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('ไม่พบข้อมูลยา $medName')),
-                    );
-                  }
+                  // Use medication from box directly (med object from _medicationsInBox)
+                  _removeMedicationFromBox(med);
                 },
               ),
             ],

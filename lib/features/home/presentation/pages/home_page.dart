@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:capyadoo/core/model/daily_intake.dart';
@@ -5,6 +6,7 @@ import 'package:capyadoo/core/services/medication_schedule_service.dart';
 import 'package:capyadoo/core/model/user.dart';
 import 'package:capyadoo/core/providers/auth_provider.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_list_page.dart';
+import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_detail_page.dart';
 import 'package:capyadoo/features/care/presentation/pages/care_management_page.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
@@ -92,15 +94,15 @@ class _HomePageState extends State<HomePage> {
   Future<void> _checkOverdueStatus() async {
     try {
       final now = DateTime.now();
-      // Only check for today
-      if (DateFormat('yyyy-MM-dd').format(_selectedDate) !=
-          DateFormat('yyyy-MM-dd').format(now)) {
-        return;
-      }
+      final selectedDateOnly = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+      );
 
       bool hasChanges = false;
       for (final item in _schedule) {
-        // Only check items with valid UUID intakeId (from backend)
+        // Check items with valid UUID intakeId (from backend)
         if (item.status == IntakeStatus.PENDING &&
             !item.intakeId.contains('_') &&
             item.intakeId.isNotEmpty) {
@@ -109,15 +111,28 @@ class _HomePageState extends State<HomePage> {
             final hour = int.tryParse(timeParts[0]) ?? 0;
             final minute = int.tryParse(timeParts[1]) ?? 0;
             final scheduleTime = DateTime(
-              now.year,
-              now.month,
-              now.day,
+              _selectedDate.year,
+              _selectedDate.month,
+              _selectedDate.day,
               hour,
               minute,
             );
 
-            // If current time has passed the scheduled time, mark as overdue
-            if (now.isAfter(scheduleTime)) {
+            // If current time has passed the scheduled time for the selected date, mark as overdue
+            // Check if it's today and time has passed, or if it's a past date
+            final isToday = selectedDateOnly.isAtSameMomentAs(
+              DateTime(now.year, now.month, now.day),
+            );
+            final isPastDate = selectedDateOnly.isBefore(
+              DateTime(now.year, now.month, now.day),
+            );
+
+            if (isToday && now.isAfter(scheduleTime)) {
+              // Today and time has passed - mark as overdue immediately
+              await MedicationScheduleService.markAsOverdue(item.intakeId);
+              hasChanges = true;
+            } else if (isPastDate) {
+              // Past date - mark as overdue
               await MedicationScheduleService.markAsOverdue(item.intakeId);
               hasChanges = true;
             }
@@ -186,8 +201,26 @@ class _HomePageState extends State<HomePage> {
             duration: const Duration(seconds: 2),
           ),
         );
+        // อัพเดทเฉพาะ item ที่เปลี่ยน ไม่ต้อง reload ทั้งหน้า
+        setState(() {
+          final index = _schedule.indexWhere(
+            (item) => item.intakeId == intakeId,
+          );
+          if (index != -1) {
+            _schedule[index] = DailyIntake(
+              intakeId: _schedule[index].intakeId,
+              medicationName: _schedule[index].medicationName,
+              time: _schedule[index].time,
+              periodKey: _schedule[index].periodKey,
+              intakeTiming: _schedule[index].intakeTiming,
+              status: IntakeStatus.TAKEN,
+              imagePath: _schedule[index].imagePath,
+              remainingQuantity: _schedule[index].remainingQuantity,
+              medicationId: _schedule[index].medicationId,
+            );
+          }
+        });
       }
-      _loadSchedule(showLoading: false);
     } else {
       if (mounted) {
         final extraMsg =
@@ -242,7 +275,7 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    // ถ้ายัง resolve ไม่ได้ ให้แจ้งผู้ใช้ และรีเฟรชตารางอีกครั้ง
+    // ถ้ายัง resolve ไม่ได้ ให้แจ้งผู้ใช้ (ไม่ต้อง reload เพราะยังไม่มี intake ในระบบ)
     if (intakeId.contains('_')) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -252,7 +285,6 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       }
-      _loadSchedule(showLoading: false);
       return;
     }
 
@@ -398,8 +430,28 @@ class _HomePageState extends State<HomePage> {
                   DateFormat('yyyy-MM-dd').format(date) ==
                   DateFormat('yyyy-MM-dd').format(_selectedDate);
 
+              Future<void> openCalendar() async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedDate,
+                  firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (picked != null) {
+                  setState(() {
+                    _selectedDate = picked;
+                  });
+                  _loadData();
+                }
+              }
+
               return GestureDetector(
-                onTap: () {
+                onTap: () async {
+                  // index==0 เป็นปุ่มเปิดปฏิทิน (ไม่ใช่เลือกวัน)
+                  if (index == 0) {
+                    await openCalendar();
+                    return;
+                  }
                   setState(() {
                     _selectedDate = date;
                   });
@@ -418,8 +470,8 @@ class _HomePageState extends State<HomePage> {
                   child: Center(
                     child: index == 0
                         ? const Icon(
-                            Icons.calendar_today,
-                            color: Colors.blue,
+                            Icons.calendar_today_outlined,
+                            color: Colors.white,
                             size: 20,
                           )
                         : Text(
@@ -676,7 +728,46 @@ class _HomePageState extends State<HomePage> {
     print('_getBoxesForPeriod called with period: $period');
     print('Total boxes: ${_boxes.length}');
 
+    final selectedDateOnly = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+
+    bool isTimeInPeriod(String timeStr, String p) {
+      // Accept "HH:mm:ss" or "HH:mm"
+      if (timeStr.isEmpty) return false;
+      final parts = timeStr.split(':');
+      if (parts.length < 2) return false;
+      final hour = int.tryParse(parts[0]) ?? -1;
+      if (hour < 0) return false;
+
+      switch (p) {
+        case 'MORNING': // 05:00 - 10:59
+          return hour >= 5 && hour < 11;
+        case 'NOON': // 11:00 - 15:59
+          return hour >= 11 && hour < 16;
+        case 'EVENING': // 16:00 - 20:59
+          return hour >= 16 && hour < 21;
+        case 'BEDTIME': // 21:00 - 04:59 (cross midnight)
+          return hour >= 21 || hour < 5;
+        default:
+          return false;
+      }
+    }
+
     for (final box in _boxes) {
+      // ไม่แสดงกล่องถ้าวันที่เลือกอยู่ก่อนวันที่สร้างกล่อง (แสดงเฉพาะตั้งแต่วันที่สร้างเป็นต้นไป)
+      if (box.createdAt != null) {
+        final createdDateOnly = DateTime(
+          box.createdAt!.year,
+          box.createdAt!.month,
+          box.createdAt!.day,
+        );
+        if (selectedDateOnly.isBefore(createdDateOnly)) continue;
+      }
+
+      // แสดงกล่องในทุกช่วงที่กล่องถูกตั้งค่าไว้ (เช้า/กลางวัน/เย็น/ก่อนนอน)
       if (box.id != null && box.intakePeriods.contains(period)) {
         print('Box ${box.name} matches period $period');
         final dailyMeds = _boxDailyMedications[box.id] ?? [];
@@ -685,36 +776,47 @@ class _HomePageState extends State<HomePage> {
         // แปลง response จาก API ให้ตรงกับ format ที่โค้ดใช้
         // API ส่ง: { id, medication: { name }, intakeTime, status }
         // โค้ดต้องการ: { id, medicationName, scheduledTime, status }
-        final convertedMeds = dailyMeds.map((med) {
-          // ดึง medication name จาก medication object
+        // กรองเฉพาะรายการที่อยู่ในช่วงเวลานี้ โดยดูจาก intakeTime ที่ backend ส่งมา
+        final seenKeys = <String>{};
+        final convertedMeds = <Map<String, dynamic>>[];
+        for (final med in dailyMeds) {
           final medicationObj = med['medication'] as Map<String, dynamic>?;
+          final medId =
+              medicationObj?['id']?.toString() ??
+              med['medicationId']?.toString() ??
+              '';
           final medicationName =
               medicationObj?['name'] as String? ??
               med['medicationName'] as String? ??
               'ไม่ระบุชื่อ';
 
-          // ดึง intakeTime และแปลงเป็น scheduledTime (HH:mm)
           final intakeTime =
               med['intakeTime'] as String? ??
               med['scheduledTime'] as String? ??
               _getDefaultTimeForPeriod(period);
+          if (!isTimeInPeriod(intakeTime, period)) {
+            continue;
+          }
           final scheduledTime = _formatTime(intakeTime);
-
-          // ดึง status
           final status = med['status'] as String? ?? 'PENDING';
-
-          // ดึง id (intakeId)
           final intakeId = med['id'] as String? ?? '';
 
-          return {
+          // Unique per (med + time) so a medication can appear in multiple periods,
+          // but not duplicated within the same period.
+          final dedupKey =
+              '${medId.isNotEmpty ? medId : medicationName}|$scheduledTime';
+          if (seenKeys.contains(dedupKey)) continue;
+          seenKeys.add(dedupKey);
+
+          convertedMeds.add({
             'id': intakeId,
             'medicationName': medicationName,
             'scheduledTime': scheduledTime,
             'status': status,
             'dosage': med['dosage'] ?? 1,
             'unit': med['unit'] ?? 'เม็ด',
-          };
-        }).toList();
+          });
+        }
 
         // ถ้ามี daily medications ให้แสดง
         if (convertedMeds.isNotEmpty) {
@@ -774,7 +876,8 @@ class _HomePageState extends State<HomePage> {
       case 'EVENING':
         return '18:00';
       case 'BEDTIME':
-        return '22:00';
+        // Keep consistent with backend schedule (DailyMedicationService + box schedule uses 21:00)
+        return '21:00';
       default:
         return '08:00';
     }
@@ -794,229 +897,286 @@ class _HomePageState extends State<HomePage> {
         '08:00';
     // แปลง format ถ้าเป็น "HH:mm:ss" เป็น "HH:mm"
     final formattedTime = _formatTime(timeStr);
-    final intakeId = firstMed?['id'] as String? ?? '';
-    final status = firstMed?['status'] as String? ?? 'PENDING';
-
-    final isTaken = status == 'TAKEN';
-    final isNotTaken = status == 'NOT_TAKEN';
-    final isMissed = status == 'MISSED';
+    // สถานะกล่อง: ถ้ายาทุกตัวในกล่องทานแล้ว = ทานแล้ว (กดยืนยันครั้งเดียวสำหรับทั้งกล่อง)
+    final allStatuses = medications
+        .map((m) => m['status'] as String? ?? 'PENDING')
+        .toList();
+    final isTaken =
+        medications.isNotEmpty &&
+        allStatuses.every((s) => s.toUpperCase() == 'TAKEN');
+    final isNotTaken =
+        medications.isNotEmpty &&
+        allStatuses.every((s) => s.toUpperCase() == 'NOT_TAKEN');
+    final isMissed =
+        medications.isNotEmpty &&
+        allStatuses.any((s) => s.toUpperCase() == 'MISSED');
     final isOverdue =
-        status == 'OVERDUE' ||
-        (status == 'PENDING' && _isTimePassedForSelectedDate(formattedTime));
+        !isTaken &&
+        !isNotTaken &&
+        (allStatuses.any((s) => s.toUpperCase() == 'OVERDUE') ||
+            (allStatuses.any((s) => s.toUpperCase() == 'PENDING') &&
+                _isTimePassedForSelectedDate(formattedTime)));
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.inventory_2_outlined,
-                  size: 20,
-                  color: Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  box.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-              const CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.grey,
-                child: Icon(Icons.person, size: 16, color: Colors.white),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // List medications in box
-          ...medications.map((med) {
-            final medName = med['medicationName'] as String? ?? 'ไม่ระบุชื่อ';
-            final medDosage = med['dosage'] as num?;
-            final medUnit = med['unit'] as String? ?? 'เม็ด';
-            final medStatus = med['status'] as String? ?? 'PENDING';
-            final isMedTaken = medStatus == 'TAKEN';
-            // ใช้ dosage ถ้ามี ไม่เช่นนั้นใช้ 1 เม็ด
-            final dosageText = medDosage != null
-                ? '$medDosage $medUnit'
-                : '1 $medUnit';
+    final mealTimingText = _mealTimingLabel(box.intakeTiming);
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.medication_outlined,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '$medName ($dosageText)',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                        decoration: isMedTaken
-                            ? TextDecoration.lineThrough
-                            : null,
-                      ),
-                    ),
-                  ),
-                  if (isMedTaken)
-                    const Icon(
-                      Icons.check_circle,
-                      size: 16,
-                      color: Colors.green,
-                    ),
-                ],
-              ),
-            );
-          }),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
-              const SizedBox(width: 4),
-              Text(
-                '${formattedTime.substring(0, formattedTime.length > 5 ? 5 : formattedTime.length)} น.',
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-              ),
-              const Spacer(),
-              if (isTaken)
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => PillBoxDetailPage(pillBox: box)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2ECC71),
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                    image: box.imagePath != null && box.imagePath!.isNotEmpty
+                        ? DecorationImage(
+                            image: box.imagePath!.startsWith('http')
+                                ? NetworkImage(box.imagePath!)
+                                : FileImage(File(box.imagePath!))
+                                      as ImageProvider,
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
-                  child: const Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle_outline,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        'ทานแล้ว',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (isNotTaken)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'ไม่กินยา',
-                    style: TextStyle(
-                      color: Colors.white,
+                  child: box.imagePath == null || box.imagePath!.isEmpty
+                      ? const Icon(
+                          Icons.inventory_2_outlined,
+                          size: 20,
+                          color: Colors.blue,
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    box.name,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
+                      fontSize: 18,
                     ),
                   ),
-                )
-              else if (isMissed)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(
-                        Icons.cancel_outlined,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        'Missed',
+                ),
+                const Icon(Icons.chevron_right, color: Colors.grey, size: 24),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // List medications in box
+            ...medications.map((med) {
+              final medName = med['medicationName'] as String? ?? 'ไม่ระบุชื่อ';
+              final medDosage = med['dosage'] as num?;
+              final medUnit = med['unit'] as String? ?? 'เม็ด';
+              final medStatus = med['status'] as String? ?? 'PENDING';
+              final isMedTaken = medStatus == 'TAKEN';
+              // ใช้ dosage ถ้ามี ไม่เช่นนั้นใช้ 1 เม็ด
+              final dosageText = medDosage != null
+                  ? '$medDosage $medUnit'
+                  : '1 $medUnit';
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.medication_outlined,
+                      size: 16,
+                      color: Colors.grey[600],
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '$medName ($dosageText)',
                         style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                          decoration: isMedTaken
+                              ? TextDecoration.lineThrough
+                              : null,
                         ),
                       ),
-                    ],
-                  ),
-                )
-              else
-                ElevatedButton(
-                  onPressed: isOverdue
-                      ? null
-                      : () => _markBoxAsTaken(intakeId, box.name),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isOverdue
-                        ? Colors.red
-                        : const Color(0xFF2196F3),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
                     ),
+                    if (isMedTaken)
+                      const Icon(
+                        Icons.check_circle,
+                        size: 16,
+                        color: Colors.green,
+                      ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Text(
+                  mealTimingText.isNotEmpty
+                      ? mealTimingText
+                      : '${formattedTime.substring(0, formattedTime.length > 5 ? 5 : formattedTime.length)} น.',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+                const Spacer(),
+                if (isTaken)
+                  Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
                     ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2ECC71),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'ทานแล้ว',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (isNotTaken)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'ไม่กินยา',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                else if (isMissed)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.cancel_outlined,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'Missed',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (isOverdue)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'เกินกำหนด',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                else
+                  ElevatedButton(
+                    onPressed: () => _markWholeBoxAsTaken(box, period),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2196F3),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                    ),
+                    child: const Text(
+                      'ยืนยันการทาน',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                  child: Text(
-                    isOverdue ? 'เกินกำหนด' : 'ยืนยันการทาน',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Future<void> _markBoxAsTaken(String intakeId, String boxName) async {
-    if (intakeId.isEmpty) {
+  String _mealTimingLabel(String? intakeTiming) {
+    if (intakeTiming == null || intakeTiming.isEmpty) return '';
+    switch (intakeTiming.toUpperCase()) {
+      case 'BEFORE_MEAL':
+        return 'ก่อนอาหาร';
+      case 'AFTER_MEAL':
+        return 'หลังอาหาร';
+      default:
+        return '';
+    }
+  }
+
+  /// ยืนยันการทานยาทั้งกล่องของช่วงนั้นเท่านั้น (กดเช้า = มาร์กเฉพาะเช้า ไม่มาร์กกลางวัน/เย็น/ก่อนนอน)
+  Future<void> _markWholeBoxAsTaken(MedicationBox box, String period) async {
+    if (box.id == null || box.id!.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('ข้อมูลไม่ถูกต้อง (Missing ID)'),
+            content: Text('ข้อมูลไม่ถูกต้อง (Missing Box ID)'),
             backgroundColor: Colors.orange,
           ),
         );
@@ -1024,34 +1184,72 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    final result = await MedicationScheduleService.markAsTakenWithResponse(
-      intakeId,
+    final userId = context.read<AuthProvider>().user?.id;
+    final success = await _pillBoxService.markBoxAsTaken(
+      box.id!,
+      _selectedDate,
+      userId: userId,
+      period: period,
     );
 
-    if (result.success) {
+    if (success) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('บันทึกการทาน $boxName เรียบร้อยแล้ว'),
+            content: Text('บันทึกการทาน ${box.name} เรียบร้อยแล้ว'),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
           ),
         );
+        // อัพเดทเฉพาะ intake ของกล่องนี้ใน period นี้ ไม่ต้อง reload ทั้งหน้า
+        if (box.id != null) {
+          final dailyMeds = _boxDailyMedications[box.id] ?? [];
+          final updatedMeds = dailyMeds.map((med) {
+            // ตรวจสอบว่า intake นี้อยู่ใน period นี้หรือไม่
+            final intakeTime =
+                med['intakeTime'] as String? ??
+                med['scheduledTime'] as String? ??
+                '';
+            if (intakeTime.isNotEmpty) {
+              final timeParts = intakeTime.split(':');
+              if (timeParts.length >= 2) {
+                final hour = int.tryParse(timeParts[0]) ?? 0;
+                bool isInPeriod = false;
+                switch (period) {
+                  case 'MORNING':
+                    isInPeriod = hour >= 5 && hour < 11;
+                    break;
+                  case 'NOON':
+                    isInPeriod = hour >= 11 && hour < 16;
+                    break;
+                  case 'EVENING':
+                    isInPeriod = hour >= 16 && hour < 21;
+                    break;
+                  case 'BEDTIME':
+                    isInPeriod = hour >= 21 || hour < 5;
+                    break;
+                }
+                if (isInPeriod) {
+                  // อัพเดทสถานะเป็น TAKEN
+                  final updated = Map<String, dynamic>.from(med);
+                  updated['status'] = 'TAKEN';
+                  return updated;
+                }
+              }
+            }
+            return med;
+          }).toList();
+
+          setState(() {
+            _boxDailyMedications[box.id!] = updatedMeds;
+          });
+        }
       }
-      _loadData();
     } else {
       if (mounted) {
-        final extraMsg =
-            (result.message != null && result.message!.trim().isNotEmpty)
-            ? ' - ${result.message}'
-            : '';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              result.statusCode == 403
-                  ? 'ไม่มีสิทธิ์ดำเนินการ (403)$extraMsg'
-                  : 'ไม่สามารถบันทึกข้อมูลได้ (Status: ${result.statusCode})$extraMsg',
-            ),
+          const SnackBar(
+            content: Text('ไม่สามารถบันทึกข้อมูลได้'),
             backgroundColor: Colors.red,
           ),
         );
@@ -1079,6 +1277,8 @@ class _HomePageState extends State<HomePage> {
 
     // (เดิมเคยใช้ตรวจ intakeId แบบ UUID แต่ตอนนี้ Pending ต้องแสดงปุ่มยืนยันเสมอ)
 
+    final hasImage = item.imagePath != null && item.imagePath!.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
@@ -1095,6 +1295,30 @@ class _HomePageState extends State<HomePage> {
       ),
       child: Row(
         children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(8),
+              image: hasImage
+                  ? DecorationImage(
+                      image: item.imagePath!.startsWith('http')
+                          ? NetworkImage(item.imagePath!)
+                          : FileImage(File(item.imagePath!)) as ImageProvider,
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: hasImage
+                ? null
+                : const Icon(
+                    Icons.medication_outlined,
+                    color: Colors.blue,
+                    size: 22,
+                  ),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1113,7 +1337,9 @@ class _HomePageState extends State<HomePage> {
                     Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
-                      '${item.time.substring(0, 5)} น.',
+                      _mealTimingLabel(item.intakeTiming).isNotEmpty
+                          ? _mealTimingLabel(item.intakeTiming)
+                          : '${item.time.substring(0, 5)} น.',
                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
                   ],
@@ -1205,17 +1431,26 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             )
+          else if (isOverdue)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'เกินกำหนด',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
           else
             ElevatedButton(
-              // Pending = ปุ่มฟ้า "ยืนยันการทาน"
-              // ถ้าเลยเวลา = แดง "เกินกำหนด" และปิดกด
-              onPressed: isOverdue ? null : () => _markAsTakenSmart(item),
+              onPressed: () => _markAsTakenSmart(item),
               style: ElevatedButton.styleFrom(
-                // Pending = ปุ่มสีฟ้า "ยืนยันการทาน"
-                // ถ้าเลยเวลา/เกินกำหนด = สีแดง
-                backgroundColor: isOverdue
-                    ? Colors.red
-                    : const Color(0xFF2196F3),
+                backgroundColor: const Color(0xFF2196F3),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -1225,9 +1460,9 @@ class _HomePageState extends State<HomePage> {
                   vertical: 8,
                 ),
               ),
-              child: Text(
-                isOverdue ? 'เกินกำหนด' : 'ยืนยันการทาน',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              child: const Text(
+                'ยืนยันการทาน',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
         ],
@@ -1273,6 +1508,25 @@ class _HomePageState extends State<HomePage> {
 
   List<DailyIntake> _getFilteredSchedule(String period) {
     return _schedule.where((item) {
+      // Prefer filtering by logical periodKey (MORNING/NOON/EVENING/BEDTIME)
+      // so that "ก่อนนอน" won't move to "เย็น" even if intakeTiming shifts time (e.g., 20:30).
+      if (item.periodKey != null && item.periodKey!.isNotEmpty) {
+        final pk = item.periodKey!.toUpperCase();
+        switch (period) {
+          case 'morning':
+            return pk == 'MORNING';
+          case 'afternoon':
+            return pk == 'NOON';
+          case 'evening':
+            return pk == 'EVENING';
+          case 'night':
+            return pk == 'BEDTIME';
+          default:
+            return false;
+        }
+      }
+
+      // Fallback to time-based filtering (older data without periodKey)
       final hour = int.parse(item.time.split(':')[0]);
       switch (period) {
         case 'morning':

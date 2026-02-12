@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:capyadoo/core/constants/app_colors.dart';
+import 'package:capyadoo/core/model/care_models.dart';
+import 'package:capyadoo/core/config/api_config.dart';
+import 'package:capyadoo/core/services/care_service.dart';
+import 'package:capyadoo/features/care/presentation/pages/patient_detail_page.dart';
 import 'package:capyadoo/features/caregivers/presentation/widgets/caregiver_request_card.dart';
 import 'package:capyadoo/features/caregivers/presentation/widgets/caregiver_card.dart';
 import 'package:capyadoo/features/caregivers/presentation/widgets/user_request_card.dart';
@@ -25,11 +30,63 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
   List<Map<String, String>> acceptedCaregivers = [];
 
   // ข้อมูล patients (สำหรับผู้ดูแล)
-  List<Map<String, String>> patientRequests = [];
-  List<Map<String, String>> acceptedPatients = [];
+  List<SentCareRequest> patientRequests = [];
+  List<Patient> acceptedPatients = [];
+  bool _isLoadingPatients = false;
 
   // Controller สำหรับค้นหา username
   final TextEditingController usernameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-detect caregiver mode from backend data (patients / sent-requests)
+    // so the screen can show data even if the toggle wasn't pressed.
+    _bootstrapCaregiverMode();
+  }
+
+  Future<void> _bootstrapCaregiverMode() async {
+    // Try to fetch caregiver-related data regardless of current isCaregiver flag.
+    // If backend returns data, we enable caregiver mode automatically.
+    try {
+      setState(() => _isLoadingPatients = true);
+      List<Patient> patients = [];
+      List<SentCareRequest> sent = [];
+
+      try {
+        patients = await CareService.getPatients();
+      } catch (e) {
+        print('bootstrap: getPatients error: $e');
+      }
+      try {
+        sent = await CareService.getSentCareRequests();
+      } catch (e) {
+        print('bootstrap: getSentCareRequests error: $e');
+      }
+
+      print(
+        'bootstrap fetched: patients=${patients.length}, sent=${sent.length}',
+      );
+
+      if (!mounted) return;
+      setState(() {
+        acceptedPatients = patients;
+        patientRequests = sent;
+        // If backend has caregiver-related data, enable caregiver UI.
+        if (patients.isNotEmpty || sent.isNotEmpty) {
+          isCaregiver = true;
+        }
+        _isLoadingPatients = false;
+      });
+      print(
+        'bootstrap applied: isCaregiver=$isCaregiver, acceptedPatients=${acceptedPatients.length}, patientRequests=${patientRequests.length}',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoadingPatients = false);
+      print('Error bootstrapping caregiver mode: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -37,33 +94,69 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
     super.dispose();
   }
 
+  Future<void> _loadPatients() async {
+    if (!isCaregiver) return;
+    setState(() => _isLoadingPatients = true);
+    try {
+      final patients = await CareService.getPatients();
+      if (mounted) {
+        setState(() {
+          acceptedPatients = patients;
+          _isLoadingPatients = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingPatients = false);
+      }
+      print('Error loading patients: $e');
+    }
+  }
+
   void _addCaregiverRole() {
     setState(() {
       isCaregiver = true;
     });
+    _loadPatients();
+    _loadSentRequests();
   }
 
-  void _searchUser() {
+  Future<void> _loadSentRequests() async {
+    if (!isCaregiver) return;
+    try {
+      final sent = await CareService.getSentCareRequests();
+      if (mounted) {
+        setState(() {
+          patientRequests = sent;
+        });
+      }
+    } catch (e) {
+      print('Error loading sent requests: $e');
+    }
+  }
+
+  Future<void> _searchUser() async {
     final username = usernameController.text.trim();
     if (username.isEmpty) {
       _showSnackBar('กรุณากรอก Username');
       return;
     }
 
-    // จำลองการส่งคำขอ
-    setState(() {
-      patientRequests.add({'name': username, 'username': '@$username'});
-      usernameController.clear();
-    });
-    _showSnackBar('ส่งคำขอไปยัง $username แล้ว');
+    final ok = await CareService.sendCareRequest(username);
+    if (ok) {
+      if (mounted) {
+        setState(() {
+          usernameController.clear();
+        });
+      }
+      await _loadSentRequests();
+      _showSnackBar('ส่งคำขอไปยัง $username แล้ว');
+    } else {
+      _showSnackBar('ส่งคำขอไม่สำเร็จ');
+    }
   }
 
-  void _cancelRequest(int index) {
-    setState(() {
-      patientRequests.removeAt(index);
-    });
-    _showSnackBar('ยกเลิกคำขอแล้ว');
-  }
+  // NOTE: backend ยังไม่มี endpoint ยกเลิกคำขอ (cancel) จึงแสดงเป็นรายการอย่างเดียว
 
   void _acceptCaregiverRequest(int index) {
     setState(() {
@@ -112,8 +205,9 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
     );
   }
 
-  void _removePatient(int index) {
-    showDialog(
+  Future<void> _removePatient(int index) async {
+    final patient = acceptedPatients[index];
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text(
@@ -126,27 +220,39 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('ยกเลิก'),
           ),
           TextButton(
-            onPressed: () {
-              setState(() {
-                acceptedPatients.removeAt(index);
-              });
-              Navigator.pop(context);
-              _showSnackBar('ลบผู้ใช้งานแล้ว');
-            },
+            onPressed: () => Navigator.pop(context, true),
             child: const Text('ลบ'),
           ),
         ],
       ),
     );
+
+    if (confirmed == true) {
+      try {
+        final success = await CareService.removePatient(patient.patientId);
+        if (success && mounted) {
+          setState(() {
+            acceptedPatients.removeAt(index);
+          });
+          _showSnackBar('ลบผู้ใช้งานแล้ว');
+        } else {
+          _showSnackBar('เกิดข้อผิดพลาดในการลบ');
+        }
+      } catch (e) {
+        _showSnackBar('เกิดข้อผิดพลาดในการลบ');
+      }
+    }
   }
 
-  void _viewPatientData(Map<String, String> patient) {
-    // TODO: Navigate to patient data page
-    _showSnackBar('ดูข้อมูลของ ${patient['name']}');
+  void _viewPatientData(Patient patient) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => PatientDetailPage(patient: patient)),
+    );
   }
 
   void _showSnackBar(String message) {
@@ -158,12 +264,58 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
     );
   }
 
+  void _showCareDebugInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'สถานะการเชื่อมต่อ',
+          style: TextStyle(fontFamily: 'Sarabun'),
+        ),
+        content: Text(
+          'baseUrl: ${ApiConfig.baseUrl}\n'
+          'sent-requests: ${patientRequests.length}\n'
+          'patients: ${acceptedPatients.length}\n'
+          'loading: $_isLoadingPatients\n'
+          'isCaregiver: $isCaregiver',
+          style: const TextStyle(fontFamily: 'Sarabun'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ปิด'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hasCaregiverData =
+        patientRequests.isNotEmpty || acceptedPatients.isNotEmpty;
+    final showCaregiverUi = isCaregiver || hasCaregiverData;
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: Column(
         children: [
+          if (kDebugMode)
+            Container(
+              width: double.infinity,
+              color: Colors.black87,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                'DEBUG caregiver=$isCaregiver showUi=$showCaregiverUi '
+                'loading=$_isLoadingPatients '
+                'sent=${patientRequests.length} patients=${acceptedPatients.length}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
           // Header
           Container(
             height: 120,
@@ -199,7 +351,23 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 48),
+                    IconButton(
+                      onPressed: () async {
+                        await _bootstrapCaregiverMode();
+                        if (mounted) {
+                          _showSnackBar(
+                            'รีเฟรชแล้ว (sent=${patientRequests.length}, patients=${acceptedPatients.length})',
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.refresh, color: Colors.white),
+                      tooltip: 'รีเฟรช',
+                    ),
+                    IconButton(
+                      onPressed: _showCareDebugInfo,
+                      icon: const Icon(Icons.info_outline, color: Colors.white),
+                      tooltip: 'ดูสถานะ',
+                    ),
                   ],
                 ),
               ),
@@ -282,7 +450,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                       ],
 
                       // ส่วนของผู้ดูแล - เพิ่มผู้ใช้งาน
-                      if (isCaregiver) ...[
+                      if (showCaregiverUi) ...[
                         AddUserSection(
                           controller: usernameController,
                           onSearch: _searchUser,
@@ -290,8 +458,8 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                         const SizedBox(height: 24),
                       ],
 
-                      // ส่วนของผู้ดูแล - คำขอที่รอดำเนินการ
-                      if (isCaregiver && patientRequests.isNotEmpty) ...[
+                      // ส่วนของผู้ดูแล - คำขอที่ส่งไปแล้ว (รอดำเนินการ)
+                      if (showCaregiverUi) ...[
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
@@ -332,16 +500,29 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              ...patientRequests.asMap().entries.map((entry) {
-                                final index = entry.key;
-                                final request = entry.value;
-                                return UserRequestCard(
-                                  name: request['name']!,
-                                  username: request['username']!,
-                                  isPending: true,
-                                  onCancel: () => _cancelRequest(index),
-                                );
-                              }),
+                              if (patientRequests.isEmpty)
+                                const Text(
+                                  'ยังไม่มีคำขอที่ส่งไป',
+                                  style: TextStyle(
+                                    fontFamily: 'Sarabun',
+                                    fontSize: 13,
+                                    color: AppColors.textSub,
+                                  ),
+                                )
+                              else
+                                ...patientRequests.asMap().entries.map((entry) {
+                                  final request = entry.value;
+                                  return UserRequestCard(
+                                    name: request.patientUsername.isNotEmpty
+                                        ? request.patientUsername
+                                        : 'ไม่ระบุชื่อ',
+                                    username: request.patientUsername.isNotEmpty
+                                        ? '@${request.patientUsername}'
+                                        : '',
+                                    isPending: true,
+                                    onCancel: null,
+                                  );
+                                }),
                             ],
                           ),
                         ),
@@ -349,7 +530,8 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                       ],
 
                       // ส่วนของผู้ใช้งาน - ถ้ายังไม่มีผู้ดูแล
-                      if (!isCaregiver && acceptedCaregivers.isEmpty) ...[
+                      // แสดงเฉพาะตอน "ยังไม่มีข้อมูลฝั่งผู้ดูแลเลยจริงๆ"
+                      if (!showCaregiverUi && acceptedCaregivers.isEmpty) ...[
                         EmptyStateWidget(
                           icon: Icons.people_outline,
                           title: 'คุณยังไม่ได้เป็นผู้ดูแล',
@@ -428,7 +610,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                       ),
 
                       // รายชื่อผู้ใช้งาน (สำหรับผู้ดูแล)
-                      if (isCaregiver) ...[
+                      if (showCaregiverUi) ...[
                         const SizedBox(height: 24),
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -472,7 +654,14 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              if (acceptedPatients.isEmpty)
+                              if (_isLoadingPatients)
+                                const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                )
+                              else if (acceptedPatients.isEmpty)
                                 const EmptyStateWidget(
                                   icon: Icons.person_outline,
                                   title: 'ยังไม่มีผู้ใช้งานในการดูแล',
@@ -487,8 +676,8 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                                   final index = entry.key;
                                   final patient = entry.value;
                                   return PatientCard(
-                                    name: patient['name']!,
-                                    username: patient['username']!,
+                                    name: patient.fullName,
+                                    username: patient.username,
                                     onViewData: () => _viewPatientData(patient),
                                     onDelete: () => _removePatient(index),
                                   );

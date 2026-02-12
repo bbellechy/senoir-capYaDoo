@@ -26,16 +26,25 @@ class MedicationScheduleService {
     String? medicationName,
     required DateTime date,
     required String time,
+    String? userId,
   }) async {
     try {
       final formattedDate = DateFormat('yyyy-MM-dd').format(date);
-      final response = await ApiClient.get('/daily-medication?date=$formattedDate');
+      final userParam = (userId != null && userId.isNotEmpty)
+          ? '&userId=$userId'
+          : '';
+      final response = await ApiClient.get(
+        '/daily-medication?date=$formattedDate$userParam',
+      );
 
       if (response.statusCode != 200) return null;
 
-      final List<dynamic> jsonList = json.decode(utf8.decode(response.bodyBytes));
-      final backendIntakes =
-          jsonList.map((j) => DailyIntake.fromJson(j)).toList();
+      final List<dynamic> jsonList = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+      final backendIntakes = jsonList
+          .map((j) => DailyIntake.fromJson(j))
+          .toList();
 
       String normalizeTime(String t) {
         // Compare only HH:mm to be resilient to seconds formats
@@ -138,8 +147,10 @@ class MedicationScheduleService {
       }
 
       // Fetch medications for the user
-      final medications = await MedicationService.getUserMedications(profile.id);
-      
+      final medications = await MedicationService.getUserMedications(
+        profile.id,
+      );
+
       // Generate daily intake from medications
       return await generateDailyIntakeFromMedications(medications, date);
     } catch (e) {
@@ -151,8 +162,9 @@ class MedicationScheduleService {
   // Generate daily intake list from medications based on date, days, startDate, endDate
   static Future<List<DailyIntake>> generateDailyIntakeFromMedications(
     List<UserMedication> medications,
-    DateTime date,
-  ) async {
+    DateTime date, {
+    String? backendUserId,
+  }) async {
     final List<DailyIntake> dailyIntakes = [];
     final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
     final int dayOfWeek = date.weekday; // 1=Monday, 7=Sunday
@@ -169,7 +181,11 @@ class MedicationScheduleService {
       if (med.startDate != null) {
         final startDate = DateTime.tryParse(med.startDate!);
         if (startDate != null) {
-          final startDateOnly = DateTime(startDate.year, startDate.month, startDate.day);
+          final startDateOnly = DateTime(
+            startDate.year,
+            startDate.month,
+            startDate.day,
+          );
           if (dateOnly.isBefore(startDateOnly)) continue;
         }
       }
@@ -177,29 +193,40 @@ class MedicationScheduleService {
       if (med.endDate != null) {
         final endDate = DateTime.tryParse(med.endDate!);
         if (endDate != null) {
-          final endDateOnly = DateTime(endDate.year, endDate.month, endDate.day);
+          final endDateOnly = DateTime(
+            endDate.year,
+            endDate.month,
+            endDate.day,
+          );
           if (dateOnly.isAfter(endDateOnly)) continue;
         }
       }
 
-      // Generate intake times from intakePeriods
-      final intakeTimes = _getIntakeTimesFromPeriods(med.intakePeriods);
-      
+      // Generate intake times from intakePeriods (+ adjust by intakeTiming to match backend)
+      final intakeEntries = _getIntakeEntriesFromPeriods(
+        med.intakePeriods,
+        intakeTiming: med.intakeTiming,
+      );
+
       // If no intake periods specified, skip
-      if (intakeTimes.isEmpty) continue;
+      if (intakeEntries.isEmpty) continue;
 
       // Create DailyIntake for each time
-      for (final time in intakeTimes) {
+      for (final entry in intakeEntries) {
+        final periodKey = entry.key;
+        final time = entry.value;
         // Check if there's an existing intake record from backend
         // For now, we'll create a basic intake record
         // The backend should handle the actual intake status via daily-medication API
         final intakeId = '${med.id}_${formattedDate}_$time';
-        
+
         dailyIntakes.add(
           DailyIntake(
             intakeId: intakeId,
             medicationName: med.name,
             time: time,
+            periodKey: periodKey,
+            intakeTiming: med.intakeTiming,
             status: IntakeStatus.PENDING, // Default status, backend will update
             imagePath: med.imagePath,
             remainingQuantity: med.remainingQuantity,
@@ -210,13 +237,22 @@ class MedicationScheduleService {
     }
 
     // Try to get actual intake status from backend daily-medication API
-    return await _mergeWithBackendIntakeStatus(dailyIntakes, formattedDate);
+    return await _mergeWithBackendIntakeStatus(
+      dailyIntakes,
+      formattedDate,
+      backendUserId: backendUserId,
+    );
   }
 
   // Get intake times from periods (MORNING, NOON, EVENING, BEDTIME)
-  static List<String> _getIntakeTimesFromPeriods(List<String>? periods) {
+  // Adjust by intakeTiming (BEFORE_MEAL/AFTER_MEAL) to match backend offsets (+/- 30 mins)
+  // Returns pairs (periodKey -> time)
+  static List<MapEntry<String, String>> _getIntakeEntriesFromPeriods(
+    List<String>? periods, {
+    String? intakeTiming,
+  }) {
     if (periods == null || periods.isEmpty) return [];
-    
+
     final Map<String, String> periodToTime = {
       'MORNING': '08:00:00',
       'NOON': '12:00:00',
@@ -224,33 +260,77 @@ class MedicationScheduleService {
       'BEDTIME': '21:00:00',
     };
 
-    return periods
-        .where((p) => periodToTime.containsKey(p.toUpperCase()))
-        .map((p) => periodToTime[p.toUpperCase()]!)
-        .toList();
+    int deltaMinutes = 0;
+    switch (intakeTiming?.toUpperCase()) {
+      case 'BEFORE_MEAL':
+        deltaMinutes = -30;
+        break;
+      case 'AFTER_MEAL':
+        deltaMinutes = 30;
+        break;
+      default:
+        deltaMinutes = 0; // WITH_MEAL / IMMEDIATE / null
+    }
+
+    String applyDelta(String hhmmss) {
+      final parts = hhmmss.split(':');
+      if (parts.length < 2) return hhmmss;
+      final h = int.tryParse(parts[0]) ?? 0;
+      final m = int.tryParse(parts[1]) ?? 0;
+      final base = DateTime(2000, 1, 1, h, m);
+      final shifted = base.add(Duration(minutes: deltaMinutes));
+
+      // Clamp within the same day to avoid wrap-around surprises (match backend behavior)
+      DateTime clamped = shifted;
+      if (deltaMinutes < 0 && shifted.day != base.day) {
+        clamped = DateTime(2000, 1, 1, 0, 0);
+      } else if (deltaMinutes > 0 && shifted.day != base.day) {
+        clamped = DateTime(2000, 1, 1, 23, 59);
+      }
+
+      String two(int v) => v.toString().padLeft(2, '0');
+      return '${two(clamped.hour)}:${two(clamped.minute)}:00';
+    }
+
+    final entries = <MapEntry<String, String>>[];
+    for (final raw in periods) {
+      final p = raw.toString().trim().toUpperCase();
+      final base = periodToTime[p];
+      if (base == null) continue;
+      entries.add(MapEntry(p, applyDelta(base)));
+    }
+    return entries;
   }
 
   // Merge with backend intake status if available
   static Future<List<DailyIntake>> _mergeWithBackendIntakeStatus(
     List<DailyIntake> generatedIntakes,
-    String formattedDate,
-  ) async {
+    String formattedDate, {
+    String? backendUserId,
+  }) async {
     try {
+      final userParam = (backendUserId != null && backendUserId.isNotEmpty)
+          ? '&userId=$backendUserId'
+          : '';
       final response = await ApiClient.get(
-        '/daily-medication?date=$formattedDate',
+        '/daily-medication?date=$formattedDate$userParam',
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = json.decode(
           utf8.decode(response.bodyBytes),
         );
-        final backendIntakes = jsonList.map((json) => DailyIntake.fromJson(json)).toList();
-        
+        final backendIntakes = jsonList
+            .map((json) => DailyIntake.fromJson(json))
+            .toList();
+
         print('Backend intakes count: ${backendIntakes.length}');
         for (final intake in backendIntakes) {
-          print('Backend intake: ${intake.medicationName} at ${intake.time} - ID: ${intake.intakeId}');
+          print(
+            'Backend intake: ${intake.medicationName} at ${intake.time} - ID: ${intake.intakeId}',
+          );
         }
-        
+
         String normalizeTime(String t) {
           if (t.length >= 5) return t.substring(0, 5);
           return t;
@@ -312,7 +392,7 @@ class MedicationScheduleService {
         // Update generated intakes with backend status and intakeId (if available)
         // Only update existing generated intakes, don't add new ones from backend
         final List<DailyIntake> mergedIntakes = [];
-        
+
         for (final generated in generatedIntakes) {
           final hhmm = normalizeTime(generated.time);
           final period = getTimePeriod(generated.time);
@@ -325,7 +405,8 @@ class MedicationScheduleService {
           }
 
           // 2) name + time
-          backend ??= byNameTime['${normalizeName(generated.medicationName)}_$hhmm'];
+          backend ??=
+              byNameTime['${normalizeName(generated.medicationName)}_$hhmm'];
 
           // 3) unique medicationId + period
           if (backend == null &&
@@ -337,33 +418,44 @@ class MedicationScheduleService {
 
           // 4) unique name + period
           if (backend == null) {
-            final list = byNamePeriod['${normalizeName(generated.medicationName)}_$period'];
+            final list =
+                byNamePeriod['${normalizeName(generated.medicationName)}_$period'];
             if (list != null && list.length == 1) backend = list.first;
           }
-          
+
           if (backend != null) {
             // Found matching backend intake - update status and intakeId (if available)
             mergedIntakes.add(
               DailyIntake(
-                intakeId: backend.intakeId.isNotEmpty 
-                    ? backend.intakeId 
-                    : generated.intakeId, // Use backend intakeId if available, otherwise keep generated
-                medicationName: generated.medicationName, // Always keep from generated (has name)
-                time: generated.time, // Always keep from generated (correct format)
+                intakeId: backend.intakeId.isNotEmpty
+                    ? backend.intakeId
+                    : generated
+                          .intakeId, // Use backend intakeId if available, otherwise keep generated
+                medicationName: generated
+                    .medicationName, // Always keep from generated (has name)
+                time: generated
+                    .time, // Always keep from generated (correct format)
+                periodKey: generated.periodKey,
+                intakeTiming: generated.intakeTiming,
                 status: backend.status, // Always use backend status
                 imagePath: generated.imagePath ?? backend.imagePath,
-                remainingQuantity: generated.remainingQuantity ?? backend.remainingQuantity,
+                remainingQuantity:
+                    generated.remainingQuantity ?? backend.remainingQuantity,
                 medicationId: generated.medicationId ?? backend.medicationId,
               ),
             );
-            print('Updated: ${generated.medicationName} at ${generated.time} - Status: ${backend.status}, Backend ID: ${backend.intakeId.isEmpty ? "none" : backend.intakeId}');
+            print(
+              'Updated: ${generated.medicationName} at ${generated.time} - Status: ${backend.status}, Backend ID: ${backend.intakeId.isEmpty ? "none" : backend.intakeId}',
+            );
           } else {
             // No backend record yet - use generated intake as is (status will be PENDING)
-            print('No backend record: ${generated.medicationName} at ${generated.time} - Generated ID: ${generated.intakeId}');
+            print(
+              'No backend record: ${generated.medicationName} at ${generated.time} - Generated ID: ${generated.intakeId}',
+            );
             mergedIntakes.add(generated);
           }
         }
-        
+
         print('Total merged intakes: ${mergedIntakes.length}');
         return mergedIntakes;
       } else {
@@ -373,7 +465,7 @@ class MedicationScheduleService {
     } catch (e) {
       print('Error merging with backend intake status: $e');
     }
-    
+
     return generatedIntakes;
   }
 
@@ -388,12 +480,15 @@ class MedicationScheduleService {
     // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (36 characters with hyphens)
     // Or without hyphens: 32 hex characters
     if (intakeId.isEmpty) return false;
-    
+
     // Check if it contains underscore (generated IDs have format: medId_date_time)
     if (intakeId.contains('_')) return false;
-    
+
     // Check if it's a valid UUID format (with or without hyphens)
-    final uuidPattern = RegExp(r'^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$', caseSensitive: false);
+    final uuidPattern = RegExp(
+      r'^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$',
+      caseSensitive: false,
+    );
     return uuidPattern.hasMatch(intakeId);
   }
 
@@ -415,10 +510,12 @@ class MedicationScheduleService {
       print('Marking as taken - intakeId: $intakeId');
       final response = await ApiClient.post('/daily-medication/$intakeId/take');
       print('Mark as taken response: ${response.statusCode}');
-      if (response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 204) {
+      if (response.statusCode != 200 &&
+          response.statusCode != 201 &&
+          response.statusCode != 204) {
         print('Response body: ${response.body}');
       }
-      
+
       return IntakeActionResponse(
         success:
             response.statusCode == 200 ||

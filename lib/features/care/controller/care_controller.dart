@@ -4,11 +4,13 @@ import 'package:capyadoo/core/services/care_service.dart';
 
 class CareController extends ChangeNotifier {
   List<CareRequest> _requests = [];
+  List<SentCareRequest> _sentRequests = [];
   List<Patient> _patients = [];
   bool _isLoading = false;
   String? _error;
 
   List<CareRequest> get requests => _requests;
+  List<SentCareRequest> get sentRequests => _sentRequests;
   List<Patient> get patients => _patients;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -21,11 +23,13 @@ class CareController extends ChangeNotifier {
     try {
       final results = await Future.wait([
         CareService.getCareRequests(),
+        CareService.getSentCareRequests(),
         CareService.getPatients(),
       ]);
 
       _requests = results[0] as List<CareRequest>;
-      _patients = results[1] as List<Patient>;
+      _sentRequests = results[1] as List<SentCareRequest>;
+      _patients = results[2] as List<Patient>;
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -51,6 +55,19 @@ class CareController extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     final success = await CareService.respondToRequest(id, accept);
+    if (success) {
+      await loadData();
+    } else {
+      _isLoading = false;
+      notifyListeners();
+    }
+    return success;
+  }
+
+  Future<bool> cancelSentRequest(String id) async {
+    _isLoading = true;
+    notifyListeners();
+    final success = await CareService.cancelSentRequest(id);
     if (success) {
       await loadData();
     } else {

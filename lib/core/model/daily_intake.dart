@@ -4,6 +4,11 @@ class DailyIntake {
   final String intakeId;
   final String medicationName;
   final String time;
+  /// ช่วงเวลาเชิงตรรกะ (ยึดตาม intakePeriods) เพื่อให้ไม่หลุดช่วงเวลาถึงแม้เวลาเลื่อนจาก intakeTiming
+  /// ค่าที่ใช้: MORNING, NOON, EVENING, BEDTIME
+  final String? periodKey;
+  /// intakeTiming ของยา (BEFORE_MEAL/AFTER_MEAL/WITH_MEAL/IMMEDIATE)
+  final String? intakeTiming;
   final IntakeStatus status;
   final String? imagePath;
   final int? remainingQuantity;
@@ -13,6 +18,8 @@ class DailyIntake {
     required this.intakeId,
     required this.medicationName,
     required this.time,
+    this.periodKey,
+    this.intakeTiming,
     required this.status,
     this.imagePath,
     this.remainingQuantity,
@@ -70,10 +77,21 @@ class DailyIntake {
       imagePath = medication['imagePath']?.toString();
     }
 
+    // intakeTiming may exist at root or in medication object
+    String? intakeTiming = json['intakeTiming']?.toString();
+    if (intakeTiming == null &&
+        json['medication'] != null &&
+        json['medication'] is Map) {
+      final medication = json['medication'] as Map;
+      intakeTiming = medication['intakeTiming']?.toString();
+    }
+
     return DailyIntake(
       intakeId: intakeId,
       medicationName: medicationName,
       time: time,
+      periodKey: json['periodKey']?.toString(),
+      intakeTiming: intakeTiming,
       status: _parseStatus(json['status']),
       imagePath: imagePath,
       remainingQuantity: remainingQuantity,
@@ -102,6 +120,8 @@ class DailyIntake {
       'intakeId': intakeId,
       'medicationName': medicationName,
       'time': time,
+      'periodKey': periodKey,
+      'intakeTiming': intakeTiming,
       'status': status.name,
       'imagePath': imagePath,
       'remainingQuantity': remainingQuantity,

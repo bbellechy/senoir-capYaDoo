@@ -4,10 +4,14 @@ class MedicationBox {
   final String? description;
   final String? imagePath;
   final List<String> medicationIds;
-  final List<Map<String, dynamic>> medications; // Store medications array from API
+  final List<Map<String, dynamic>>
+  medications; // Store medications array from API
   final List<int> days;
   final List<String> intakePeriods;
   final String? intakeTiming;
+
+  /// วันที่สร้างกล่อง (จาก API) เพื่อแสดงเฉพาะตั้งแต่วันนี้เป็นต้นไป
+  final DateTime? createdAt;
 
   MedicationBox({
     this.id,
@@ -19,6 +23,7 @@ class MedicationBox {
     this.days = const [],
     this.intakePeriods = const [],
     this.intakeTiming,
+    this.createdAt,
   });
 
   factory MedicationBox.fromJson(Map<String, dynamic> json) {
@@ -26,7 +31,7 @@ class MedicationBox {
     // If 'medications' array exists, extract IDs. Otherwise use 'medicationIds'.
     List<String> ids = [];
     List<Map<String, dynamic>> medicationsList = [];
-    
+
     if (json['medications'] != null && json['medications'] is List) {
       final medsList = json['medications'] as List;
       medicationsList = medsList.map((e) {
@@ -35,11 +40,14 @@ class MedicationBox {
         }
         return <String, dynamic>{};
       }).toList();
-      
-      ids = medicationsList.map((e) {
-        if (e.containsKey('id')) return e['id'].toString();
-        return '';
-      }).where((id) => id.isNotEmpty).toList();
+
+      ids = medicationsList
+          .map((e) {
+            if (e.containsKey('id')) return e['id'].toString();
+            return '';
+          })
+          .where((id) => id.isNotEmpty)
+          .toList();
     } else if (json['medicationIds'] != null) {
       ids = (json['medicationIds'] as List).map((e) => e.toString()).toList();
     }
@@ -47,13 +55,67 @@ class MedicationBox {
     // Parse days
     List<int> daysList = [];
     if (json['days'] != null && json['days'] is List) {
-      daysList = (json['days'] as List).map((e) => e is int ? e : int.tryParse(e.toString()) ?? 0).where((e) => e > 0).toList();
+      daysList = (json['days'] as List)
+          .map((e) => e is int ? e : int.tryParse(e.toString()) ?? 0)
+          .where((e) => e > 0)
+          .toList();
     }
 
     // Parse intakePeriods
+    // รองรับได้หลายรูปแบบ:
+    // - intakePeriods: ["MORNING","NOON"]
+    // - intakePeriods: "MORNING,NOON"
+    // - intake_periods: "MORNING,NOON" (เผื่อ backend ส่ง snake_case)
     List<String> periodsList = [];
-    if (json['intakePeriods'] != null && json['intakePeriods'] is List) {
-      periodsList = (json['intakePeriods'] as List).map((e) => e.toString()).toList();
+    final rawPeriods =
+        json['intakePeriods'] ?? json['intake_periods'] ?? json['intakePeriod'];
+
+    List<String> _normalizePeriods(Iterable<dynamic> periods) {
+      return periods
+          .map((e) => e.toString().trim())
+          .where((p) => p.isNotEmpty)
+          .map((p) {
+            // normalize (support Thai labels just in case)
+            switch (p.toUpperCase()) {
+              case 'เช้า':
+              case 'MORNING':
+                return 'MORNING';
+              case 'กลางวัน':
+              case 'NOON':
+              case 'AFTERNOON':
+                return 'NOON';
+              case 'เย็น':
+              case 'EVENING':
+                return 'EVENING';
+              case 'ก่อนนอน':
+              case 'BEDTIME':
+              case 'NIGHT':
+                return 'BEDTIME';
+              default:
+                return p.toUpperCase();
+            }
+          })
+          .toSet() // de-dup
+          .toList();
+    }
+
+    if (rawPeriods is List) {
+      periodsList = _normalizePeriods(rawPeriods);
+    } else if (rawPeriods is String) {
+      periodsList = _normalizePeriods(rawPeriods.split(','));
+    }
+
+    // Parse createdAt (รองรับทั้ง createdAt และ created_at)
+    DateTime? createdAt;
+    if (json['createdAt'] != null) {
+      try {
+        createdAt = DateTime.tryParse(json['createdAt'].toString());
+      } catch (_) {}
+    }
+    if (createdAt == null && json['created_at'] != null) {
+      try {
+        createdAt = DateTime.tryParse(json['created_at'].toString());
+      } catch (_) {}
     }
 
     return MedicationBox(
@@ -66,6 +128,7 @@ class MedicationBox {
       days: daysList,
       intakePeriods: periodsList,
       intakeTiming: json['intakeTiming'],
+      createdAt: createdAt,
     );
   }
 
@@ -92,6 +155,7 @@ class MedicationBox {
     List<int>? days,
     List<String>? intakePeriods,
     String? intakeTiming,
+    DateTime? createdAt,
   }) {
     return MedicationBox(
       id: id ?? this.id,
@@ -103,6 +167,7 @@ class MedicationBox {
       days: days ?? this.days,
       intakePeriods: intakePeriods ?? this.intakePeriods,
       intakeTiming: intakeTiming ?? this.intakeTiming,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

@@ -89,10 +89,10 @@ class NotificationController extends ChangeNotifier {
               minute,
             );
 
-            // If more than 15 minutes late
-            if (now.difference(scheduleTime).inMinutes > 15) {
+            // If current time has passed the scheduled time, mark as overdue immediately
+            if (now.isAfter(scheduleTime)) {
               print(
-                'Medication ${schedule.medicationName} is overdue (>15 mins). Updating status.',
+                'Medication ${schedule.medicationName} is overdue. Updating status.',
               );
               await MedicationScheduleService.markAsOverdue(schedule.intakeId);
             }

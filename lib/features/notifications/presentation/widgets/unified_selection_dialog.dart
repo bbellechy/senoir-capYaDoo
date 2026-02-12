@@ -123,7 +123,7 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
           'name': item.displayName,
           'id': item.id,
           'type': 'user_medication',
-          'imagePath': item.masterMedicationEntity?.indication,
+          'imagePath': item.imagePath,
         },
       ); // Indication is usually where a generic image might be, but use null if not sure
     } else if (item is MedicationBox) {
@@ -275,7 +275,7 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
                   child: Text(
                     _searchController.text.isNotEmpty
                         ? 'ไม่พบยา "${_searchController.text}"'
-                        : 'ยังไม่มียาในรายการ\nกรุณาเพิ่มข้อมูลยาก่อน',
+                        : 'กรุณาค้นหาชื่อยาหรือพิมพ์ชื่อยาที่ต้องการเพิ่ม',
                     textAlign: TextAlign.center,
                   ),
                 )

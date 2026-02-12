@@ -18,6 +18,27 @@ class CareRequest {
   }
 }
 
+/// รายการคำขอที่ caregiver "ส่งออกไป" หา patient
+class SentCareRequest {
+  final String id;
+  final String patientUsername;
+  final String status; // e.g., "PENDING"
+
+  SentCareRequest({
+    required this.id,
+    required this.patientUsername,
+    required this.status,
+  });
+
+  factory SentCareRequest.fromJson(Map<String, dynamic> json) {
+    return SentCareRequest(
+      id: json['id']?.toString() ?? '',
+      patientUsername: json['patientUsername']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+    );
+  }
+}
+
 class Patient {
   final String patientId;
   final String username;

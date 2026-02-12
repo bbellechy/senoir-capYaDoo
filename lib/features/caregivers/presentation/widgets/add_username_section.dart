@@ -4,7 +4,7 @@ import 'package:capyadoo/core/constants/app_colors.dart';
 /// ส่วนเพิ่มผู้ใช้งาน (สำหรับผู้ดูแล)
 class AddUserSection extends StatelessWidget {
   final TextEditingController controller;
-  final VoidCallback onSearch;
+  final Future<void> Function() onSearch;
 
   const AddUserSection({
     super.key,
@@ -100,7 +100,7 @@ class AddUserSection extends StatelessWidget {
                 width: 100,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: onSearch,
+                  onPressed: () => onSearch(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4CAF50),
                     foregroundColor: Colors.white,

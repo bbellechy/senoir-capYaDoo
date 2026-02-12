@@ -330,21 +330,31 @@ class PillBoxService {
   }
 
   // Remove medication from box using the specific DELETE endpoint
+  // Backend: DELETE /api/medication-boxes/{boxId}/medications/{medicationId}
+  // ถ้าลบแล้วยังโผล่: ตรวจว่า backend ใช้ medicationId ชนิดไหน (user_medication_id หรือ master_medication_id)
   Future<bool> removeMedicationFromBox(
     String boxId,
     String medicationId,
   ) async {
     try {
       final token = await _getToken();
+      final url = '$_baseUrl/$boxId/medications/$medicationId';
+      print('DELETE $url');
       final response = await http.delete(
-        Uri.parse('$_baseUrl/$boxId/medications/$medicationId'),
+        Uri.parse(url),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
-      return response.statusCode == 200 || response.statusCode == 204;
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return true;
+      }
+      print(
+        'Remove medication failed: status=${response.statusCode} body=${response.body}',
+      );
+      return false;
     } catch (e) {
       print('Error removing medication from box: $e');
       return false;
@@ -405,13 +415,20 @@ class PillBoxService {
   // Get daily medications for a specific box
   Future<List<Map<String, dynamic>>> getDailyMedicationsForBox(
     String boxId,
-    DateTime date,
-  ) async {
+    DateTime date, {
+    String? userId,
+  }) async {
     try {
       final token = await _getToken();
       final dateStr = DateFormat('yyyy-MM-dd').format(date);
+      final uri = Uri.parse('$_baseUrl/$boxId/daily?date=$dateStr');
+      final uriWithUserId = userId != null && userId.isNotEmpty
+          ? uri.replace(
+              queryParameters: {...uri.queryParameters, 'userId': userId},
+            )
+          : uri;
       final response = await http.get(
-        Uri.parse('$_baseUrl/$boxId/daily?date=$dateStr'),
+        uriWithUserId,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -426,6 +443,36 @@ class PillBoxService {
     } catch (e) {
       print('Error fetching daily medications for box: $e');
       return [];
+    }
+  }
+
+  /// ยืนยันการทานยาทั้งกล่องในวันที่เลือก (กดครั้งเดียว = ทุกตัวในกล่องของช่วงนั้นเท่านั้น)
+  /// [period] ถ้าระบุ (MORNING, NOON, EVENING, BEDTIME) จะมาร์กเฉพาะช่วงนั้น ไม่มาร์กทุกมื้อ
+  Future<bool> markBoxAsTaken(
+    String boxId,
+    DateTime date, {
+    String? userId,
+    String? period,
+  }) async {
+    try {
+      final token = await _getToken();
+      final dateStr = DateFormat('yyyy-MM-dd').format(date);
+      var uri = Uri.parse('$_baseUrl/$boxId/daily/take?date=$dateStr');
+      var params = Map<String, String>.from(uri.queryParameters);
+      if (userId != null && userId.isNotEmpty) params['userId'] = userId;
+      if (period != null && period.isNotEmpty) params['period'] = period;
+      uri = uri.replace(queryParameters: params);
+      final response = await http.post(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('Error marking box as taken: $e');
+      return false;
     }
   }
 }

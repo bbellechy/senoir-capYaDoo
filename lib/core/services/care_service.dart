@@ -8,6 +8,26 @@ import 'package:capyadoo/core/services/medication_service.dart';
 import 'package:capyadoo/core/services/medication_schedule_service.dart';
 
 class CareService {
+  /// รายการคำขอที่เราส่งไปหาใครแล้ว (รอการตอบรับ) - ใช้ endpoint ตามที่ backend รองรับ
+  static Future<List<SentCareRequest>> getSentCareRequests() async {
+    try {
+      final response = await ApiClient.get('/care/sent-requests');
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = json.decode(
+          utf8.decode(response.bodyBytes),
+        );
+        return jsonList.map((j) => SentCareRequest.fromJson(j)).toList();
+      }
+      print(
+        'getSentCareRequests failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}',
+      );
+      return [];
+    } catch (e) {
+      print('Error getting sent care requests: $e');
+      return [];
+    }
+  }
+
   // Get all care requests sent to the current user
   static Future<List<CareRequest>> getCareRequests() async {
     try {
@@ -63,6 +83,9 @@ class CareService {
         );
         return jsonList.map((j) => Patient.fromJson(j)).toList();
       }
+      print(
+        'getPatients failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}',
+      );
       return [];
     } catch (e) {
       print('Error getting patients: $e');
@@ -78,23 +101,27 @@ class CareService {
     try {
       // Use the same API as main page: /medications/search?userId=...
       final medications = await MedicationService.getUserMedications(patientId);
-      
+
       // Generate daily intake from medications (same logic as main page)
-      return await MedicationScheduleService.generateDailyIntakeFromMedications(medications, date);
+      return await MedicationScheduleService.generateDailyIntakeFromMedications(
+        medications,
+        date,
+        backendUserId: patientId,
+      );
     } catch (e) {
       print('Error getting patient schedule: $e');
       return [];
     }
   }
 
-
   // Get medication boxes for a specific patient
   static Future<List<MedicationBox>> getPatientMedicationBoxes(
     String patientId,
   ) async {
     try {
+      // Use the same API as main page: /api/medication-boxes?userId=...
       final response = await ApiClient.get(
-        '/caregiver/patients/$patientId/medication-boxes',
+        '/medication-boxes?userId=$patientId',
       );
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = json.decode(
@@ -125,12 +152,21 @@ class CareService {
   // Remove a patient from caregiver's care list
   static Future<bool> removePatient(String patientId) async {
     try {
-      final response = await ApiClient.delete(
-        '/caregiver/patients/$patientId',
-      );
+      final response = await ApiClient.delete('/caregiver/patients/$patientId');
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
       print('Error removing patient: $e');
+      return false;
+    }
+  }
+
+  // Cancel a sent care request
+  static Future<bool> cancelSentRequest(String requestId) async {
+    try {
+      final response = await ApiClient.delete('/care/sent-requests/$requestId');
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('Error canceling sent request: $e');
       return false;
     }
   }

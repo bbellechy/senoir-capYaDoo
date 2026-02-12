@@ -346,17 +346,6 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                             ),
                           ),
                         ),
-                        if (_medicineName == null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4, left: 12),
-                            child: Text(
-                              'กรุณาระบุชื่อยา',
-                              style: TextStyle(
-                                color: Colors.red[700],
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -832,7 +821,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
             ? 'BEFORE_MEAL'
             : _mealTiming == 'หลังอาหาร'
             ? 'AFTER_MEAL'
-            : 'WITH_MEAL',
+            : 'IMMEDIATE',
         'intakePeriods': _mealTimes.map((t) {
           switch (t) {
             case 'เช้า':

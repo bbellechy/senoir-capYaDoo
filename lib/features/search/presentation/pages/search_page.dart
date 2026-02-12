@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:speech_to_text/speech_to_text.dart' as speech_to_text;
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/model/medication.dart';
 import '../../../../core/services/search_master_medication_api.dart';
 import 'medication_detail_page.dart';
@@ -17,8 +15,6 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
-
-  final ImagePicker _picker = ImagePicker();
 
   bool loading = false;
   List<Medication> results = [];
@@ -37,7 +33,7 @@ class _SearchPageState extends State<SearchPage> {
       return '$th ($en)';
     }
 
-    return hasTh ? th! : en!;
+    return hasTh ? th : en ?? '-';
   }
 
   final speech_to_text.SpeechToText _speechToText =
@@ -121,37 +117,6 @@ class _SearchPageState extends State<SearchPage> {
       setState(() => _isListening = false);
     } catch (e) {
       print('Stop listening error: $e');
-    }
-  }
-
-  Future<void> _pickImageFromCamera() async {
-    try {
-      var status = await Permission.camera.request();
-      if (!status.isGranted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('กรุณาอนุญาตการใช้กล้อง')));
-        return;
-      }
-
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 80,
-      );
-
-      if (image != null) {
-        // TODO: Process image for OCR or medication identification
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('กำลังประมวลผลรูปภาพ...'),
-            backgroundColor: Colors.blue.shade600,
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('ไม่สามารถเปิดกล้องได้')));
     }
   }
 
@@ -297,30 +262,6 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  height: 48,
-                  width: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.qr_code_scanner,
-                      color: Colors.grey.shade700,
-                      size: 24,
-                    ),
-                    onPressed: _pickImageFromCamera,
                   ),
                 ),
               ],
