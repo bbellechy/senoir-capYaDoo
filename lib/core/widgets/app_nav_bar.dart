@@ -10,7 +10,6 @@ class AppNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 88,
       decoration: BoxDecoration(
         color: AppColors.white,
         boxShadow: [
@@ -23,7 +22,7 @@ class AppNavBar extends StatelessWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -77,7 +76,6 @@ class AppNavBar extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         width: 64,
-        height: 56,
         padding: const EdgeInsets.symmetric(vertical: 4.0),
         decoration: isSelected
             ? BoxDecoration(

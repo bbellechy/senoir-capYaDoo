@@ -269,8 +269,8 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
                   'รายการยาในกล่อง (${_medicationsInBox.length})',
                   style: const TextStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w600,
+                    
                   ),
                 ),
                 TextButton.icon(
@@ -282,8 +282,8 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
                   label: const Text(
                     'เพิ่มยา',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.primaryBlue,
                     ),
                   ),
@@ -417,7 +417,6 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
                       medName,
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     if (userMed != null) ...[

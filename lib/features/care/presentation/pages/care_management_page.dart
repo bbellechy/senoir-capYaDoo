@@ -286,7 +286,7 @@ class _CareManagementPageState extends State<CareManagementPage> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
-                  fontSize: 16,
+                  fontSize: 20,
                 ),
               ),
             ],

@@ -65,7 +65,8 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
           _selectedTiming = 'หลังอาหาร';
           break;
         case 'WITH_MEAL':
-          _selectedTiming = 'พร้อมอาหาร';
+          // UI no longer exposes WITH_MEAL; map to the closest available option.
+          _selectedTiming = 'หลังอาหาร';
           break;
         case 'IMMEDIATE':
           _selectedTiming = 'ทานทันที';
@@ -84,20 +85,7 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    if (_selectedDays.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('กรุณาเลือกวันที่ต้องทานยา')),
-      );
-      return;
-    }
-    if (_selectedPeriods.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('กรุณาเลือกช่วงเวลารับประทาน')),
-      );
-      return;
-    }
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() {
       _isSubmitting = true;
@@ -128,8 +116,6 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
             ? 'BEFORE_MEAL'
             : _selectedTiming == 'หลังอาหาร'
             ? 'AFTER_MEAL'
-            : _selectedTiming == 'พร้อมอาหาร'
-            ? 'WITH_MEAL'
             : 'IMMEDIATE',
       );
       success = await _controller.updatePillBox(updatedBox, _imageFile);
@@ -157,8 +143,6 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
             ? 'BEFORE_MEAL'
             : _selectedTiming == 'หลังอาหาร'
             ? 'AFTER_MEAL'
-            : _selectedTiming == 'พร้อมอาหาร'
-            ? 'WITH_MEAL'
             : 'IMMEDIATE',
       );
     }
@@ -200,6 +184,7 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -222,8 +207,9 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
               // Name Field
               AppTextField(
                 controller: _nameController,
-                label: 'ชื่อกล่องยา *',
+                label: 'ชื่อกล่องยา',
                 hint: 'เช่น ยาเบาหวาน, ยาประจำวัน',
+                isRequired: true,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'กรุณาระบุชื่อกล่องยา';
@@ -243,29 +229,60 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
               const SizedBox(height: 32),
 
               // Days selector
-              Row(
-                children: [
-                  const Text(
-                    'วันที่ต้องทานยา',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  const Text(
-                    ' *',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.red,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              DaySelectorWidget(
-                selectedDays: _selectedDays,
-                onDaysChanged: (days) {
-                  setState(() {
-                    _selectedDays = days;
-                  });
+              FormField<List<int>>(
+                initialValue: _selectedDays,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'กรุณาเลือกวันที่ต้องทานยา';
+                  }
+                  return null;
+                },
+                builder: (field) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            'วันที่ต้องทานยา',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const Text(
+                            ' *',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      DaySelectorWidget(
+                        selectedDays: _selectedDays,
+                        onDaysChanged: (days) {
+                          setState(() {
+                            _selectedDays = days;
+                          });
+                          field.didChange(days);
+                        },
+                      ),
+                      if (field.hasError) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          field.errorText ?? '',
+                          style: const TextStyle(
+                            color: AppColors.error,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
                 },
               ),
               const SizedBox(height: 24),
@@ -308,9 +325,9 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                   ),
                   Expanded(
                     child: AppRadioButton<String>(
-                      value: 'พร้อมอาหาร',
+                      value: 'ทานทันที',
                       groupValue: _selectedTiming,
-                      label: 'พร้อมอาหาร',
+                      label: 'ทานทันที',
                       onChanged: (value) {
                         if (value != null) {
                           setState(() {
@@ -323,117 +340,116 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                 ],
               ),
               const SizedBox(height: 8),
-              AppRadioButton<String>(
-                value: 'ทานทันที',
-                groupValue: _selectedTiming,
-                label: 'ทานทันที',
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedTiming = value;
-                    });
-                  }
-                },
-              ),
               const SizedBox(height: 24),
 
               // Meal times
-              Row(
-                children: [
-                  const Text(
-                    'เวลารับประทาน',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  const Text(
-                    ' *',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.red,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Column(
-                children: [
-                  Row(
+              FormField<List<String>>(
+                initialValue: _selectedPeriods,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'กรุณาเลือกเวลารับประทาน';
+                  }
+                  return null;
+                },
+                builder: (field) {
+                  void togglePeriod(String period, bool checked) {
+                    setState(() {
+                      if (checked) {
+                        if (!_selectedPeriods.contains(period)) {
+                          _selectedPeriods.add(period);
+                        }
+                      } else {
+                        _selectedPeriods.remove(period);
+                      }
+                    });
+                    field.didChange(List<String>.from(_selectedPeriods));
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: AppCheckbox(
-                          value: _selectedPeriods.contains('เช้า'),
-                          label: 'เช้า',
-                          onChanged: (checked) {
-                            setState(() {
-                              if (checked == true) {
-                                if (!_selectedPeriods.contains('เช้า')) {
-                                  _selectedPeriods.add('เช้า');
-                                }
-                              } else {
-                                _selectedPeriods.remove('เช้า');
-                              }
-                            });
-                          },
-                        ),
+                      Row(
+                        children: [
+                          const Text(
+                            'เวลารับประทาน',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const Text(
+                            ' *',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
                       ),
-                      Expanded(
-                        child: AppCheckbox(
-                          value: _selectedPeriods.contains('กลางวัน'),
-                          label: 'กลางวัน',
-                          onChanged: (checked) {
-                            setState(() {
-                              if (checked == true) {
-                                if (!_selectedPeriods.contains('กลางวัน')) {
-                                  _selectedPeriods.add('กลางวัน');
-                                }
-                              } else {
-                                _selectedPeriods.remove('กลางวัน');
-                              }
-                            });
-                          },
-                        ),
+                      const SizedBox(height: 8),
+                      Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: AppCheckbox(
+                                  value: _selectedPeriods.contains('เช้า'),
+                                  label: 'เช้า',
+                                  onChanged: (checked) {
+                                    togglePeriod('เช้า', checked == true);
+                                  },
+                                ),
+                              ),
+                              Expanded(
+                                child: AppCheckbox(
+                                  value: _selectedPeriods.contains('กลางวัน'),
+                                  label: 'กลางวัน',
+                                  onChanged: (checked) {
+                                    togglePeriod('กลางวัน', checked == true);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: AppCheckbox(
+                                  value: _selectedPeriods.contains('เย็น'),
+                                  label: 'เย็น',
+                                  onChanged: (checked) {
+                                    togglePeriod('เย็น', checked == true);
+                                  },
+                                ),
+                              ),
+                              Expanded(
+                                child: AppCheckbox(
+                                  value: _selectedPeriods.contains('ก่อนนอน'),
+                                  label: 'ก่อนนอน',
+                                  onChanged: (checked) {
+                                    togglePeriod('ก่อนนอน', checked == true);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
+                      if (field.hasError) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          field.errorText ?? '',
+                          style: const TextStyle(
+                            color: AppColors.error,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppCheckbox(
-                          value: _selectedPeriods.contains('เย็น'),
-                          label: 'เย็น',
-                          onChanged: (checked) {
-                            setState(() {
-                              if (checked == true) {
-                                if (!_selectedPeriods.contains('เย็น')) {
-                                  _selectedPeriods.add('เย็น');
-                                }
-                              } else {
-                                _selectedPeriods.remove('เย็น');
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                      Expanded(
-                        child: AppCheckbox(
-                          value: _selectedPeriods.contains('ก่อนนอน'),
-                          label: 'ก่อนนอน',
-                          onChanged: (checked) {
-                            setState(() {
-                              if (checked == true) {
-                                if (!_selectedPeriods.contains('ก่อนนอน')) {
-                                  _selectedPeriods.add('ก่อนนอน');
-                                }
-                              } else {
-                                _selectedPeriods.remove('ก่อนนอน');
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  );
+                },
               ),
               const SizedBox(height: 32),
 

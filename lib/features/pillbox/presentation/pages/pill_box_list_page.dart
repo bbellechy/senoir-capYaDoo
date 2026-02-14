@@ -123,7 +123,7 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
               children: [
                 const Text(
                   'กล่องยาทั้งหมด',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                 ),
                 GestureDetector(
                   onTap: _navigateToAddPage,
@@ -134,13 +134,14 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
                         style: TextStyle(
                           color: AppColors.primaryBlue,
                           fontWeight: FontWeight.w600,
+                          fontSize: 20,
                         ),
                       ),
                       const SizedBox(width: 4),
                       Icon(
                         Icons.add_circle,
                         color: AppColors.primaryBlue,
-                        size: 20,
+                        size: 24,
                       ),
                     ],
                   ),

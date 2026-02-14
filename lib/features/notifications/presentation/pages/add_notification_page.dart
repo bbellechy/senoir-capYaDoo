@@ -149,7 +149,6 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
               ),
             ),
             const SizedBox(height: 12),
@@ -216,14 +215,25 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
             const SizedBox(height: 24),
 
             // Time Selector
-            Text(
-              'เวลา *',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-              ),
-            ),
+                       Row(
+                          children: [
+                            const Text(
+                              'เวลา',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Text(
+                              ' *',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
             const SizedBox(height: 8),
             GestureDetector(
               onTap: _selectTime,
@@ -257,9 +267,8 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
             Text(
               'วันที่ต้องการแจ้งเตือน',
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 16),

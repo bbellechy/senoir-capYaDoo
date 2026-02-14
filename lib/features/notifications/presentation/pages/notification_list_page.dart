@@ -204,14 +204,14 @@ class _NotificationListPageState extends State<NotificationListPage> {
                       color: _isDeleteMode
                           ? AppColors.primaryBlue
                           : Colors.grey[600],
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
                 const Text(
                   'การแจ้งเตือนทั้งหมด',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                 ),
                 TextButton(
                   onPressed: () => _navigateToAdd(context),
@@ -221,8 +221,8 @@ class _NotificationListPageState extends State<NotificationListPage> {
                         'เพิ่ม',
                         style: TextStyle(
                           color: AppColors.primaryBlue,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -246,7 +246,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
                 icon: const Icon(Icons.delete, color: Colors.white),
                 label: const Text(
                   'ลบรายการที่เลือก',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white, fontSize: 20,),
                 ),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               ),

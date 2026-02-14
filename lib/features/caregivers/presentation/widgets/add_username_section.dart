@@ -41,10 +41,10 @@ class AddUserSection extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               const Text(
-                'เพิ่มผู้ใช้งาน',
+                'เพิ่มผู้ใช้งานที่ต้องการดูแล',
                 style: TextStyle(
                   fontFamily: 'Sarabun',
-                  fontSize: 16,
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
@@ -53,10 +53,10 @@ class AddUserSection extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Username ของผู้ใช้งาน',
+            'Username ของผู้ใช้งานที่ต้องการดูแล',
             style: TextStyle(
               fontFamily: 'Sarabun',
-              fontSize: 14,
+              fontSize: 20,
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
             ),

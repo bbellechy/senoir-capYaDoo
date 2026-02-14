@@ -93,7 +93,7 @@ class _MedicineListPageState extends State<MedicineListPage> {
               children: [
                 const Text(
                   'รายการยาทั้งหมด',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -112,7 +112,7 @@ class _MedicineListPageState extends State<MedicineListPage> {
                         'เพิ่มข้อมูล',
                         style: TextStyle(
                           color: AppColors.primaryBlue,
-                          fontSize: 24,
+                          fontSize: 20,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

@@ -86,9 +86,9 @@ class _PillSelectionWidgetState extends State<PillSelectionWidget> {
                     text: TextSpan(
                       text: 'เลือกยา/กล่องยา ',
                       style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[700],
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
                       ),
                       children: const [
                         TextSpan(
