@@ -12,7 +12,8 @@ class PillBoxService {
   // Replace with your actual backend URL
   // static const String _baseUrl = 'http://10.0.2.2:8080/api/medication-boxes';
   static const String _baseUrl =
-      'https://concluded-conf-given-beans.trycloudflare.com/api/medication-boxes';
+      // 'https://concluded-conf-given-beans.trycloudflare.com/api/medication-boxes';
+      'http://192.168.1.37:8080/api/medication-boxes';
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   // Get token helper - use TokenStorage to match the rest of the app
@@ -288,11 +289,15 @@ class PillBoxService {
       final queryParams = <String, String>{};
       if (masterMedicationId != null) {
         queryParams['masterMedicationId'] = masterMedicationId;
-      } else if (medicationName != null) {
+      }
+      if (medicationName != null) {
         queryParams['medicationName'] = medicationName;
-      } else if (medicationId != null) {
+      }
+      if (medicationId != null) {
         queryParams['medicationId'] = medicationId;
-      } else {
+      }
+
+      if (queryParams.isEmpty) {
         print('Error: No medication identifier provided');
         return false;
       }

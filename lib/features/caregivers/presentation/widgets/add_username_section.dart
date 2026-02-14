@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
+import 'package:capyadoo/core/widgets/speech_to_text_field.dart';
 
 /// ส่วนเพิ่มผู้ใช้งาน (สำหรับผู้ดูแล)
 class AddUserSection extends StatelessWidget {
@@ -64,35 +65,43 @@ class AddUserSection extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: TextField(
+                child: SpeechToTextField(
                   controller: controller,
-                  decoration: InputDecoration(
-                    hintText: 'กรอก Username ของผู้ใช้งาน',
-                    hintStyle: const TextStyle(
-                      fontFamily: 'Sarabun',
-                      color: AppColors.textSub,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.blueBorder),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.blueBorder),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: AppColors.primaryBlue,
-                        width: 2,
+                  onSearch: onSearch,
+                  child: TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      hintText: 'กรอก Username ของผู้ใช้งาน',
+                      hintStyle: const TextStyle(
+                        fontFamily: 'Sarabun',
+                        color: AppColors.textSub,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: AppColors.blueBorder,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: AppColors.blueBorder,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: AppColors.primaryBlue,
+                          width: 2,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    style: const TextStyle(fontFamily: 'Sarabun', fontSize: 14),
                   ),
-                  style: const TextStyle(fontFamily: 'Sarabun', fontSize: 14),
                 ),
               ),
               const SizedBox(width: 8),

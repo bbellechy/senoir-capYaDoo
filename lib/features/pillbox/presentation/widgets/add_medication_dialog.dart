@@ -3,6 +3,7 @@ import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/model/medication.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
 import 'package:capyadoo/features/notifications/data/medication_search_service.dart';
+import 'package:capyadoo/core/widgets/speech_to_text_field.dart';
 import 'dart:async';
 
 class AddMedicationDialog extends StatefulWidget {
@@ -26,6 +27,13 @@ class _AddMedicationDialogState extends State<AddMedicationDialog> {
   List<dynamic> _suggestions = [];
   bool _isSearching = false;
   Timer? _debounce;
+
+  // Speech-to-text
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -77,13 +85,17 @@ class _AddMedicationDialogState extends State<AddMedicationDialog> {
       name = med.name;
       id = med.id;
     } else if (med is UserMedication) {
-      name = med.name;
+      name = med.displayName;
       id = med.id;
     } else {
       name = med.toString();
     }
 
-    Navigator.pop(context, {'name': name, 'id': id});
+    Navigator.pop(context, {
+      'name': name,
+      'id': id,
+      'type': med is UserMedication ? 'user_medication' : 'medication',
+    });
   }
 
   void _onManualSubmit() {
@@ -126,23 +138,27 @@ class _AddMedicationDialogState extends State<AddMedicationDialog> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
-            TextField(
+            SpeechToTextField(
               controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'เลือกยา...',
-                filled: true,
-                fillColor: Colors.blue[50],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+              onSearch: () => _performSearch(_searchController.text),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: 'เลือกยา...',
+                  filled: true,
+                  fillColor: Colors.blue[50],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  suffixIcon: _isSearching
+                      ? const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : null,
                 ),
-                suffixIcon: _isSearching
-                    ? const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
               ),
             ),
             const SizedBox(height: 16),

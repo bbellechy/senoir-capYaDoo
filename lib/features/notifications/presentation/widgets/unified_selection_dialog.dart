@@ -4,6 +4,7 @@ import 'package:capyadoo/core/model/medication.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/features/notifications/data/medication_search_service.dart';
+import 'package:capyadoo/core/widgets/speech_to_text_field.dart';
 import 'dart:async';
 
 class UnifiedSelectionDialog extends StatefulWidget {
@@ -12,6 +13,7 @@ class UnifiedSelectionDialog extends StatefulWidget {
   final bool showMasterMedications;
   final bool showBoxes;
   final bool allowFreeText;
+
   /// โหลดรายการยาทั้งหมดแสดงทันทีเมื่อเปิด dialog (เหมาะกับหน้าเพิ่มยาในกล่อง)
   final bool loadAllMedicationsOnOpen;
 
@@ -39,6 +41,9 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
   List<MedicationBox> _boxes = [];
   bool _isSearching = false;
   Timer? _debounce;
+  int _lastSearchId = 0;
+
+  // Speech-to-text
 
   @override
   void initState() {
@@ -79,32 +84,67 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
 
   Future<void> _performSearch(String query) async {
     setState(() => _isSearching = true);
+    final currentSearchId = ++_lastSearchId;
+
     try {
       final List<Future> futures = [];
 
       // Always search user medications
       futures.add(_searchService.searchUserMedications(widget.userId, query));
 
-      // Optionally search master medications
-      if (widget.showMasterMedications && query.isNotEmpty) {
+      // Always search master medications when enabled
+      if (widget.showMasterMedications) {
         futures.add(_searchService.searchMasterMedications(query));
       }
 
       final results = await Future.wait(futures);
 
-      final userMeds = results[0] as List<UserMedication>;
-      final masterMeds = widget.showMasterMedications && query.isNotEmpty
+      if (currentSearchId != _lastSearchId) return;
+
+      final userMedsResult = results[0] as List<UserMedication>;
+      final masterMedsResult = widget.showMasterMedications
           ? results[1] as List<Medication>
           : <Medication>[];
 
+      final List<dynamic> combinedList = [];
+      final Set<String> seenIds = {};
+
+      // 1. Process User Medications
+      for (var med in userMedsResult) {
+        combinedList.add(med);
+        if (med.id != null) seenIds.add(med.id!);
+        if (med.masterMedicationEntity?.id != null) {
+          seenIds.add(med.masterMedicationEntity!.id!);
+        }
+      }
+
+      // 2. Process Master Medications
+      for (var med in masterMedsResult) {
+        if (med.id != null && !seenIds.contains(med.id)) {
+          combinedList.add(med);
+          seenIds.add(med.id!);
+        } else if (med.id == null) {
+          final medName = med.name.toLowerCase();
+          bool alreadyIn = combinedList.any((m) {
+            if (m is UserMedication)
+              return m.displayName.toLowerCase() == medName;
+            if (m is Medication) return m.name.toLowerCase() == medName;
+            return false;
+          });
+          if (!alreadyIn) combinedList.add(med);
+        }
+      }
+
       if (mounted) {
         setState(() {
-          _medSuggestions = [...userMeds, ...masterMeds];
+          _medSuggestions = combinedList;
           _isSearching = false;
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _isSearching = false);
+      if (mounted && currentSearchId == _lastSearchId) {
+        setState(() => _isSearching = false);
+      }
     }
   }
 
@@ -247,30 +287,33 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
   Widget _buildMedicationSearch() {
     return Column(
       children: [
-        TextField(
+        SpeechToTextField(
           controller: _searchController,
-          onChanged: _onSearchChanged,
-          decoration: InputDecoration(
-            hintText: 'ค้นหายา...',
-            filled: true,
-            fillColor: Colors.blue[50],
-            prefixIcon: const Icon(Icons.search),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+          onSearch: () => _performSearch(_searchController.text),
+          child: TextField(
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            decoration: InputDecoration(
+              hintText: 'ค้นหายา...',
+              filled: true,
+              fillColor: Colors.blue[50],
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              suffixIcon: _isSearching
+                  ? const Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : null,
             ),
-            suffixIcon: _isSearching
-                ? const Padding(
-                    padding: EdgeInsets.all(12.0),
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : null,
           ),
         ),
         const SizedBox(height: 12),
         Expanded(
-          child:
-              _medSuggestions.isEmpty && !_isSearching
+          child: _medSuggestions.isEmpty && !_isSearching
               ? Center(
                   child: Text(
                     _searchController.text.isNotEmpty

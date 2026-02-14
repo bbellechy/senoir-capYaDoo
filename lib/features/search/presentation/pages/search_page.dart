@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
-import 'package:speech_to_text/speech_to_text.dart' as speech_to_text;
 import '../../../../core/model/medication.dart';
-import '../../../../core/services/search_master_medication_api.dart';
+import '../../../../core/model/user_medication.dart';
+import '../../../../core/services/auth_service.dart';
+import '../../../../features/notifications/data/medication_search_service.dart';
+import '../../../../core/widgets/speech_to_text_field.dart';
 import 'medication_detail_page.dart';
 
 class SearchPage extends StatefulWidget {
@@ -17,9 +19,11 @@ class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
 
   bool loading = false;
-  List<Medication> results = [];
+  List<dynamic> results = []; // Can contain both Medication and UserMedication
   bool hasSearched = false;
-  bool _isListening = false;
+  int _lastSearchId = 0;
+  String? _userId;
+  final MedicationSearchService _searchService = MedicationSearchService();
 
   String displayTradeName(String? th, String? en) {
     bool hasTh = th != null && th.trim().isNotEmpty && th.trim() != '-';
@@ -36,96 +40,33 @@ class _SearchPageState extends State<SearchPage> {
     return hasTh ? th : en ?? '-';
   }
 
-  final speech_to_text.SpeechToText _speechToText =
-      speech_to_text.SpeechToText();
-  bool _speechEnabled = false;
-
   @override
   void initState() {
     super.initState();
-    _initSpeech();
+    _loadUserId();
   }
 
-  Future<void> _initSpeech() async {
+  Future<void> _loadUserId() async {
     try {
-      _speechEnabled = await _speechToText.initialize(
-        onStatus: (status) {
-          print('STT Status: $status');
-          if (status == 'notListening' || status == 'done') {
-            setState(() => _isListening = false);
-            if (_searchController.text.isNotEmpty) {
-              search();
-            }
-          } else if (status == 'listening') {
-            setState(() => _isListening = true);
-          }
-        },
-        onError: (errorNotification) {
-          print('STT Error: $errorNotification');
-          setState(() => _isListening = false);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('เกิดข้อผิดพลาด: ${errorNotification.errorMsg}'),
-              ),
-            );
-          }
-        },
-      );
-      setState(() {});
-    } catch (e) {
-      print('STT Init Error: $e');
-    }
-  }
-
-  Future<void> _startListening() async {
-    if (!_speechEnabled) {
-      await _initSpeech();
-      if (!_speechEnabled) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('ไม่สามารถเรียกใช้งานไมโครโฟนได้')),
-          );
-        }
-        return;
+      final profile = await AuthService.getProfile();
+      if (mounted) {
+        setState(() {
+          _userId = profile?.id;
+        });
       }
-    }
-
-    if (_isListening) {
-      await _stopListening();
-    } else {
-      try {
-        await _speechToText.listen(
-          onResult: (result) {
-            setState(() {
-              _searchController.text = result.recognizedWords;
-            });
-          },
-          localeId: 'th_TH',
-          cancelOnError: true,
-          listenMode: speech_to_text.ListenMode.dictation,
-        );
-      } catch (e) {
-        print('Start listening error: $e');
-      }
-    }
-  }
-
-  Future<void> _stopListening() async {
-    try {
-      await _speechToText.stop();
-      setState(() => _isListening = false);
     } catch (e) {
-      print('Stop listening error: $e');
+      print('Error loading user ID: $e');
     }
   }
 
   void search() async {
     if (_searchController.text.trim().isEmpty) {
-      setState(() {
-        results = [];
-        hasSearched = false;
-      });
+      if (mounted) {
+        setState(() {
+          results = [];
+          hasSearched = false;
+        });
+      }
       return;
     }
 
@@ -134,21 +75,80 @@ class _SearchPageState extends State<SearchPage> {
       hasSearched = true;
     });
 
+    final currentSearchId = ++_lastSearchId;
+
     try {
-      results = await SearchMedicationApi.search(_searchController.text.trim());
-    } catch (e) {
+      final query = _searchController.text.trim();
+
+      // Parallel searches
+      final List<Future> futures = [];
+      if (_userId != null && _userId!.isNotEmpty) {
+        futures.add(_searchService.searchUserMedications(_userId!, query));
+      }
+      futures.add(_searchService.searchMasterMedications(query));
+
+      final searchResults = await Future.wait(futures);
+
+      // Check if this is still the latest search
+      if (currentSearchId != _lastSearchId) return;
+
+      final List<dynamic> combinedResults = [];
+      final Set<String> seenIds = {};
+
+      // 1. Process User Medications first (highest priority)
+      if (_userId != null && _userId!.isNotEmpty) {
+        final List<UserMedication> userMeds =
+            searchResults[0] as List<UserMedication>;
+        for (var med in userMeds) {
+          combinedResults.add(med);
+          if (med.id != null) seenIds.add(med.id!);
+          // Also block by master ID if available to prevent doubles
+          if (med.masterMedicationEntity?.id != null) {
+            seenIds.add(med.masterMedicationEntity!.id!);
+          }
+        }
+      }
+
+      // 2. Process Master Medications
+      final List<Medication> masterMeds =
+          (_userId != null && _userId!.isNotEmpty)
+          ? searchResults[1] as List<Medication>
+          : searchResults[0] as List<Medication>;
+
+      for (var med in masterMeds) {
+        if (med.id != null && !seenIds.contains(med.id)) {
+          combinedResults.add(med);
+          seenIds.add(med.id!);
+        } else if (med.id == null) {
+          final medName = med.name.toLowerCase();
+          bool alreadyIn = combinedResults.any((m) {
+            if (m is UserMedication)
+              return m.displayName.toLowerCase() == medName;
+            if (m is Medication) return m.name.toLowerCase() == medName;
+            return false;
+          });
+          if (!alreadyIn) combinedResults.add(med);
+        }
+      }
+
       if (mounted) {
+        setState(() {
+          results = combinedResults;
+        });
+      }
+    } catch (e) {
+      print('Search error: $e');
+      if (mounted && currentSearchId == _lastSearchId) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('ค้นหาไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'),
             backgroundColor: Colors.red.shade400,
-            behavior: SnackBarBehavior.floating,
           ),
         );
       }
     }
 
-    if (mounted) {
+    if (mounted && currentSearchId == _lastSearchId) {
       setState(() => loading = false);
     }
   }
@@ -156,9 +156,6 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void dispose() {
     _searchController.dispose();
-    if (_isListening) {
-      _speechToText.stop();
-    }
     super.dispose();
   }
 
@@ -223,42 +220,36 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                       ],
                     ),
-                    child: TextField(
+                    child: SpeechToTextField(
                       controller: _searchController,
-                      onChanged: (value) {
-                        if (value.isEmpty) {
-                          setState(() {
-                            results = [];
-                            hasSearched = false;
-                          });
-                        }
-                      },
-                      onSubmitted: (_) => search(),
-                      decoration: InputDecoration(
-                        hintText: 'ค้นหายาที่ต้องการ...',
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Colors.grey.shade600,
-                          size: 22,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isListening ? Icons.mic : Icons.mic_none,
-                            color: _isListening
-                                ? Colors.red
-                                : Colors.grey.shade600,
+                      onSearch: search,
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (value) {
+                          if (value.isEmpty) {
+                            setState(() {
+                              results = [];
+                              hasSearched = false;
+                            });
+                          }
+                        },
+                        onSubmitted: (_) => search(),
+                        decoration: InputDecoration(
+                          hintText: 'ค้นหายาที่ต้องการ...',
+                          hintStyle: TextStyle(
+                            color: Colors.grey.shade400,
+                            fontSize: 14,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: Colors.grey.shade600,
                             size: 22,
                           ),
-                          onPressed: _startListening,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
                       ),
                     ),
@@ -358,13 +349,35 @@ class _SearchPageState extends State<SearchPage> {
       padding: const EdgeInsets.all(16),
       itemCount: results.length,
       itemBuilder: (context, index) {
-        final medication = results[index];
-        return _buildMedicationCard(medication);
+        final item = results[index];
+        return _buildMedicationCard(item);
       },
     );
   }
 
-  Widget _buildMedicationCard(Medication medication) {
+  Widget _buildMedicationCard(dynamic item) {
+    // Handle both Medication and UserMedication
+    Medication medication;
+    String subtitle;
+    bool isUserMedication = false;
+
+    if (item is Medication) {
+      medication = item;
+      subtitle = 'ยากลาง';
+    } else if (item is UserMedication) {
+      // Convert UserMedication to Medication for display
+      medication = Medication(
+        id: item.id,
+        tradenameTh: item.displayName,
+        tradenameEn: item.masterMedicationEntity?.tradenameEn,
+        indication: item.masterMedicationEntity?.indication,
+        categoryUse: item.masterMedicationEntity?.categoryUse,
+      );
+      subtitle = 'ยาของคุณ';
+      isUserMedication = true;
+    } else {
+      return const SizedBox.shrink();
+    }
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
@@ -416,6 +429,17 @@ class _SearchPageState extends State<SearchPage> {
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF1A1A1A),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isUserMedication
+                              ? AppColors.primaryBlue
+                              : Colors.grey.shade500,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 4),

@@ -17,7 +17,7 @@ class MedicationSearchService {
     try {
       String path = '/medications/search?userId=$userId';
       if (keyword != null && keyword.isNotEmpty) {
-        path += '&keyword=$keyword';
+        path += '&keyword=${Uri.encodeComponent(keyword)}';
       }
 
       final response = await ApiClient.get(path);

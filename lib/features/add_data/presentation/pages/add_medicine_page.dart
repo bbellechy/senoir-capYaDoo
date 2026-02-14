@@ -11,6 +11,7 @@ import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/services/medication_service.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
 import 'package:capyadoo/core/widgets/app_searchable_dropdown.dart';
+import 'package:capyadoo/core/model/user_medication.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/day_selector_widget.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/unified_selection_dialog.dart';
 import 'package:path_provider/path_provider.dart';
@@ -84,10 +85,93 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
     );
 
     if (result != null) {
-      final medName = result['name'] as String;
+      final type = result['type'] as String;
       setState(() {
-        _medicineName = medName;
+        _medicineName = result['name'] as String;
+
+        // If it's a UserMedication or filtered master medication, we might have more data
+        // For now, let's see if we can get the full object or if we need to fetch it
+        // The result currently only has name, id, type, imagePath.
       });
+
+      // If it's a known medication, try to fetch its full details to populate fields
+      if (result['id'] != null &&
+          (type == 'medication' || type == 'user_medication')) {
+        _populateFieldsFromSelection(
+          result['id'].toString(),
+          type == 'user_medication',
+        );
+      }
+    }
+  }
+
+  Future<void> _populateFieldsFromSelection(
+    String id,
+    bool isUserMedication,
+  ) async {
+    setState(() => _isLoading = true);
+    try {
+      UserMedication? med;
+      if (isUserMedication) {
+        med = await MedicationService.getMedicationById(id, _userId!);
+      } else {
+        // For master medication, we don't have a direct "get by ID" that returns UserMedication
+        // but it will populate name which is already done.
+        // Some master meds might have default dosages in the future.
+      }
+
+      if (med != null && mounted) {
+        setState(() {
+          _medicineName = med!.name;
+          _amount = med.dosage?.toString() ?? '';
+          _amountController.text = _amount;
+          _unit = med.unit ?? '';
+          _frequency = med.timesPerDay?.toString() ?? '';
+          _frequencyController.text = _frequency;
+
+          if (med.intakeTiming != null) {
+            _mealTiming = med.intakeTiming == 'BEFORE_MEAL'
+                ? 'ก่อนอาหาร'
+                : med.intakeTiming == 'AFTER_MEAL'
+                ? 'หลังอาหาร'
+                : 'ทานทันที';
+          }
+
+          if (med.intakePeriods != null) {
+            _mealTimes = med.intakePeriods!.map((t) {
+              switch (t) {
+                case 'MORNING':
+                  return 'เช้า';
+                case 'NOON':
+                  return 'กลางวัน';
+                case 'EVENING':
+                  return 'เย็น';
+                case 'BEDTIME':
+                  return 'ก่อนนอน';
+                default:
+                  return t;
+              }
+            }).toList();
+          }
+
+          if (med.days != null) {
+            _selectedDays = List<int>.from(med.days!);
+          }
+
+          if (med.notes != null) {
+            _additionalNotes = med.notes!;
+            _notesController.text = _additionalNotes;
+          }
+
+          if (med.imagePath != null) {
+            _initialImageUrl = med.imagePath;
+          }
+        });
+      }
+    } catch (e) {
+      print('Error populating fields: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

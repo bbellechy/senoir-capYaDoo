@@ -516,9 +516,11 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
 
       if (type == 'user_medication' && medId != null) {
         // Already a user medication - use medicationId parameter
+        // Backend also requires medicationName or masterMedicationId
         success = await _controller.addMedicationToBox(
           _currentBox.id!,
           medicationId: medId,
+          medicationName: medName,
         );
       } else if (type == 'medication' && medId != null) {
         // Master medication - use masterMedicationId parameter
