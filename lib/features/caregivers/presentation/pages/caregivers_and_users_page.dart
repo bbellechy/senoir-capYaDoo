@@ -12,6 +12,9 @@ import 'package:capyadoo/features/caregivers/presentation/widgets/patient_card.d
 import '../widgets/role_section.dart';
 import '../widgets/add_username_section.dart';
 import '../widgets/empty_state_widget.dart';
+import 'package:capyadoo/core/services/page_navigation_service.dart';
+import 'package:capyadoo/core/widgets/app_empty_card.dart';
+import 'package:capyadoo/core/widgets/app_nav_bar.dart';
 
 class CaregiversAndUsersPage extends StatefulWidget {
   const CaregiversAndUsersPage({super.key});
@@ -40,6 +43,10 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
   @override
   void initState() {
     super.initState();
+    // Use addPostFrameCallback to avoid triggering rebuilds during an ongoing build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      PageNavigationService().setCaregiverMode(true);
+    });
     // Auto-detect caregiver mode from backend data (patients / sent-requests)
     // so the screen can show data even if the toggle wasn't pressed.
     _bootstrapCaregiverMode();
@@ -90,6 +97,10 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
 
   @override
   void dispose() {
+    // Similarly for dispose, ensure we don't trigger updates during a build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      PageNavigationService().setCaregiverMode(false);
+    });
     usernameController.dispose();
     super.dispose();
   }
@@ -297,7 +308,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
     final showCaregiverUi = isCaregiver || hasCaregiverData;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF8FAF8),
       body: Column(
         children: [
           if (kDebugMode)
@@ -316,60 +327,111 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                 ),
               ),
             ),
-          // Header
+          // Premium Caregiver Header
           Container(
-            height: 120,
+            height: 220,
+            width: double.infinity,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+              color: AppColors.success,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(40),
+                bottomRight: Radius.circular(40),
               ),
             ),
             child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
+              bottom: false,
+              child: Stack(
+                children: [
+                  // Decorative Circles (Green tint)
+                  Positioned(
+                    right: -50,
+                    top: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: -30,
+                    bottom: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 8,
+                    top: 0,
+                    child: IconButton(
                       icon: const Icon(
                         Icons.arrow_back_ios,
                         color: Colors.white,
                       ),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                    const Expanded(
-                      child: Center(
-                        child: Text(
+                  ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.supervisor_account_rounded,
+                          color: Colors.white70,
+                          size: 48,
+                        ),
+                        SizedBox(height: 12),
+                        Text(
                           'ผู้ดูแลและผู้ใช้งาน',
                           style: TextStyle(
-                            fontFamily: 'Sarabun',
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Sarabun',
+                            letterSpacing: 1.2,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                    IconButton(
-                      onPressed: () async {
-                        await _bootstrapCaregiverMode();
-                        if (mounted) {
-                          _showSnackBar(
-                            'รีเฟรชแล้ว (sent=${patientRequests.length}, patients=${acceptedPatients.length})',
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.refresh, color: Colors.white),
-                      tooltip: 'รีเฟรช',
+                  ),
+                  Positioned(
+                    right: 8,
+                    top: 0,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () async {
+                            await _bootstrapCaregiverMode();
+                            if (mounted) {
+                              _showSnackBar(
+                                'รีเฟรชแล้ว (sent=${patientRequests.length}, patients=${acceptedPatients.length})',
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.refresh, color: Colors.white),
+                          tooltip: 'รีเฟรช',
+                        ),
+                        IconButton(
+                          onPressed: _showCareDebugInfo,
+                          icon: const Icon(
+                            Icons.info_outline,
+                            color: Colors.white,
+                          ),
+                          tooltip: 'ดูสถานะ',
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      onPressed: _showCareDebugInfo,
-                      icon: const Icon(Icons.info_outline, color: Colors.white),
-                      tooltip: 'ดูสถานะ',
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -662,12 +724,11 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                                   ),
                                 )
                               else if (acceptedPatients.isEmpty)
-                                const EmptyStateWidget(
+                                AppEmptyCard(
                                   icon: Icons.person_outline,
                                   title: 'ยังไม่มีผู้ใช้งานในการดูแล',
                                   subtitle:
                                       'เพิ่มผู้ใช้งานโดยใช้ Username ของผู้ใช้งาน',
-                                  showBorder: false,
                                 )
                               else
                                 ...acceptedPatients.asMap().entries.map((
@@ -695,6 +756,14 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: AppNavBar(
+        currentIndex: 4, // Profile tab index
+        isCaregiverMode: true,
+        onTap: (index) {
+          Navigator.pop(context);
+          PageNavigationService().setIndex(index);
+        },
       ),
     );
   }

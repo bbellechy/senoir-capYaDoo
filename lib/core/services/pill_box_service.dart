@@ -259,7 +259,15 @@ class PillBoxService {
 
       if (response.statusCode == 200) {
         final data = json.decode(utf8.decode(response.bodyBytes));
+        print('DEBUG getBoxById: Raw response data: $data');
+        print(
+          'DEBUG getBoxById: medications in response: ${data['medications']}',
+        );
         final box = MedicationBox.fromJson(data);
+        print('DEBUG getBoxById: Parsed box medications: ${box.medications}');
+        print(
+          'DEBUG getBoxById: Parsed box medicationIds: ${box.medicationIds}',
+        );
 
         final localPath = await _getLocalImageMapping(boxId);
         if (localPath != null) {
@@ -321,6 +329,19 @@ class PillBoxService {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        // Parse response to check if medications are included
+        try {
+          final responseData = json.decode(utf8.decode(response.bodyBytes));
+          if (responseData is Map<String, dynamic>) {
+            final medications = responseData['medications'];
+            print('DEBUG: Response medications: $medications');
+            if (medications != null && medications is List) {
+              print('DEBUG: Medications count: ${medications.length}');
+            }
+          }
+        } catch (e) {
+          print('DEBUG: Error parsing response: $e');
+        }
         return true;
       } else {
         print(

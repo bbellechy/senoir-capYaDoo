@@ -4,6 +4,7 @@ import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/features/pillbox/controller/pill_box_controller.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_add_page.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_detail_page.dart';
+import 'package:capyadoo/core/widgets/app_empty_card.dart';
 
 class PillBoxListPage extends StatefulWidget {
   const PillBoxListPage({super.key});
@@ -37,7 +38,6 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
   }
 
   void _navigateToDetail(String boxId) async {
-    // Need to find the box object or pass ID
     final box = _controller.pillBoxes.firstWhere((b) => b.id == boxId);
     final result = await Navigator.push(
       context,
@@ -97,53 +97,133 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'กล่องยา',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'Sarabun',
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: Column(
         children: [
+          // Premium Header
+          Container(
+            height: 220,
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(40),
+                bottomRight: Radius.circular(40),
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Stack(
+                children: [
+                  // Decorative Circles
+                  Positioned(
+                    right: -50,
+                    top: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.05),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: -30,
+                    bottom: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.05),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 8,
+                    top: 0,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.white,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.medication_liquid_outlined,
+                          color: Colors.white70,
+                          size: 48,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'กล่องยา',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 36,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Sarabun',
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 16.0,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'กล่องยาทั้งหมด',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
                 ),
                 GestureDetector(
                   onTap: _navigateToAddPage,
-                  child: Row(
-                    children: [
-                      Text(
-                        'สร้างกล่องยาใหม่',
-                        style: TextStyle(
-                          color: AppColors.primaryBlue,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 20,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'สร้างใหม่',
+                          style: TextStyle(
+                            color: AppColors.primaryBlue,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.add_circle,
-                        color: AppColors.primaryBlue,
-                        size: 24,
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.add_circle,
+                          color: AppColors.primaryBlue,
+                          size: 20,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -158,21 +238,14 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
                 }
 
                 if (_controller.pillBoxes.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.medication,
-                          size: 64,
-                          color: Colors.grey[300],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'ไม่มีกล่องยา',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ],
+                  return Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Center(
+                      child: AppEmptyCard(
+                        title: 'ยังไม่มีกล่องยา',
+                        subtitle: 'สร้างกล่องยาใหม่เพื่อเริ่มต้นใช้งาน',
+                        onAddPressed: _navigateToAddPage,
+                      ),
                     ),
                   );
                 }

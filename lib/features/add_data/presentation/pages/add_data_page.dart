@@ -13,6 +13,7 @@ import 'package:capyadoo/core/model/user_medication.dart';
 import 'package:capyadoo/core/model/symptom_record.dart';
 import 'add_medicine_page.dart';
 import 'add_symptom_page.dart';
+import 'package:capyadoo/core/widgets/app_empty_card.dart';
 
 class AddDataPage extends StatefulWidget {
   const AddDataPage({super.key});
@@ -138,69 +139,101 @@ class _AddDataPageState extends State<AddDataPage>
         children: [
           // Header with tabs
           Container(
-            height: 175,
-            decoration: const BoxDecoration(color: AppColors.primaryBlue),
+            height: 220,
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(40),
+                bottomRight: Radius.circular(40),
+              ),
+            ),
             child: SafeArea(
               bottom: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
+              child: Stack(
                 children: [
-                  // Top bar with back button and title
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 30,
-                      right: 30,
-                      bottom: 20,
+                  // Decorative Circles
+                  Positioned(
+                    right: -50,
+                    top: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.05),
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
+                  ),
+                  Positioned(
+                    left: -30,
+                    bottom: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.05),
+                      ),
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // Title
+                      Expanded(
+                        child: Center(
                           child: Text(
                             _headerTitle,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 36,
+                              fontWeight: FontWeight.w700,
                               fontFamily: 'Sarabun',
+                              letterSpacing: 1.2,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-
-                  // Tabs
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: SizedBox(
-                      height: 40,
-                      child: TabBar(
-                        controller: _tabController,
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Colors.white,
-                        dividerColor: Colors.transparent,
-                        indicatorSize: TabBarIndicatorSize.label,
-                        indicator: const UnderlineTabIndicator(
-                          borderSide: BorderSide(color: Colors.white, width: 3),
-                          insets: EdgeInsets.zero,
-                        ),
-                        labelStyle: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Sarabun',
-                        ),
-                        unselectedLabelStyle: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Sarabun',
-                        ),
-                        tabs: const [
-                          Tab(text: 'ข้อมูลยา'),
-                          Tab(text: 'บันทึกอาการ'),
-                        ],
                       ),
-                    ),
+
+                      // Tabs
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: SizedBox(
+                          height: 48,
+                          child: TabBar(
+                            controller: _tabController,
+                            labelColor: Colors.white,
+                            unselectedLabelColor: Colors.white70,
+                            dividerColor: Colors.transparent,
+                            indicatorSize: TabBarIndicatorSize.label,
+                            indicator: const UnderlineTabIndicator(
+                              borderSide: BorderSide(
+                                color: Colors.white,
+                                width: 3,
+                              ),
+                              insets: EdgeInsets.zero,
+                            ),
+                            labelStyle: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'Sarabun',
+                            ),
+                            unselectedLabelStyle: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Sarabun',
+                            ),
+                            tabs: const [
+                              Tab(text: 'ข้อมูลยา'),
+                              Tab(text: 'บันทึกอาการ'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                   ),
                 ],
               ),
@@ -307,35 +340,19 @@ class _AddDataPageState extends State<AddDataPage>
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Container(
-        width: 380,
-        margin: const EdgeInsets.symmetric(horizontal: 24),
-        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-        decoration: BoxDecoration(
-          color: AppColors.whitelist,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.blueBorder, width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.medication, size: 80, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            const Text(
-              'ยังไม่มีรายการยา',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSub,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'เพิ่มยาเพื่อเริ่มต้นใช้งาน',
-              style: TextStyle(fontSize: 14, color: AppColors.textSub),
-            ),
-          ],
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Center(
+        child: AppEmptyCard(
+          title: 'ยังไม่มีรายการยา',
+          subtitle: 'เพิ่มยาเพื่อเริ่มต้นใช้งาน',
+          onAddPressed: () async {
+            final result = await Navigator.pushNamed(
+              context,
+              AppRouter.addMedicineRoute,
+            );
+            if (result == true) _loadData();
+          },
         ),
       ),
     );
@@ -422,35 +439,20 @@ class _AddDataPageState extends State<AddDataPage>
   }
 
   Widget _buildEmptySymptomState() {
-    return Center(
-      child: Container(
-        width: 380,
-        margin: const EdgeInsets.symmetric(horizontal: 24),
-        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-        decoration: BoxDecoration(
-          color: AppColors.whitelist,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.blueBorder, width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.assignment, size: 80, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            const Text(
-              'ยังไม่มีบันทึกอาการ',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSub,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'เริ่มบันทึกอาการเพื่อติดตามสุขภาพ',
-              style: TextStyle(fontSize: 14, color: AppColors.textSub),
-            ),
-          ],
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Center(
+        child: AppEmptyCard(
+          icon: Icons.assignment_outlined,
+          title: 'ยังไม่มีบันทึกอาการ',
+          subtitle: 'เริ่มบันทึกอาการเพื่อติดตามสุขภาพ',
+          onAddPressed: () async {
+            final result = await Navigator.pushNamed(
+              context,
+              AppRouter.addSymptomRoute,
+            );
+            if (result == true) _loadData();
+          },
         ),
       ),
     );

@@ -75,6 +75,8 @@ class _SpeechToTextFieldState extends State<SpeechToTextField> {
         }
         return;
       }
+      // Wait a bit for the STT engine to settle after first-time permission/init
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     if (_isListening) {
@@ -84,12 +86,12 @@ class _SpeechToTextFieldState extends State<SpeechToTextField> {
         await _speechToText.listen(
           onResult: (result) {
             setState(() {
-              widget.controller.text = result.recognizedWords;
+              widget.controller.text = result.recognizedWords.trim();
             });
           },
           localeId: widget.localeId,
           cancelOnError: true,
-          listenMode: speech_to_text.ListenMode.dictation,
+          listenMode: speech_to_text.ListenMode.search,
         );
       } catch (e) {
         print('Start listening error: $e');

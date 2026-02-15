@@ -47,11 +47,8 @@ class _HomePageState extends State<HomePage> {
         return;
       }
     }
-    await Future.wait([
-      _loadSchedule(showLoading: false),
-      _loadBoxes(),
-      _checkOverdueStatus(), // Check for late medications
-    ]);
+    await _loadSchedule(showLoading: false);
+    await _checkOverdueStatus(); // Check for late medications
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -93,52 +90,42 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _checkOverdueStatus() async {
     try {
-      final now = DateTime.now();
-      final selectedDateOnly = DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-      );
-
       bool hasChanges = false;
+
+      // 1. Check master medications schedule
       for (final item in _schedule) {
         // Check items with valid UUID intakeId (from backend)
         if (item.status == IntakeStatus.PENDING &&
             !item.intakeId.contains('_') &&
             item.intakeId.isNotEmpty) {
-          final timeParts = item.time.split(':');
-          if (timeParts.length >= 2) {
-            final hour = int.tryParse(timeParts[0]) ?? 0;
-            final minute = int.tryParse(timeParts[1]) ?? 0;
-            final scheduleTime = DateTime(
-              _selectedDate.year,
-              _selectedDate.month,
-              _selectedDate.day,
-              hour,
-              minute,
-            );
+          if (_isTimePassedForSelectedDate(item.time)) {
+            await MedicationScheduleService.markAsOverdue(item.intakeId);
+            hasChanges = true;
+          }
+        }
+      }
 
-            // If current time has passed the scheduled time for the selected date, mark as overdue
-            // Check if it's today and time has passed, or if it's a past date
-            final isToday = selectedDateOnly.isAtSameMomentAs(
-              DateTime(now.year, now.month, now.day),
-            );
-            final isPastDate = selectedDateOnly.isBefore(
-              DateTime(now.year, now.month, now.day),
-            );
+      // 2. Check medication boxes daily medications
+      for (final boxId in _boxDailyMedications.keys) {
+        final meds = _boxDailyMedications[boxId]!;
+        for (final med in meds) {
+          final status = (med['status'] as String? ?? 'PENDING').toUpperCase();
+          final intakeId = med['id'] as String? ?? '';
 
-            if (isToday && now.isAfter(scheduleTime)) {
-              // Today and time has passed - mark as overdue immediately
-              await MedicationScheduleService.markAsOverdue(item.intakeId);
-              hasChanges = true;
-            } else if (isPastDate) {
-              // Past date - mark as overdue
-              await MedicationScheduleService.markAsOverdue(item.intakeId);
+          if (status == 'PENDING' && intakeId.isNotEmpty) {
+            final intakeTime =
+                med['intakeTime'] as String? ??
+                med['scheduledTime'] as String? ??
+                '';
+            if (intakeTime.isNotEmpty &&
+                _isTimePassedForSelectedDate(intakeTime)) {
+              await MedicationScheduleService.markAsOverdue(intakeId);
               hasChanges = true;
             }
           }
         }
       }
+
       // Reload if any changes might have happened
       if (hasChanges) {
         await _loadSchedule(showLoading: false);
@@ -1475,7 +1462,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Check if the scheduled time has passed
-  // Check if time has passed for the selected date (not today)
+  // Now handles past dates correctly: if the date is in the past, time always "passed"
   bool _isTimePassedForSelectedDate(String time) {
     try {
       final now = DateTime.now();
@@ -1486,11 +1473,17 @@ class _HomePageState extends State<HomePage> {
       );
       final todayOnly = DateTime(now.year, now.month, now.day);
 
-      // Only check overdue if selected date is today
-      if (selectedDateOnly != todayOnly) {
+      // If selected date is in the past, all scheduled times have passed
+      if (selectedDateOnly.isBefore(todayOnly)) {
+        return true;
+      }
+
+      // If selected date is in the future, no scheduled times have passed yet
+      if (selectedDateOnly.isAfter(todayOnly)) {
         return false;
       }
 
+      // If selected date is today, check the specific time
       final timeParts = time.split(':');
       if (timeParts.length >= 2) {
         final hour = int.tryParse(timeParts[0]) ?? 0;

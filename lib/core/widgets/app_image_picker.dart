@@ -63,7 +63,7 @@ class AppImagePicker extends StatelessWidget {
                     size: 32,
                   ),
                   title: const Text(
-                    'ถ่ายรูป',
+                    'แตะเพื่อถ่ายภาพหรือเลือกจากอัลบั้ม',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                   ),
                   contentPadding: const EdgeInsets.symmetric(

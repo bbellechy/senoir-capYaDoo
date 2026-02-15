@@ -5,6 +5,8 @@ import 'package:capyadoo/features/care/controller/care_controller.dart';
 import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/services/care_service.dart';
 import 'package:capyadoo/features/care/presentation/pages/patient_detail_page.dart';
+import 'package:capyadoo/core/services/page_navigation_service.dart';
+import 'package:capyadoo/core/widgets/app_empty_card.dart';
 
 class CareManagementPage extends StatefulWidget {
   const CareManagementPage({super.key});
@@ -21,12 +23,20 @@ class _CareManagementPageState extends State<CareManagementPage> {
   @override
   void initState() {
     super.initState();
+    // Use addPostFrameCallback to avoid triggering rebuilds during an ongoing build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      PageNavigationService().setCaregiverMode(true);
+    });
     _controller.loadData();
     _controller.addListener(_onControllerUpdate);
   }
 
   @override
   void dispose() {
+    // Similarly for dispose, ensure we don't trigger updates during a build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      PageNavigationService().setCaregiverMode(false);
+    });
     _controller.removeListener(_onControllerUpdate);
     _searchController.dispose();
     super.dispose();
@@ -89,7 +99,7 @@ class _CareManagementPageState extends State<CareManagementPage> {
       builder: (context) => AlertDialog(
         title: const Text('ยืนยันการเพิ่มผู้ดูแล'),
         content: Text(
-          'คุณต้องการเพิ่ม $username เป็น${_isCaregiverView ? 'ผู้ใช้งาน' : 'ผู้ดูแล'}ใช่หรือไม่?',
+          'คุณต้องการเพิ่ม $username เป็น${_isCaregiverView ? 'ผู้ดูแล' : 'ผู้ดูแล'}ใช่หรือไม่?',
         ),
         actions: [
           TextButton(
@@ -133,25 +143,87 @@ class _CareManagementPageState extends State<CareManagementPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAF8),
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'ผู้ดูแลและผู้ใช้งาน',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'Sarabun',
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: Column(
         children: [
+          // Premium Caregiver Header
+          Container(
+            height: 220,
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: AppColors.success,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(40),
+                bottomRight: Radius.circular(40),
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Stack(
+                children: [
+                  // Decorative Circles (Green tint)
+                  Positioned(
+                    right: -50,
+                    top: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: -30,
+                    bottom: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 8,
+                    top: 0,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.white,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.supervisor_account_rounded,
+                          color: Colors.white70,
+                          size: 48,
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'ผู้ดูแลและผู้ใช้งาน',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Sarabun',
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           // Main Content
           Expanded(
             child: _controller.isLoading
@@ -210,26 +282,26 @@ class _CareManagementPageState extends State<CareManagementPage> {
               ),
               const SizedBox(width: 8),
               Text(
-                _isCaregiverView ? 'เพิ่มผู้ใช้งาน' : 'เพิ่มผู้ดูแล',
+                _isCaregiverView ? 'เพิ่มผู้ใช้งานที่ต้องการดูแล' : 'เพิ่มผู้ดูแล',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 20,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Username ของ${_isCaregiverView ? 'ผู้ใช้งาน' : 'ผู้ดูแล'}',
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-          ),
+          // const SizedBox(height: 4),
+          // Text(
+          //   'Username ของ${_isCaregiverView ? 'ผู้ใช้งานที่ต้องการดูแล' : 'ผู้ดูแล'}',
+          //   style: TextStyle(color: Colors.grey[600], fontSize: 16),
+          // ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: AppInputText(
                   controller: _searchController,
-                  hintText: 'กรอก Username',
+                  hintText: 'กรอก Username ที่ต้องการดูแล',
                 ),
               ),
               const SizedBox(width: 12),
@@ -282,7 +354,7 @@ class _CareManagementPageState extends State<CareManagementPage> {
               ),
               const SizedBox(width: 8),
               Text(
-                'คำขอที่รอดำเนินการ (${_controller.sentRequests.length})',
+                'คำขอเป็นผู้ดูแล (${_controller.sentRequests.length})',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -296,11 +368,13 @@ class _CareManagementPageState extends State<CareManagementPage> {
             Center(
               child: Text(
                 'ไม่มีคำขอที่รอดำเนินการ',
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                style: TextStyle(color: Colors.grey[600], fontSize: 18),
               ),
             )
           else
-            ..._controller.sentRequests.map((request) => _buildSentRequestCard(request)),
+            ..._controller.sentRequests.map(
+              (request) => _buildSentRequestCard(request),
+            ),
         ],
       ),
     );
@@ -329,27 +403,21 @@ class _CareManagementPageState extends State<CareManagementPage> {
                 Text(
                   request.patientUsername,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
                     color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '@${request.patientUsername}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  'รอการยอมรับจากผู้ใช้งาน...',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[700],
-                  ),
-                ),
+                // Text(
+                //   'รอการยอมรับจากผู้ใช้งาน...',
+                //   style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                // ),
               ],
             ),
           ),
@@ -384,7 +452,9 @@ class _CareManagementPageState extends State<CareManagementPage> {
                   ),
                 );
                 if (confirm == true) {
-                  final success = await _controller.cancelSentRequest(request.id);
+                  final success = await _controller.cancelSentRequest(
+                    request.id,
+                  );
                   if (success && mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('ยกเลิกคำขอเรียบร้อยแล้ว')),
@@ -402,13 +472,13 @@ class _CareManagementPageState extends State<CareManagementPage> {
               icon: const Icon(Icons.close, size: 16, color: Colors.black),
               label: const Text(
                 'ยกเลิก',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.black, fontSize: 12),
               ),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
@@ -435,10 +505,11 @@ class _CareManagementPageState extends State<CareManagementPage> {
               const Icon(Icons.info_outline, color: Colors.orange),
               const SizedBox(width: 8),
               Text(
-                'คำขอที่รอดำเนินการ (${_controller.requests.length})',
+                'คำขอต้องการเป็นผู้ดูแลของคุณ (${_controller.requests.length})',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.orange,
+                  fontSize: 20,
                 ),
               ),
             ],
@@ -471,11 +542,11 @@ class _CareManagementPageState extends State<CareManagementPage> {
               children: [
                 Text(
                   req.caregiverUsername,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const Text(
                   'ต้องการเป็นผู้ดูแลของคุณ',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               ],
             ),
@@ -522,7 +593,7 @@ class _CareManagementPageState extends State<CareManagementPage> {
   }
 
   Widget _buildListSection() {
-    final title = _isCaregiverView ? 'รายชื่อผู้ใช้งาน' : 'รายชื่อผู้ดูแล';
+    final title = _isCaregiverView ? 'รายชื่อผู้ใช้งานที่กำลังดูแล' : 'รายชื่อผู้ดูแล';
     final items = _isCaregiverView
         ? _controller.patients
         : []; // Caregiver view only for now
@@ -558,28 +629,19 @@ class _CareManagementPageState extends State<CareManagementPage> {
                 '$title (${items.length})',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 20,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           if (items.isEmpty)
-            Center(
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.group_off_outlined,
-                    size: 48,
-                    color: Colors.grey,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'ยังไม่มี${_isCaregiverView ? 'ผู้ใช้งานใน' : 'ผู้ดูแล'}การดูแล',
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
+            AppEmptyCard(
+              icon: Icons.group_off_outlined,
+              title:
+                  'ยังไม่มี${_isCaregiverView ? 'ผู้ใช้งานใน' : 'ผู้ดูแล'}การดูแล',
+              subtitle:
+                  'เชิญ${_isCaregiverView ? 'ผู้ใช้งาน' : 'ผู้ดูแล'}เพื่อดูข้อมูล',
             )
           else
             ...items.map((item) => _buildPatientItem(item as Patient)),
@@ -610,11 +672,11 @@ class _CareManagementPageState extends State<CareManagementPage> {
               children: [
                 Text(
                   patient.fullName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 Text(
                   '@${patient.username}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: const TextStyle(fontSize: 18, color: Colors.grey),
                 ),
               ],
             ),
@@ -638,7 +700,7 @@ class _CareManagementPageState extends State<CareManagementPage> {
             ),
             child: const Text(
               'ดูข้อมูล',
-              style: TextStyle(color: Colors.white, fontSize: 12),
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ),
           IconButton(

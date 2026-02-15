@@ -130,8 +130,26 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
+              image: _resolveImagePath(widget.box.imagePath) != null
+                  ? DecorationImage(
+                      image:
+                          _resolveImagePath(
+                            widget.box.imagePath,
+                          )!.startsWith('http')
+                          ? NetworkImage(
+                                  _resolveImagePath(widget.box.imagePath)!,
+                                )
+                                as ImageProvider
+                          : FileImage(
+                              File(_resolveImagePath(widget.box.imagePath)!),
+                            ),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-            child: const Icon(Icons.inventory_2, size: 40, color: Colors.white),
+            child: _resolveImagePath(widget.box.imagePath) == null
+                ? const Icon(Icons.inventory_2, size: 40, color: Colors.white)
+                : null,
           ),
           const SizedBox(width: 20),
           Expanded(

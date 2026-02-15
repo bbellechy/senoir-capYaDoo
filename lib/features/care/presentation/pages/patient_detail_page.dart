@@ -8,6 +8,8 @@ import 'package:capyadoo/core/services/care_service.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/features/care/presentation/pages/patient_pill_box_detail_page.dart';
+import 'package:capyadoo/core/widgets/app_nav_bar.dart';
+import 'package:capyadoo/core/services/page_navigation_service.dart';
 import 'package:intl/intl.dart';
 
 class PatientDetailPage extends StatefulWidget {
@@ -90,12 +92,41 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
         children: [
           Container(
             height: 300,
+            width: double.infinity,
             decoration: const BoxDecoration(
               color: AppColors.success,
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(40),
                 bottomRight: Radius.circular(40),
               ),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -40,
+                  top: -40,
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.08),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -20,
+                  bottom: -20,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.08),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           SafeArea(
@@ -118,6 +149,15 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
           ),
         ],
       ),
+      bottomNavigationBar: AppNavBar(
+        currentIndex: 0,
+        isCaregiverMode: true,
+        onTap: (index) {
+          // Reset navigation and pop back to home
+          Navigator.of(context).popUntil((route) => route.isFirst);
+          PageNavigationService().setIndex(index);
+        },
+      ),
     );
   }
 
@@ -125,36 +165,57 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-          const SizedBox(width: 8),
-          CircleAvatar(
-            radius: 25,
-            backgroundColor: Colors.white.withOpacity(0.2),
-            child: const Icon(Icons.person, color: Colors.white, size: 30),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'ข้อมูลการทานยาของ',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-                Text(
-                  widget.patient.fullName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'ข้อมูลการทานยาของ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontFamily: 'Sarabun',
+                    ),
                   ),
+                  Text(
+                    widget.patient.fullName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Sarabun',
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          Column(
+            children: [
+              const Icon(Icons.person_pin, color: Colors.white, size: 36),
+              const SizedBox(height: 4),
+              const Text(
+                'PATIENT',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -535,15 +596,9 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     final allPending =
         statusesToCheck.isEmpty || statusesToCheck.every((s) => s == 'PENDING');
 
-    // ตรวจสอบ overdue: ถ้ามี OVERDUE/MISSED หรือทุกอัน PENDING และเวลาเลยแล้ว
-    // แต่ไม่แสดง "เกินกำหนด" ถ้าไม่ใช่วันนี้ (แสดงเฉพาะวันนี้ที่เวลาเลยแล้ว)
-    final today = DateTime.now();
-    final isToday =
-        _selectedDate.year == today.year &&
-        _selectedDate.month == today.month &&
-        _selectedDate.day == today.day;
+    // Check overdue: if any item is already marked OVERDUE/MISSED, or if all are PENDING but time has passed.
     final isOverdue =
-        anyOverdue || (allPending && isToday && _isTimePassed(formattedTime));
+        anyOverdue || (allPending && _isTimePassed(formattedTime));
 
     return GestureDetector(
       onTap: () {
@@ -576,16 +631,35 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: Colors.blue[50],
                     borderRadius: BorderRadius.circular(8),
+                    image: _resolveImagePath(box.imagePath) != null
+                        ? DecorationImage(
+                            image:
+                                _resolveImagePath(
+                                  box.imagePath,
+                                )!.startsWith('http')
+                                ? NetworkImage(
+                                    _resolveImagePath(box.imagePath)!,
+                                  )
+                                : FileImage(
+                                        File(_resolveImagePath(box.imagePath)!),
+                                      )
+                                      as ImageProvider,
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
-                  child: const Icon(
-                    Icons.inventory_2_outlined,
-                    size: 20,
-                    color: Colors.blue,
-                  ),
+                  child: _resolveImagePath(box.imagePath) == null
+                      ? const Icon(
+                          Icons.inventory_2_outlined,
+                          size: 20,
+                          color: Colors.blue,
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -745,18 +819,10 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     final bool isNotTaken = item.status == IntakeStatus.NOT_TAKEN;
     final bool isMissed = item.status == IntakeStatus.MISSED;
 
-    // Check if overdue: status is OVERDUE/MISSED OR (time has passed and status is PENDING and it's today)
-    final today = DateTime.now();
-    final isToday =
-        _selectedDate.year == today.year &&
-        _selectedDate.month == today.month &&
-        _selectedDate.day == today.day;
     final bool isOverdue =
         item.status == IntakeStatus.OVERDUE ||
         item.status == IntakeStatus.MISSED ||
-        (isToday &&
-            _isTimePassed(item.time) &&
-            item.status == IntakeStatus.PENDING);
+        (_isTimePassed(item.time) && item.status == IntakeStatus.PENDING);
 
     final resolvedPath = _resolveImagePath(item.imagePath);
 
@@ -960,9 +1026,28 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
   }
 
   // Check if the scheduled time has passed
+  // Now handles past dates: if the date is in the past, time always "passed"
   bool _isTimePassed(String time) {
     try {
       final now = DateTime.now();
+      final selectedDateOnly = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+      );
+      final todayOnly = DateTime(now.year, now.month, now.day);
+
+      // If selected date is in the past, all scheduled times have passed
+      if (selectedDateOnly.isBefore(todayOnly)) {
+        return true;
+      }
+
+      // If selected date is in the future, no scheduled times have passed yet
+      if (selectedDateOnly.isAfter(todayOnly)) {
+        return false;
+      }
+
+      // If selected date is today, check the specific time
       final timeParts = time.split(':');
       if (timeParts.length >= 2) {
         final hour = int.tryParse(timeParts[0]) ?? 0;

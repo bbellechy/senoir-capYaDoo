@@ -12,6 +12,8 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  static const int _flagInsistent = 4;
+
   static Future<void> init() async {
     tz.initializeTimeZones();
 
@@ -92,7 +94,9 @@ class NotificationService {
     NotificationResponse response,
   ) async {
     try {
-      print('NotificationService: Handling action: ${response.actionId}, payload: ${response.payload}');
+      print(
+        'NotificationService: Handling action: ${response.actionId}, payload: ${response.payload}',
+      );
       if (response.actionId == 'stop') {
         final String? payload = response.payload;
         if (payload != null) {
@@ -115,21 +119,19 @@ class NotificationService {
           }
         }
       } else if (response.actionId == 'snooze') {
-        print('NotificationService: Snooze requested, payload: ${response.payload}');
         final String? payload = response.payload;
         if (payload == null || payload.isEmpty) {
-          print('NotificationService: Snooze failed - payload is null or empty');
           return;
         }
         final parts = payload.split('|');
         if (parts.length < 5) {
-          print('NotificationService: Snooze failed - payload parts < 5: $parts');
           return;
         }
         final id = int.tryParse(parts[0]) ?? 0;
 
-        final snoozeTime = tz.TZDateTime.now(tz.local).add(const Duration(minutes: 10));
-        print('NotificationService: Scheduling snooze for $snoozeTime, id: ${id + 2000}');
+        final snoozeTime = tz.TZDateTime.now(
+          tz.local,
+        ).add(const Duration(minutes: 10));
 
         await _notificationsPlugin.zonedSchedule(
           id + 2000,
@@ -157,9 +159,11 @@ class NotificationService {
     }
   }
 
-  static Future<ByteArrayAndroidBitmap?> _loadImageAsBytes(
-    String imagePath,
-  ) async {
+  // Simplified image loader returning bytes.
+  // This is what the user said "used to work" (before crash issues).
+  // With resized images (512x512), this IS the correct way.
+  static Future<ByteArrayAndroidBitmap?> _loadImage(String imagePath) async {
+    print('NotificationService: Loading image from $imagePath');
     try {
       if (imagePath.startsWith('http')) {
         final response = await http.get(Uri.parse(imagePath));
@@ -170,15 +174,49 @@ class NotificationService {
       }
 
       final file = File(imagePath);
-      if (!await file.exists()) return null;
-      final Uint8List bytes = await file.readAsBytes();
-      return ByteArrayAndroidBitmap(bytes);
+      if (await file.exists()) {
+        final bytes = await file.readAsBytes();
+        print(
+          'NotificationService: Loaded image ${bytes.length} bytes from $imagePath',
+        );
+        return ByteArrayAndroidBitmap(bytes);
+      } else {
+        print('NotificationService: File not found at $imagePath');
+        return null;
+      }
     } catch (e) {
       print('NotificationService: Error loading image: $e');
       return null;
     }
   }
 
+  // This function is REQUIRED by NotificationController
+  static Future<String?> saveImageToAppStorage(String imagePath) async {
+    try {
+      final file = File(imagePath);
+      if (!await file.exists()) return null;
+
+      final directory = await getApplicationDocumentsDirectory();
+      final imagesDir = Directory('${directory.path}/notification_images');
+      if (!await imagesDir.exists()) await imagesDir.create(recursive: true);
+
+      String extension = 'jpg';
+      if (imagePath.contains('.')) {
+        extension = imagePath.split('.').last;
+      }
+
+      final newPath =
+          '${imagesDir.path}/med_${DateTime.now().millisecondsSinceEpoch}.$extension';
+      await file.copy(newPath);
+      print('NotificationService: Image saved to $newPath');
+      return newPath;
+    } catch (e) {
+      print('NotificationService: Error saving image: $e');
+      return null;
+    }
+  }
+
+  // This function is REQUIRED by _getAlarmAndroidDetails
   static List<AndroidNotificationAction> _getActions() {
     return [
       const AndroidNotificationAction(
@@ -194,12 +232,10 @@ class NotificationService {
     ];
   }
 
-  static const int _flagInsistent = 4;
-
   static AndroidNotificationDetails _getAlarmAndroidDetails(
     String title,
     String body, {
-    ByteArrayAndroidBitmap? imageBytes,
+    ByteArrayAndroidBitmap? image,
   }) {
     return AndroidNotificationDetails(
       'alarm_channel_v1',
@@ -214,15 +250,14 @@ class NotificationService {
       autoCancel: false,
       sound: const RawResourceAndroidNotificationSound('alarm_sound'),
       additionalFlags: Int32List.fromList([_flagInsistent]),
-      styleInformation: imageBytes != null
+      styleInformation: image != null
           ? BigPictureStyleInformation(
-              imageBytes,
-              largeIcon: imageBytes,
+              image,
               contentTitle: title,
               summaryText: body,
             )
           : null,
-      largeIcon: imageBytes,
+      largeIcon: image,
       actions: _getActions(),
     );
   }
@@ -234,14 +269,8 @@ class NotificationService {
     String? imagePath,
     String? payload,
   }) async {
-    final imageBytes = imagePath != null
-        ? await _loadImageAsBytes(imagePath)
-        : null;
-    final androidDetails = _getAlarmAndroidDetails(
-      title,
-      body,
-      imageBytes: imageBytes,
-    );
+    final image = imagePath != null ? await _loadImage(imagePath) : null;
+    final androidDetails = _getAlarmAndroidDetails(title, body, image: image);
 
     await _notificationsPlugin.show(
       id,
@@ -250,24 +279,6 @@ class NotificationService {
       NotificationDetails(android: androidDetails),
       payload: payload,
     );
-  }
-
-  static Future<String?> saveImageToAppStorage(String imagePath) async {
-    try {
-      final file = File(imagePath);
-      if (!await file.exists()) return null;
-
-      final directory = await getApplicationDocumentsDirectory();
-      final imagesDir = Directory('${directory.path}/notification_images');
-      if (!await imagesDir.exists()) await imagesDir.create(recursive: true);
-
-      final newPath =
-          '${imagesDir.path}/med_${DateTime.now().millisecondsSinceEpoch}.${imagePath.split('.').last}';
-      await file.copy(newPath);
-      return newPath;
-    } catch (e) {
-      return null;
-    }
   }
 
   static Future<void> scheduleWeeklyNotification({
@@ -280,24 +291,11 @@ class NotificationService {
     String? imagePath,
     String? intakeId, // Pass intakeId for confirmation logic
   }) async {
-    String? finalImagePath = imagePath;
-
-    // Only save if it's not already in permanent storage and is a local file
-    if (imagePath != null &&
-        await File(imagePath).exists() &&
-        !imagePath.contains('notification_images')) {
-      final savedPath = await saveImageToAppStorage(imagePath);
-      if (savedPath != null) finalImagePath = savedPath;
-    }
-
-    final imageBytes = finalImagePath != null
-        ? await _loadImageAsBytes(finalImagePath)
-        : null;
-    final androidDetails = _getAlarmAndroidDetails(
-      title,
-      body,
-      imageBytes: imageBytes,
-    );
+    // Simplified: Just use the provided path.
+    // The Controller already ensures the image is saved to app storage.
+    // And _loadImage will handle reading it.
+    final image = imagePath != null ? await _loadImage(imagePath) : null;
+    final androidDetails = _getAlarmAndroidDetails(title, body, image: image);
 
     final scheduledTime = _nextInstanceOfDayAndTime(day, hour, minute);
     await _notificationsPlugin.zonedSchedule(

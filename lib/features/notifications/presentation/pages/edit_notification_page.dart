@@ -26,21 +26,61 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
   bool _isSaving = false;
   bool _isDeleting = false;
 
-  Future<void> _takePhoto() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? photo = await picker.pickImage(
-      source: ImageSource.camera,
-      maxWidth: 800,
-      maxHeight: 800,
-      imageQuality: 85,
-    );
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        maxWidth: 300,
+        maxHeight: 300,
+        imageQuality: 60,
+      );
 
-    if (photo != null) {
-      setState(() {
-        _imagePath = photo.path;
-      });
-      print('EditNotificationPage: New image captured: $_imagePath');
+      if (image != null) {
+        setState(() {
+          _imagePath = image.path;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
     }
+  }
+
+  void _showImageSourceSelector() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.camera_alt,
+                color: AppColors.primaryBlue,
+              ),
+              title: const Text('ถ่ายภาพ'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.photo_library,
+                color: AppColors.primaryBlue,
+              ),
+              title: const Text('เลือกจากอัลบั้ม'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -49,9 +89,9 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
     _medicationName = widget.notification.medicationName;
     _imagePath = widget.notification.imagePath;
     _selectedDays = List.from(widget.notification.days);
-    _selectedTime = widget.notification.times.isNotEmpty
-        ? widget.notification.times[0]
-        : null;
+    if (widget.notification.times.isNotEmpty) {
+      _selectedTime = widget.notification.times.first;
+    }
   }
 
   @override
@@ -229,7 +269,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
           children: [
             // TOP CAPTURE SECTION
             const Text(
-              'ถ่ายภาพยาสำหรับแจ้งเตือน',
+              'แก้ไขรูปภาพยา (ถ่ายภาพหรือเลือกจากอัลบั้ม)',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -238,7 +278,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
             ),
             const SizedBox(height: 12),
             GestureDetector(
-              onTap: _takePhoto,
+              onTap: _showImageSourceSelector,
               child: Container(
                 width: double.infinity,
                 height: 180,
@@ -260,13 +300,13 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.camera_alt_outlined,
+                            Icons.add_a_photo_outlined,
                             size: 48,
                             color: Colors.grey[400],
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'แตะเพื่อถ่ายภาพ',
+                            'แตะเพื่อเพิ่มรูปภาพ',
                             style: TextStyle(color: Colors.grey[500]),
                           ),
                         ],
@@ -281,8 +321,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons
-                                .camera_alt, // Changed to camera icon for "change"
+                            Icons.edit,
                             color: Colors.white,
                             size: 20,
                           ),

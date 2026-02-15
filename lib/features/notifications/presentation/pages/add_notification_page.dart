@@ -23,20 +23,61 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
   String? _selectedTime;
   bool _isSaving = false;
 
-  Future<void> _takePhoto() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? photo = await picker.pickImage(
-      source: ImageSource.camera,
-      maxWidth: 800,
-      maxHeight: 800,
-      imageQuality: 85,
-    );
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        maxWidth: 300,
+        maxHeight: 300,
+        imageQuality: 60,
+      );
 
-    if (photo != null) {
-      setState(() {
-        _imagePath = photo.path;
-      });
+      if (image != null) {
+        setState(() {
+          _imagePath = image.path;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
     }
+  }
+
+  void _showImageSourceSelector() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.camera_alt,
+                color: AppColors.primaryBlue,
+              ),
+              title: const Text('ถ่ายภาพ'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.photo_library,
+                color: AppColors.primaryBlue,
+              ),
+              title: const Text('เลือกจากอัลบั้ม'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -145,15 +186,12 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
           children: [
             // TOP CAPTURE SECTION
             const Text(
-              'ถ่ายภาพยาสำหรับแจ้งเตือน',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              'รูปภาพยา (ถ่ายภาพหรือเลือกจากอัลบั้ม)',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             GestureDetector(
-              onTap: _takePhoto,
+              onTap: _showImageSourceSelector,
               child: Container(
                 width: double.infinity,
                 height: 180,
@@ -173,13 +211,13 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.camera_alt_outlined,
+                            Icons.add_a_photo_outlined,
                             size: 48,
                             color: Colors.grey[400],
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'แตะเพื่อถ่ายภาพ',
+                            'แตะเพื่อเพิ่มรูปภาพ',
                             style: TextStyle(color: Colors.grey[500]),
                           ),
                         ],
@@ -194,7 +232,7 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.refresh,
+                            Icons.edit,
                             color: Colors.white,
                             size: 20,
                           ),
@@ -215,25 +253,22 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
             const SizedBox(height: 24),
 
             // Time Selector
-                       Row(
-                          children: [
-                            const Text(
-                              'เวลา',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const Text(
-                              ' *',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
+            Row(
+              children: [
+                const Text(
+                  'เวลา',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const Text(
+                  ' *',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             GestureDetector(
               onTap: _selectTime,
@@ -266,10 +301,7 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
             // Day Selector
             Text(
               'วันที่ต้องการแจ้งเตือน',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             DaySelectorWidget(

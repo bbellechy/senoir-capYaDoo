@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:capyadoo/core/services/api_client.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/model/daily_intake.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
@@ -127,7 +128,21 @@ class CareService {
         final List<dynamic> jsonList = json.decode(
           utf8.decode(response.bodyBytes),
         );
-        return jsonList.map((j) => MedicationBox.fromJson(j)).toList();
+        final boxes = jsonList.map((j) => MedicationBox.fromJson(j)).toList();
+
+        // Enrich with local images if available (for same-device consistency)
+        const storage = FlutterSecureStorage();
+        for (var i = 0; i < boxes.length; i++) {
+          if (boxes[i].id != null) {
+            final localPath = await storage.read(
+              key: 'box_image_${boxes[i].id}',
+            );
+            if (localPath != null) {
+              boxes[i] = boxes[i].copyWith(imagePath: localPath);
+            }
+          }
+        }
+        return boxes;
       }
       return [];
     } catch (e) {

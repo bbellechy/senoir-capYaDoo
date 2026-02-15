@@ -63,7 +63,11 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
           setState(() {
             if (boxDetails != null) {
               _currentBox = boxDetails;
-              print('Box medications: ${_currentBox.medicationIds}');
+              print('DEBUG: Box medications array: ${_currentBox.medications}');
+              print('DEBUG: Box medicationIds: ${_currentBox.medicationIds}');
+              print(
+                'DEBUG: Box medications count: ${_currentBox.medications.length}',
+              );
             }
             _allUserMedications = userMeds;
             print(
@@ -92,10 +96,31 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
   // Section 1: Medications in this box
   // Use medications from box directly, or match with user medications if available
   List<Map<String, dynamic>> get _medicationsInBox {
+    print('DEBUG _medicationsInBox getter called');
+    print(
+      'DEBUG _medicationsInBox: _currentBox.medications.length: ${_currentBox.medications.length}',
+    );
+    print(
+      'DEBUG _medicationsInBox: _currentBox.medications: ${_currentBox.medications}',
+    );
+
     // If box has medications array, use it directly
     if (_currentBox.medications.isNotEmpty) {
+      print(
+        'DEBUG _medicationsInBox: Using medications array, returning ${_currentBox.medications.length} items',
+      );
       return _currentBox.medications;
     }
+
+    print(
+      'DEBUG _medicationsInBox: medications array is empty, trying to match with user medications',
+    );
+    print(
+      'DEBUG _medicationsInBox: _currentBox.medicationIds: ${_currentBox.medicationIds}',
+    );
+    print(
+      'DEBUG _medicationsInBox: _allUserMedications.length: ${_allUserMedications.length}',
+    );
 
     // Otherwise, try to match with user medications
     final matchedMeds = _allUserMedications
@@ -103,6 +128,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
         .map((m) => {'id': m.id, 'name': m.displayName})
         .toList();
 
+    print('DEBUG _medicationsInBox: Matched ${matchedMeds.length} medications');
     return matchedMeds;
   }
 
@@ -188,6 +214,11 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('DEBUG build: _medicationsInBox.length: ${_medicationsInBox.length}');
+    print(
+      'DEBUG build: _currentBox.medications.length: ${_currentBox.medications.length}',
+    );
+    print('DEBUG build: _isLoading: $_isLoading');
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9FF),
       appBar: AppBar(
@@ -270,7 +301,6 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
-                    
                   ),
                 ),
                 TextButton.icon(
@@ -314,7 +344,10 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
   }
 
   Widget _buildMedicationList(List<Map<String, dynamic>> meds) {
+    print('DEBUG _buildMedicationList: meds count: ${meds.length}');
+    print('DEBUG _buildMedicationList: meds: $meds');
     if (meds.isEmpty) {
+      print('DEBUG _buildMedicationList: meds is empty, showing empty state');
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -413,12 +446,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      medName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
+                    Text(medName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     if (userMed != null) ...[
                       const SizedBox(height: 4),
                       Text(

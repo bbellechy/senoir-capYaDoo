@@ -253,7 +253,7 @@ class NotificationController extends ChangeNotifier {
 
         // Only schedule if enabled
         if (updatedNotification.isEnabled) {
-          await _scheduleNotification(updatedNotification);
+          await _scheduleNotification(notificationToStore);
         }
 
         // Reload notifications

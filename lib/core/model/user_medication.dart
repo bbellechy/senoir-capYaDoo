@@ -50,10 +50,17 @@ class UserMedication {
     List<int>? parseDays(dynamic daysData) {
       if (daysData == null) return null;
       if (daysData is List) {
-        return daysData.map((e) => int.tryParse(e.toString())).whereType<int>().toList();
+        return daysData
+            .map((e) => int.tryParse(e.toString()))
+            .whereType<int>()
+            .toList();
       }
       if (daysData is String) {
-        return daysData.split(',').map((e) => int.tryParse(e.trim())).whereType<int>().toList();
+        return daysData
+            .split(',')
+            .map((e) => int.tryParse(e.trim()))
+            .whereType<int>()
+            .toList();
       }
       return null;
     }
@@ -70,10 +77,10 @@ class UserMedication {
       intakePeriods: json['intakePeriods'] != null
           ? (json['intakePeriods'] is String
                 ? (json['intakePeriods'] as String)
-                    .split(RegExp(r'[,\s]+'))
-                    .map((s) => s.trim())
-                    .where((s) => s.isNotEmpty)
-                    .toList()
+                      .split(RegExp(r'[,\s]+'))
+                      .map((s) => s.trim())
+                      .where((s) => s.isNotEmpty)
+                      .toList()
                 : List<String>.from(json['intakePeriods']))
           : null,
       expiryDate: json['expiryDate'],

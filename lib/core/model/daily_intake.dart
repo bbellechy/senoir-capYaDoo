@@ -4,9 +4,11 @@ class DailyIntake {
   final String intakeId;
   final String medicationName;
   final String time;
+
   /// ช่วงเวลาเชิงตรรกะ (ยึดตาม intakePeriods) เพื่อให้ไม่หลุดช่วงเวลาถึงแม้เวลาเลื่อนจาก intakeTiming
   /// ค่าที่ใช้: MORNING, NOON, EVENING, BEDTIME
   final String? periodKey;
+
   /// intakeTiming ของยา (BEFORE_MEAL/AFTER_MEAL/WITH_MEAL/IMMEDIATE)
   final String? intakeTiming;
   final IntakeStatus status;

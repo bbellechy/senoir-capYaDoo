@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../../../../core/model/medication.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class MedicationDetailPage extends StatefulWidget {
   final Medication medication;
@@ -65,7 +66,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
       backgroundColor: const Color(0xFFFDFBF6),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: AppColors.primaryBlue,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -87,7 +88,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
-                color: Color(0xFF2196F3),
+                color: AppColors.primaryBlue,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(24),
                   bottomRight: Radius.circular(24),
@@ -112,7 +113,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                     child: const Icon(
                       Icons.medication,
                       size: 48,
-                      color: Color(0xFF2196F3),
+                      color: AppColors.primaryBlue,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -156,13 +157,13 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                     content: widget.medication.categoryUse ?? "-",
                     section: 'categoryUse',
                   ),
-                  const SizedBox(height: 12),
-                  _buildInfoCard(
-                    title: 'ข้อบ่งใช้',
-                    icon: Icons.fact_check_outlined,
-                    content: widget.medication.indication ?? "-",
-                    section: 'indication2',
-                  ),
+                  // const SizedBox(height: 12),
+                  // _buildInfoCard(
+                  //   title: 'ข้อบ่งใช้',
+                  //   icon: Icons.fact_check_outlined,
+                  //   content: widget.medication.indication ?? "-",
+                  //   section: 'indication2',
+                  // ),
                 ],
               ),
             ),

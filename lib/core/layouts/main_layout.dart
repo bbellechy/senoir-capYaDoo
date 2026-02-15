@@ -55,15 +55,20 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: AppNavBar(
-        currentIndex: _currentIndex,
-        onTap: _onNavBarTap,
-      ),
-      floatingActionButton: const VoiceAssistantButton(),
-      // Adjust FAB location if needed to not overlap with BottomBar
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    return ValueListenableBuilder<bool>(
+      valueListenable: PageNavigationService().isCaregiverMode,
+      builder: (context, isCaregiver, child) {
+        return Scaffold(
+          body: IndexedStack(index: _currentIndex, children: _pages),
+          bottomNavigationBar: AppNavBar(
+            currentIndex: _currentIndex,
+            onTap: _onNavBarTap,
+            isCaregiverMode: isCaregiver,
+          ),
+          floatingActionButton: const VoiceAssistantButton(),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        );
+      },
     );
   }
 }

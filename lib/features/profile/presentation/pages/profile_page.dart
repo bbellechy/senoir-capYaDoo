@@ -12,33 +12,65 @@ class ProfilePage extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // Blue header
+          // Premium Header
           Container(
-            height: 140,
+            height: 200,
+            width: double.infinity,
             decoration: const BoxDecoration(
-              color: Color(0xFF2154AD),
-            ), // AppColors.primaryBlue
+              color: Color(0xFF2154AD), // AppColors.primaryBlue
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(40),
+                bottomRight: Radius.circular(40),
+              ),
+            ),
             child: SafeArea(
               bottom: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
+              child: Stack(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 30,
-                      right: 30,
-                      bottom: 20,
+                  // Decorative Circles
+                  Positioned(
+                    right: -40,
+                    top: -40,
+                    child: Container(
+                      width: 180,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.05),
+                      ),
                     ),
-                    child: Row(
+                  ),
+                  Positioned(
+                    left: -20,
+                    bottom: -20,
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.05),
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const Icon(
+                          Icons.person_pin_rounded,
+                          color: Colors.white70,
+                          size: 48,
+                        ),
+                        const SizedBox(height: 8),
                         const Text(
                           'โปรไฟล์',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 36,
+                            fontWeight: FontWeight.w700,
                             fontFamily: 'Sarabun',
+                            letterSpacing: 1.2,
                           ),
                         ),
                       ],

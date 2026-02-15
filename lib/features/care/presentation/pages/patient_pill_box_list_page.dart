@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
+import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/services/care_service.dart';
@@ -116,8 +118,24 @@ class _PatientPillBoxListPageState extends State<PatientPillBoxListPage> {
                 decoration: BoxDecoration(
                   color: AppColors.success.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
+                  image: _resolveImagePath(box.imagePath) != null
+                      ? DecorationImage(
+                          image:
+                              _resolveImagePath(
+                                box.imagePath,
+                              )!.startsWith('http')
+                              ? NetworkImage(_resolveImagePath(box.imagePath)!)
+                                    as ImageProvider
+                              : FileImage(
+                                  File(_resolveImagePath(box.imagePath)!),
+                                ),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: const Icon(Icons.shopping_bag, color: AppColors.success),
+                child: _resolveImagePath(box.imagePath) == null
+                    ? const Icon(Icons.shopping_bag, color: AppColors.success)
+                    : null,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -151,5 +169,23 @@ class _PatientPillBoxListPageState extends State<PatientPillBoxListPage> {
   void _onNavBarTap(int index) {
     Navigator.of(context).popUntil((route) => route.isFirst);
     PageNavigationService().setIndex(index);
+  }
+
+  String? _resolveImagePath(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+
+    if (path.contains(':') ||
+        path.startsWith('/') ||
+        path.contains('Documents/') ||
+        path.contains('data/user/')) {
+      return path;
+    }
+
+    if (path.startsWith('uploads/')) {
+      return '${ApiConfig.baseUrl}/$path';
+    }
+
+    return '${ApiConfig.baseUrl}/$path';
   }
 }
