@@ -22,6 +22,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   DateTime _selectedDate = DateTime.now();
+  bool _isCalendarSelected = false;
   List<DailyIntake> _schedule = [];
   List<MedicationBox> _boxes = [];
   Map<String, List<Map<String, dynamic>>> _boxDailyMedications = {};
@@ -417,9 +418,13 @@ class _HomePageState extends State<HomePage> {
               final date = DateTime.now()
                   .subtract(Duration(days: DateTime.now().weekday - 1))
                   .add(Duration(days: index));
+              // index==0 เป็นปุ่มเปิดปฏิทิน ไม่ใช่ "วัน" จึงไม่ควรผูกกับ isSelected ของ date
               final isSelected =
+                  index != 0 &&
                   DateFormat('yyyy-MM-dd').format(date) ==
-                  DateFormat('yyyy-MM-dd').format(_selectedDate);
+                      DateFormat('yyyy-MM-dd').format(_selectedDate);
+              final isCalendarChipSelected = index == 0 && _isCalendarSelected;
+              final isHighlighted = isSelected || isCalendarChipSelected;
 
               Future<void> openCalendar() async {
                 final picked = await showDatePicker(
@@ -431,6 +436,7 @@ class _HomePageState extends State<HomePage> {
                 if (picked != null) {
                   setState(() {
                     _selectedDate = picked;
+                    _isCalendarSelected = true;
                   });
                   _loadData();
                 }
@@ -445,6 +451,7 @@ class _HomePageState extends State<HomePage> {
                   }
                   setState(() {
                     _selectedDate = date;
+                    _isCalendarSelected = false;
                   });
                   _loadData();
                 },
@@ -452,17 +459,19 @@ class _HomePageState extends State<HomePage> {
                   width: 50,
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.white : Colors.transparent,
+                    color: isHighlighted ? Colors.white : Colors.transparent,
                     shape: BoxShape.circle,
-                    border: index == 0
+                    border: index == 0 && !isCalendarChipSelected
                         ? Border.all(color: Colors.white.withOpacity(0.5))
                         : null,
                   ),
                   child: Center(
                     child: index == 0
-                        ? const Icon(
+                        ? Icon(
                             Icons.calendar_today_outlined,
-                            color: Colors.white,
+                            color: isCalendarChipSelected
+                                ? Colors.blue[800]
+                                : Colors.white,
                             size: 20,
                           )
                         : Text(

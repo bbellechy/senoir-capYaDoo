@@ -38,6 +38,17 @@ class _SearchPageState extends State<SearchPage> {
     return hasTh ? th : en ?? '-';
   }
 
+  String? displayDoseForm(String? th, String? en) {
+    bool hasTh = th != null && th.trim().isNotEmpty && th.trim() != '-';
+    bool hasEn = en != null && en.trim().isNotEmpty && en.trim() != '-';
+
+    if (!hasTh && !hasEn) {
+      return null;
+    }
+
+    return hasTh ? th : en;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -339,6 +350,22 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                       ),
                       const SizedBox(height: 4),
+                      if (displayDoseForm(
+                            medication.doseFormTh,
+                            medication.doseFormEn,
+                          ) !=
+                          null) ...[
+                        Text(
+                          'รูปแบบยา: ${displayDoseForm(medication.doseFormTh, medication.doseFormEn)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                      ],
                       Text(
                         'สรรพคุณ: ${medication.indication ?? "-"}',
                         style: TextStyle(
@@ -348,6 +375,19 @@ class _SearchPageState extends State<SearchPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      if (medication.categoryUse != null &&
+                          medication.categoryUse!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'การใช้ประโยชน์: ${medication.categoryUse}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ],
                   ),
                 ),

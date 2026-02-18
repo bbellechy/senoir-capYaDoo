@@ -22,6 +22,7 @@ class PatientDetailPage extends StatefulWidget {
 
 class _PatientDetailPageState extends State<PatientDetailPage> {
   DateTime _selectedDate = DateTime.now();
+  bool _isCalendarSelected = false;
   List<DailyIntake> _schedule = [];
   List<MedicationBox> _boxes = [];
   Map<String, List<Map<String, dynamic>>> _boxDailyMedications = {};
@@ -165,42 +166,47 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'ข้อมูลการทานยาของ',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontFamily: 'Sarabun',
-                    ),
+          Expanded(
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'ข้อมูลการทานยาของ',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontFamily: 'Sarabun',
+                        ),
+                      ),
+                      Text(
+                        widget.patient.fullName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Sarabun',
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                      ),
+                    ],
                   ),
-                  Text(
-                    widget.patient.fullName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Sarabun',
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
           Column(
             children: [
@@ -249,9 +255,13 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
               final date = DateTime.now()
                   .subtract(Duration(days: DateTime.now().weekday - 1))
                   .add(Duration(days: index));
+              // index==0 เป็นปุ่มเปิดปฏิทิน ไม่ใช่ "วัน" จึงไม่ควรผูกกับ isSelected ของ date
               final isSelected =
+                  index != 0 &&
                   DateFormat('yyyy-MM-dd').format(date) ==
-                  DateFormat('yyyy-MM-dd').format(_selectedDate);
+                      DateFormat('yyyy-MM-dd').format(_selectedDate);
+              final isCalendarChipSelected = index == 0 && _isCalendarSelected;
+              final isHighlighted = isSelected || isCalendarChipSelected;
 
               Future<void> openCalendar() async {
                 final picked = await showDatePicker(
@@ -263,6 +273,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                 if (picked != null) {
                   setState(() {
                     _selectedDate = picked;
+                    _isCalendarSelected = true;
                   });
                   _loadSchedule();
                 }
@@ -275,24 +286,29 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                     await openCalendar();
                     return;
                   }
-                  setState(() => _selectedDate = date);
+                  setState(() {
+                    _selectedDate = date;
+                    _isCalendarSelected = false;
+                  });
                   _loadSchedule();
                 },
                 child: Container(
                   width: 50,
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.white : Colors.transparent,
+                    color: isHighlighted ? Colors.white : Colors.transparent,
                     shape: BoxShape.circle,
-                    border: index == 0
+                    border: index == 0 && !isCalendarChipSelected
                         ? Border.all(color: Colors.white.withOpacity(0.5))
                         : null,
                   ),
                   child: Center(
                     child: index == 0
-                        ? const Icon(
+                        ? Icon(
                             Icons.calendar_today_outlined,
-                            color: Colors.white,
+                            color: isCalendarChipSelected
+                                ? AppColors.success
+                                : Colors.white,
                             size: 20,
                           )
                         : Text(

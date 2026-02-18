@@ -8,6 +8,9 @@ class Medication {
   final String? categoryUse;
   final String? legislationClass;
   final String? indication;
+  final String? approvalDate;
+  final String? validityDate;
+  final String? licenseeName;
 
   Medication({
     this.id,
@@ -19,6 +22,9 @@ class Medication {
     this.categoryUse,
     this.legislationClass,
     this.indication,
+    this.approvalDate,
+    this.validityDate,
+    this.licenseeName,
   });
 
   // Alias for backward compatibility or when only name is available
@@ -41,6 +47,9 @@ class Medication {
       categoryUse: json['categoryUse'],
       legislationClass: json['legislationClass'],
       indication: json['indication'],
+      approvalDate: json['approvalDate'],
+      validityDate: json['validityDate'],
+      licenseeName: json['licenseeName'],
     );
   }
 
@@ -55,6 +64,9 @@ class Medication {
       'categoryUse': categoryUse,
       'legislationClass': legislationClass,
       'indication': indication,
+      'approvalDate': approvalDate,
+      'validityDate': validityDate,
+      'licenseeName': licenseeName,
     };
   }
 }

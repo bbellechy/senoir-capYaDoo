@@ -60,6 +60,10 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
     super.dispose();
   }
 
+  bool _isValidValue(String? value) {
+    return value != null && value.trim().isNotEmpty && value.trim() != '-';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -157,13 +161,61 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                     content: widget.medication.categoryUse ?? "-",
                     section: 'categoryUse',
                   ),
-                  // const SizedBox(height: 12),
-                  // _buildInfoCard(
-                  //   title: 'ข้อบ่งใช้',
-                  //   icon: Icons.fact_check_outlined,
-                  //   content: widget.medication.indication ?? "-",
-                  //   section: 'indication2',
-                  // ),
+                  if (_isValidValue(widget.medication.basicDoseForm)) ...[
+                    const SizedBox(height: 12),
+                    _buildInfoCard(
+                      title: 'รูปแบบยา (Basic)',
+                      icon: Icons.medication_liquid_outlined,
+                      content: widget.medication.basicDoseForm!,
+                      section: 'basicDoseForm',
+                    ),
+                  ],
+                  if (_isValidValue(widget.medication.doseFormTh)) ...[
+                    const SizedBox(height: 12),
+                    _buildInfoCard(
+                      title: 'รูปแบบยา (ไทย)',
+                      icon: Icons.medication_liquid_outlined,
+                      content: widget.medication.doseFormTh!,
+                      section: 'doseFormTh',
+                    ),
+                  ],
+                  if (_isValidValue(widget.medication.doseFormEn)) ...[
+                    const SizedBox(height: 12),
+                    _buildInfoCard(
+                      title: 'รูปแบบยา (อังกฤษ)',
+                      icon: Icons.medication_liquid_outlined,
+                      content: widget.medication.doseFormEn!,
+                      section: 'doseFormEn',
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  _buildInfoCard(
+                    title: 'ประเภทกฎหมาย',
+                    icon: Icons.gavel_outlined,
+                    content: widget.medication.legislationClass ?? "-",
+                    section: 'legislationClass',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoCard(
+                    title: 'วันที่อนุมัติ',
+                    icon: Icons.calendar_today_outlined,
+                    content: widget.medication.approvalDate ?? "-",
+                    section: 'approvalDate',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoCard(
+                    title: 'วันหมดอายุ',
+                    icon: Icons.event_outlined,
+                    content: widget.medication.validityDate ?? "-",
+                    section: 'validityDate',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoCard(
+                    title: 'ชื่อผู้ได้รับอนุญาต',
+                    icon: Icons.business_outlined,
+                    content: widget.medication.licenseeName ?? "-",
+                    section: 'licenseeName',
+                  ),
                 ],
               ),
             ),
