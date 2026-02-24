@@ -109,7 +109,17 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       print(
         'DEBUG _medicationsInBox: Using medications array, returning ${_currentBox.medications.length} items',
       );
-      return _currentBox.medications;
+      final meds = List<Map<String, dynamic>>.from(_currentBox.medications);
+      meds.sort((a, b) {
+        final an = (a['name']?.toString() ?? '').trim().toLowerCase();
+        final bn = (b['name']?.toString() ?? '').trim().toLowerCase();
+        final byName = an.compareTo(bn);
+        if (byName != 0) return byName;
+        final ai = (a['id']?.toString() ?? '');
+        final bi = (b['id']?.toString() ?? '');
+        return ai.compareTo(bi);
+      });
+      return meds;
     }
 
     print(
@@ -126,7 +136,16 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     final matchedMeds = _allUserMedications
         .where((m) => _currentBox.medicationIds.contains(m.id))
         .map((m) => {'id': m.id, 'name': m.displayName})
-        .toList();
+        .toList()
+      ..sort((a, b) {
+        final an = (a['name']?.toString() ?? '').trim().toLowerCase();
+        final bn = (b['name']?.toString() ?? '').trim().toLowerCase();
+        final byName = an.compareTo(bn);
+        if (byName != 0) return byName;
+        final ai = (a['id']?.toString() ?? '');
+        final bi = (b['id']?.toString() ?? '');
+        return ai.compareTo(bi);
+      });
 
     print('DEBUG _medicationsInBox: Matched ${matchedMeds.length} medications');
     return matchedMeds;

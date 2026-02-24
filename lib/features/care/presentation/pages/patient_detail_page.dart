@@ -28,60 +28,70 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
   Map<String, List<Map<String, dynamic>>> _boxDailyMedications = {};
   final PillBoxService _pillBoxService = PillBoxService();
   bool _isLoading = true;
+  int _loadSeq = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadSchedule();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _reloadForDate(_selectedDate);
+    });
   }
 
-  Future<void> _loadSchedule() async {
-    setState(() => _isLoading = true);
-    try {
-      final data = await CareService.getPatientSchedule(
-        widget.patient.patientId,
-        _selectedDate,
-      );
-      await _loadBoxes();
-      if (mounted) {
-        setState(() {
-          _schedule = data;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+  Future<void> _reloadForDate(DateTime date) async {
+    final int requestSeq = ++_loadSeq;
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _schedule = [];
+        _boxes = [];
+        _boxDailyMedications = {};
+      });
     }
-  }
 
-  Future<void> _loadBoxes() async {
     try {
-      final boxes = await CareService.getPatientMedicationBoxes(
+      final scheduleFuture = CareService.getPatientSchedule(
+        widget.patient.patientId,
+        date,
+      );
+      final boxesFuture = CareService.getPatientMedicationBoxes(
         widget.patient.patientId,
       );
-      if (mounted) {
-        setState(() {
-          _boxes = boxes;
-        });
-        // Load daily medications for each box
-        // ใช้ patientId เป็น userId สำหรับ API call
-        for (final box in boxes) {
-          if (box.id != null) {
-            final dailyMeds = await _pillBoxService.getDailyMedicationsForBox(
-              box.id!,
-              _selectedDate,
-              userId: widget.patient.patientId,
-            );
-            if (mounted) {
-              setState(() {
-                _boxDailyMedications[box.id!] = dailyMeds;
-              });
-            }
-          }
-        }
-      }
+
+      final data = await scheduleFuture;
+      final boxes = await boxesFuture;
+      final boxesSorted = List<MedicationBox>.from(boxes)
+        ..sort(
+          (a, b) =>
+              a.name.trim().toLowerCase().compareTo(b.name.trim().toLowerCase()),
+        );
+
+      if (!mounted || requestSeq != _loadSeq) return;
+
+      // Load daily medications for each box (parallel for responsiveness)
+      final Map<String, List<Map<String, dynamic>>> dailyByBoxId = {};
+      await Future.wait(
+        boxesSorted.where((b) => b.id != null).map((box) async {
+          final meds = await _pillBoxService.getDailyMedicationsForBox(
+            box.id!,
+            date,
+            userId: widget.patient.patientId,
+          );
+          dailyByBoxId[box.id!] = meds;
+        }),
+      );
+
+      if (!mounted || requestSeq != _loadSeq) return;
+
+      setState(() {
+        _schedule = data;
+        _boxes = boxesSorted;
+        _boxDailyMedications = dailyByBoxId;
+        _isLoading = false;
+      });
     } catch (e) {
-      print('Error loading boxes: $e');
+      if (!mounted || requestSeq != _loadSeq) return;
+      setState(() => _isLoading = false);
     }
   }
 
@@ -132,7 +142,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
           ),
           SafeArea(
             child: RefreshIndicator(
-              onRefresh: _loadSchedule,
+              onRefresh: () => _reloadForDate(_selectedDate),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
@@ -275,7 +285,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                     _selectedDate = picked;
                     _isCalendarSelected = true;
                   });
-                  _loadSchedule();
+                  await _reloadForDate(picked);
                 }
               }
 
@@ -290,7 +300,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                     _selectedDate = date;
                     _isCalendarSelected = false;
                   });
-                  _loadSchedule();
+                  await _reloadForDate(date);
                 },
                 child: Container(
                   width: 50,
@@ -527,13 +537,29 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
           // ใช้ Set เพื่อป้องกันการแสดงยาซ้ำกัน
           final uniqueMeds = <String, Map<String, dynamic>>{};
           for (final med in allMeds) {
-            final key = '${med['medicationName']}|${med['scheduledTime']}';
+            final rawName = (med['medicationName'] as String? ?? '');
+            final normName =
+                rawName.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+            final key = '$normName|${med['scheduledTime']}';
             if (!uniqueMeds.containsKey(key)) {
               uniqueMeds[key] = med;
             }
           }
 
-          result.add({'box': box, 'medications': uniqueMeds.values.toList()});
+          final medsSorted = uniqueMeds.values.toList()
+            ..sort((a, b) {
+              final an =
+                  (a['medicationName'] as String? ?? '').trim().toLowerCase();
+              final bn =
+                  (b['medicationName'] as String? ?? '').trim().toLowerCase();
+              final byName = an.compareTo(bn);
+              if (byName != 0) return byName;
+              final at = (a['scheduledTime'] as String? ?? '');
+              final bt = (b['scheduledTime'] as String? ?? '');
+              return at.compareTo(bt);
+            });
+
+          result.add({'box': box, 'medications': medsSorted});
         }
       }
     }

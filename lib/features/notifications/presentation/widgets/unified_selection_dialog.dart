@@ -45,6 +45,10 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
 
   // Speech-to-text
 
+  String _normalizeKey(String s) {
+    return s.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -108,9 +112,19 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
 
       final List<dynamic> combinedList = [];
       final Set<String> seenIds = {};
+      final Set<String> seenNameKeys = {};
 
       // 1. Process User Medications
       for (var med in userMedsResult) {
+        final nameKey = _normalizeKey(med.displayName);
+        // De-dup by displayed name to avoid duplicate UI entries
+        // (e.g., same medication created twice or coming from multiple sources)
+        if (nameKey.isNotEmpty && seenNameKeys.contains(nameKey)) {
+          continue;
+        }
+        if (nameKey.isNotEmpty) {
+          seenNameKeys.add(nameKey);
+        }
         combinedList.add(med);
         if (med.id != null) seenIds.add(med.id!);
         if (med.masterMedicationEntity?.id != null) {
@@ -120,18 +134,20 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
 
       // 2. Process Master Medications
       for (var med in masterMedsResult) {
+        final nameKey = _normalizeKey(med.name);
+        if (nameKey.isNotEmpty && seenNameKeys.contains(nameKey)) {
+          continue;
+        }
         if (med.id != null && !seenIds.contains(med.id)) {
           combinedList.add(med);
           seenIds.add(med.id!);
+          if (nameKey.isNotEmpty) seenNameKeys.add(nameKey);
         } else if (med.id == null) {
-          final medName = med.name.toLowerCase();
-          bool alreadyIn = combinedList.any((m) {
-            if (m is UserMedication)
-              return m.displayName.toLowerCase() == medName;
-            if (m is Medication) return m.name.toLowerCase() == medName;
-            return false;
-          });
-          if (!alreadyIn) combinedList.add(med);
+          // Fallback: no ID -> de-dup by nameKey
+          if (nameKey.isNotEmpty && !seenNameKeys.contains(nameKey)) {
+            combinedList.add(med);
+            seenNameKeys.add(nameKey);
+          }
         }
       }
 

@@ -206,7 +206,15 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
       final entry = grouped[name]!;
       (entry['statuses'] as List<String>).add(status);
     }
-    return grouped.values.toList();
+    final list = grouped.values.toList();
+    list.sort((a, b) {
+      final an =
+          (a['medicationName'] as String? ?? '').trim().toLowerCase();
+      final bn =
+          (b['medicationName'] as String? ?? '').trim().toLowerCase();
+      return an.compareTo(bn);
+    });
+    return list;
   }
 
   String _mealTimingLabel(String? intakeTiming) {

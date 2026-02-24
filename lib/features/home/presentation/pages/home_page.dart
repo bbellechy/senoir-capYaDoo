@@ -10,6 +10,7 @@ import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_detail_pag
 import 'package:capyadoo/features/care/presentation/pages/care_management_page.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
+import 'package:capyadoo/core/services/page_navigation_service.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -35,6 +36,21 @@ class _HomePageState extends State<HomePage> {
     initializeDateFormatting('th_TH', null);
     // เลื่อนโหลดข้อมูลไปหลัง build เสร็จ เพื่อไม่ให้ notifyListeners() ถูกเรียกระหว่าง build
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
+    // HomePage อยู่ใน IndexedStack → ต้อง reload เมื่อกลับมาเป็นแท็บที่ active อีกครั้ง
+    PageNavigationService().currentIndex.addListener(_onTabIndexChanged);
+  }
+
+  @override
+  void dispose() {
+    PageNavigationService().currentIndex.removeListener(_onTabIndexChanged);
+    super.dispose();
+  }
+
+  void _onTabIndexChanged() {
+    if (!mounted) return;
+    if (PageNavigationService().currentIndex.value == 0) {
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
@@ -56,6 +72,10 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadBoxes() async {
     try {
       final boxes = await _pillBoxService.getAllPillBoxes();
+      boxes.sort(
+        (a, b) =>
+            a.name.trim().toLowerCase().compareTo(b.name.trim().toLowerCase()),
+      );
       print('Loaded ${boxes.length} boxes');
       if (mounted) {
         setState(() {
@@ -521,7 +541,7 @@ class _HomePageState extends State<HomePage> {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const PillBoxListPage()),
-                  ),
+                  ).then((_) => _loadData()),
                 ),
               ),
               const SizedBox(width: 16),
@@ -725,39 +745,13 @@ class _HomePageState extends State<HomePage> {
 
   List<Map<String, dynamic>> _getBoxesForPeriod(String period) {
     final result = <Map<String, dynamic>>[];
-    print('_getBoxesForPeriod called with period: $period');
-    print('Total boxes: ${_boxes.length}');
-
     final selectedDateOnly = DateTime(
       _selectedDate.year,
       _selectedDate.month,
       _selectedDate.day,
     );
 
-    bool isTimeInPeriod(String timeStr, String p) {
-      // Accept "HH:mm:ss" or "HH:mm"
-      if (timeStr.isEmpty) return false;
-      final parts = timeStr.split(':');
-      if (parts.length < 2) return false;
-      final hour = int.tryParse(parts[0]) ?? -1;
-      if (hour < 0) return false;
-
-      switch (p) {
-        case 'MORNING': // 05:00 - 10:59
-          return hour >= 5 && hour < 11;
-        case 'NOON': // 11:00 - 15:59
-          return hour >= 11 && hour < 16;
-        case 'EVENING': // 16:00 - 20:59
-          return hour >= 16 && hour < 21;
-        case 'BEDTIME': // 21:00 - 04:59 (cross midnight)
-          return hour >= 21 || hour < 5;
-        default:
-          return false;
-      }
-    }
-
     for (final box in _boxes) {
-      // ไม่แสดงกล่องถ้าวันที่เลือกอยู่ก่อนวันที่สร้างกล่อง (แสดงเฉพาะตั้งแต่วันที่สร้างเป็นต้นไป)
       if (box.createdAt != null) {
         final createdDateOnly = DateTime(
           box.createdAt!.year,
@@ -767,44 +761,33 @@ class _HomePageState extends State<HomePage> {
         if (selectedDateOnly.isBefore(createdDateOnly)) continue;
       }
 
-      // แสดงกล่องในทุกช่วงที่กล่องถูกตั้งค่าไว้ (เช้า/กลางวัน/เย็น/ก่อนนอน)
       if (box.id != null && box.intakePeriods.contains(period)) {
-        print('Box ${box.name} matches period $period');
         final dailyMeds = _boxDailyMedications[box.id] ?? [];
-        print('Daily medications for ${box.name}: ${dailyMeds.length}');
-
-        // แปลง response จาก API ให้ตรงกับ format ที่โค้ดใช้
-        // API ส่ง: { id, medication: { name }, intakeTime, status }
-        // โค้ดต้องการ: { id, medicationName, scheduledTime, status }
-        // กรองเฉพาะรายการที่อยู่ในช่วงเวลานี้ โดยดูจาก intakeTime ที่ backend ส่งมา
-        final seenKeys = <String>{};
         final convertedMeds = <Map<String, dynamic>>[];
+        final seenKeys = <String>{};
+
         for (final med in dailyMeds) {
           final medicationObj = med['medication'] as Map<String, dynamic>?;
-          final medId =
-              medicationObj?['id']?.toString() ??
-              med['medicationId']?.toString() ??
-              '';
           final medicationName =
-              medicationObj?['name'] as String? ??
-              med['medicationName'] as String? ??
-              'ไม่ระบุชื่อ';
+              (medicationObj?['name'] as String? ??
+                      med['medicationName'] as String? ??
+                      'ไม่ระบุชื่อ')
+                  .trim();
 
           final intakeTime =
               med['intakeTime'] as String? ??
               med['scheduledTime'] as String? ??
               _getDefaultTimeForPeriod(period);
-          if (!isTimeInPeriod(intakeTime, period)) {
-            continue;
-          }
+
+          if (!_isTimeInPeriod(intakeTime, period)) continue;
+
           final scheduledTime = _formatTime(intakeTime);
           final status = med['status'] as String? ?? 'PENDING';
           final intakeId = med['id'] as String? ?? '';
 
-          // Unique per (med + time) so a medication can appear in multiple periods,
-          // but not duplicated within the same period.
-          final dedupKey =
-              '${medId.isNotEmpty ? medId : medicationName}|$scheduledTime';
+          // De-duplicate by name only within the period (coarse deduplication)
+          // to ensure "trrrrr" only shows once in the box for "NOON"
+          final dedupKey = medicationName.toLowerCase();
           if (seenKeys.contains(dedupKey)) continue;
           seenKeys.add(dedupKey);
 
@@ -818,41 +801,53 @@ class _HomePageState extends State<HomePage> {
           });
         }
 
-        // ถ้ามี daily medications ให้แสดง
         if (convertedMeds.isNotEmpty) {
-          print(
-            'Adding box ${box.name} with ${convertedMeds.length} medications',
-          );
+          convertedMeds.sort((a, b) {
+            final nameComp = (a['medicationName'] as String).compareTo(
+              b['medicationName'] as String,
+            );
+            if (nameComp != 0) return nameComp;
+            return (a['scheduledTime'] as String).compareTo(
+              b['scheduledTime'] as String,
+            );
+          });
           result.add({'box': box, 'medications': convertedMeds});
         } else if (box.medications.isNotEmpty) {
-          // ถ้าไม่มี daily medications แต่มี medications ใน box ให้ใช้ข้อมูลจาก box
-          print('Using box medications for ${box.name}');
-          final boxMeds = box.medications.map((med) {
-            return {
+          // Fallback if no daily intakes loaded yet
+          final fallbackMeds = <Map<String, dynamic>>[];
+          final fallbackSeen = <String>{};
+
+          for (final med in box.medications) {
+            final medName = (med['name'] as String? ?? 'ไม่ระบุชื่อ').trim();
+            final scheduledTime = _getDefaultTimeForPeriod(period);
+            final key = '${medName.toLowerCase()}|$scheduledTime';
+
+            if (fallbackSeen.contains(key)) continue;
+            fallbackSeen.add(key);
+
+            fallbackMeds.add({
               'id': med['id'] ?? '',
-              'medicationName': med['name'] ?? 'ไม่ระบุชื่อ',
+              'medicationName': medName,
               'dosage': med['dosage'] ?? med['quantity'] ?? 1,
               'unit': med['unit'] ?? 'เม็ด',
               'status': 'PENDING',
-              'scheduledTime': _getDefaultTimeForPeriod(period),
-            };
-          }).toList();
-          result.add({'box': box, 'medications': boxMeds});
-        } else {
-          print('Box ${box.name} has no medications to display');
-        }
-      } else {
-        if (box.id == null) {
-          print('Box ${box.name} has no id');
-        } else if (!box.intakePeriods.contains(period)) {
-          print(
-            'Box ${box.name} does not match period $period (has: ${box.intakePeriods})',
+              'scheduledTime': scheduledTime,
+            });
+          }
+          fallbackMeds.sort(
+            (a, b) => (a['medicationName'] as String).compareTo(
+              b['medicationName'] as String,
+            ),
           );
+          result.add({'box': box, 'medications': fallbackMeds});
         }
       }
     }
-    print(
-      '_getBoxesForPeriod returning ${result.length} boxes for period $period',
+
+    result.sort(
+      (a, b) => (a['box'] as MedicationBox).name.trim().toLowerCase().compareTo(
+        (b['box'] as MedicationBox).name.trim().toLowerCase(),
+      ),
     );
     return result;
   }
@@ -924,7 +919,7 @@ class _HomePageState extends State<HomePage> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => PillBoxDetailPage(pillBox: box)),
-        );
+        ).then((_) => _loadData());
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -1470,6 +1465,67 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Helper to check if a time string falls into a specific period range
+  bool _isTimeInPeriod(String timeStr, String p) {
+    if (timeStr.isEmpty) return false;
+    final parts = timeStr.split(':');
+    if (parts.length < 2) return false;
+    final hour = int.tryParse(parts[0]) ?? -1;
+    if (hour < 0) return false;
+
+    switch (p) {
+      case 'MORNING':
+        return hour >= 5 && hour < 11;
+      case 'NOON':
+        return hour >= 11 && hour < 16;
+      case 'EVENING':
+        return hour >= 16 && hour < 21;
+      case 'BEDTIME':
+        return hour >= 21 || hour < 5;
+      default:
+        return false;
+    }
+  }
+
+  // Determine if a specific medication name is already in any box for this period
+  bool _isMedicationInAnyBox(DailyIntake item, String period) {
+    final searchName = item.medicationName.trim().toLowerCase();
+    for (final box in _boxes) {
+      if (box.intakePeriods.contains(period)) {
+        // 1. Check loaded daily intakes for this box
+        final boxMeds = _boxDailyMedications[box.id] ?? [];
+        for (final bm in boxMeds) {
+          final bmName =
+              ((bm['medication'] as Map?)?['name'] as String? ??
+                      bm['medicationName'] as String? ??
+                      '')
+                  .trim()
+                  .toLowerCase();
+
+          if (bmName == searchName) {
+            // Check if this specific intake in the box belongs to the same period
+            final bmTime =
+                bm['intakeTime'] as String? ??
+                bm['scheduledTime'] as String? ??
+                '';
+            // If the box is assigned to this period and contains this med name,
+            // we treat it as being in the box for this period.
+            if (bmTime.isEmpty || _isTimeInPeriod(bmTime, period)) return true;
+          }
+        }
+
+        // 2. Check box definition if daily intakes are empty
+        if (boxMeds.isEmpty) {
+          for (final m in box.medications) {
+            final mName = (m['name'] as String? ?? '').trim().toLowerCase();
+            if (mName == searchName) return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   // Check if the scheduled time has passed
   // Now handles past dates correctly: if the date is in the past, time always "passed"
   bool _isTimePassedForSelectedDate(String time) {
@@ -1513,39 +1569,64 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<DailyIntake> _getFilteredSchedule(String period) {
-    return _schedule.where((item) {
-      // Prefer filtering by logical periodKey (MORNING/NOON/EVENING/BEDTIME)
-      // so that "ก่อนนอน" won't move to "เย็น" even if intakeTiming shifts time (e.g., 20:30).
+    final periodKey =
+        {
+          'morning': 'MORNING',
+          'afternoon': 'NOON',
+          'evening': 'EVENING',
+          'night': 'BEDTIME',
+        }[period] ??
+        period.toUpperCase();
+
+    final filtered = _schedule.where((item) {
+      bool timeMatch = false;
       if (item.periodKey != null && item.periodKey!.isNotEmpty) {
         final pk = item.periodKey!.toUpperCase();
         switch (period) {
           case 'morning':
-            return pk == 'MORNING';
+            timeMatch = pk == 'MORNING';
+            break;
           case 'afternoon':
-            return pk == 'NOON';
+            timeMatch = pk == 'NOON';
+            break;
           case 'evening':
-            return pk == 'EVENING';
+            timeMatch = pk == 'EVENING';
+            break;
           case 'night':
-            return pk == 'BEDTIME';
-          default:
-            return false;
+            timeMatch = pk == 'BEDTIME';
+            break;
+        }
+      } else {
+        final hour = int.parse(item.time.split(':')[0]);
+        switch (period) {
+          case 'morning':
+            timeMatch = hour >= 5 && hour < 11;
+            break;
+          case 'afternoon':
+            timeMatch = hour >= 11 && hour < 16;
+            break;
+          case 'evening':
+            timeMatch = hour >= 16 && hour < 21;
+            break;
+          case 'night':
+            timeMatch = hour >= 21 || hour < 5;
+            break;
         }
       }
 
-      // Fallback to time-based filtering (older data without periodKey)
-      final hour = int.parse(item.time.split(':')[0]);
-      switch (period) {
-        case 'morning':
-          return hour >= 5 && hour < 11;
-        case 'afternoon':
-          return hour >= 11 && hour < 16;
-        case 'evening':
-          return hour >= 16 && hour < 21;
-        case 'night':
-          return hour >= 21 || hour < 5;
-        default:
-          return false;
+      if (!timeMatch) return false;
+
+      // Hide if already in a box for this period
+      if (_isMedicationInAnyBox(item, periodKey)) {
+        return false;
       }
+
+      return true;
     }).toList();
+
+    filtered.sort(
+      (a, b) => a.medicationName.trim().compareTo(b.medicationName.trim()),
+    );
+    return filtered;
   }
 }
