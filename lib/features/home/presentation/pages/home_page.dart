@@ -182,7 +182,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _markAsTaken(String intakeId, String name) async {
+  bool _isSelectedDateToday() {
+    final fmt = DateFormat('yyyy-MM-dd');
+    return fmt.format(_selectedDate) == fmt.format(DateTime.now());
+  }
+
+  Future<void> _markAsTaken(String intakeId, String name, {bool isLate = false}) async {
     if (intakeId.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -204,7 +209,9 @@ class _HomePageState extends State<HomePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('บันทึกการทาน $name เรียบร้อยแล้ว'),
+            content: Text(
+              isLate ? 'บันทึกว่า $name ทานล่าช้าแล้ว' : 'บันทึกการทาน $name เรียบร้อยแล้ว',
+            ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
           ),
@@ -246,7 +253,7 @@ class _HomePageState extends State<HomePage> {
             action: SnackBarAction(
               label: 'ลองใหม่',
               textColor: Colors.white,
-              onPressed: () => _markAsTaken(intakeId, name),
+              onPressed: () => _markAsTaken(intakeId, name, isLate: isLate),
             ),
           ),
         );
@@ -254,7 +261,20 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _markAsTakenSmart(DailyIntake item) async {
+  Future<void> _markAsTakenSmart(DailyIntake item, {bool isLate = false}) async {
+    // ยืนยันการทานธรรมดาได้เฉพาะวันนี้; ส่วนทานล่าช้ากดได้เสมอเมื่อเกินกำหนด
+    if (!isLate && !_isSelectedDateToday()) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ยืนยันได้เฉพาะรายการของวันนี้เท่านั้น'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
     // ถ้าเป็น id แบบ generated (medId_date_time) ให้พยายาม resolve UUID จาก backend ก่อน
     String intakeId = item.intakeId;
 
@@ -296,7 +316,7 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    await _markAsTaken(intakeId, item.medicationName);
+    await _markAsTaken(intakeId, item.medicationName, isLate: isLate);
   }
 
   @override
@@ -911,6 +931,7 @@ class _HomePageState extends State<HomePage> {
         (allStatuses.any((s) => s.toUpperCase() == 'OVERDUE') ||
             (allStatuses.any((s) => s.toUpperCase() == 'PENDING') &&
                 _isTimePassedForSelectedDate(formattedTime)));
+    final canConfirmToday = _isSelectedDateToday();
 
     final mealTimingText = _mealTimingLabel(box.intakeTiming);
 
@@ -1109,26 +1130,50 @@ class _HomePageState extends State<HomePage> {
                     ),
                   )
                 else if (isOverdue)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'เกินกำหนด',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
+                  canConfirmToday
+                      ? GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => _markWholeBoxAsTaken(box, period, isLate: true),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'ทานล่าช้า',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'เกินกำหนด',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
                 else
                   ElevatedButton(
-                    onPressed: () => _markWholeBoxAsTaken(box, period),
+                    onPressed: canConfirmToday
+                        ? () => _markWholeBoxAsTaken(box, period, isLate: false)
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2196F3),
                       foregroundColor: Colors.white,
@@ -1166,7 +1211,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// ยืนยันการทานยาทั้งกล่องของช่วงนั้นเท่านั้น (กดเช้า = มาร์กเฉพาะเช้า ไม่มาร์กกลางวัน/เย็น/ก่อนนอน)
-  Future<void> _markWholeBoxAsTaken(MedicationBox box, String period) async {
+  Future<void> _markWholeBoxAsTaken(MedicationBox box, String period, {bool isLate = false}) async {
+    if (!isLate && !_isSelectedDateToday()) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ยืนยันได้เฉพาะรายการของวันนี้เท่านั้น'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
     if (box.id == null || box.id!.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1191,7 +1247,11 @@ class _HomePageState extends State<HomePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('บันทึกการทาน ${box.name} เรียบร้อยแล้ว'),
+            content: Text(
+              isLate
+                  ? 'บันทึกว่า ${box.name} ทานล่าช้าแล้ว'
+                  : 'บันทึกการทาน ${box.name} เรียบร้อยแล้ว',
+            ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
           ),
@@ -1266,6 +1326,7 @@ class _HomePageState extends State<HomePage> {
             item.status == IntakeStatus.MISSED ||
             (_isTimePassedForSelectedDate(item.time) &&
                 item.status == IntakeStatus.PENDING));
+    final bool canConfirmToday = _isSelectedDateToday();
 
     final bool isLowQuantity =
         item.remainingQuantity != null && item.remainingQuantity! < 7;
@@ -1427,23 +1488,50 @@ class _HomePageState extends State<HomePage> {
               ),
             )
           else if (isOverdue)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                'เกินกำหนด',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
+            canConfirmToday
+                ? GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _markAsTakenSmart(item, isLate: true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'ทานล่าช้า',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'เกินกำหนด',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
           else
             ElevatedButton(
-              onPressed: () => _markAsTakenSmart(item),
+              onPressed: canConfirmToday
+                  ? () => _markAsTakenSmart(item, isLate: false)
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2196F3),
                 foregroundColor: Colors.white,

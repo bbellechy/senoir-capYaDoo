@@ -69,14 +69,25 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
       if (!mounted || requestSeq != _loadSeq) return;
 
       // Load daily medications for each box (parallel for responsiveness)
+      // Retry เมื่อได้รายการว่าง เพราะ backend บางครั้งสร้าง intake ช้า รอบแรกอาจคืนว่าง
       final Map<String, List<Map<String, dynamic>>> dailyByBoxId = {};
+      const int maxAttempts = 3;
+      const Duration retryDelay = Duration(milliseconds: 500);
+
       await Future.wait(
         boxesSorted.where((b) => b.id != null).map((box) async {
-          final meds = await _pillBoxService.getDailyMedicationsForBox(
-            box.id!,
-            date,
-            userId: widget.patient.patientId,
-          );
+          List<Map<String, dynamic>> meds = [];
+          for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            if (!mounted || requestSeq != _loadSeq) return;
+            meds = await _pillBoxService.getDailyMedicationsForBox(
+              box.id!,
+              date,
+              userId: widget.patient.patientId,
+            );
+            if (meds.isNotEmpty) break;
+            if (attempt < maxAttempts) await Future.delayed(retryDelay);
+          }
+          if (!mounted || requestSeq != _loadSeq) return;
           dailyByBoxId[box.id!] = meds;
         }),
       );
@@ -506,9 +517,9 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
           orElse: () => {},
         );
 
-        if (existingBox.isEmpty && dailyMeds.isNotEmpty) {
-          // ยังไม่มีกล่องนี้ใน result → เพิ่มใหม่พร้อมยาทั้งหมดในกล่อง
-          // ไม่กรองตาม period - แสดงยาทั้งหมดในกล่อง
+        // แสดงกล่องเสมอ (แม้วันที่นั้น backend ยังไม่สร้าง intake เช่น วันในอนาคต)
+        if (existingBox.isEmpty) {
+          // ยังไม่มีกล่องนี้ใน result → เพิ่มใหม่พร้อมยาทั้งหมดในกล่อง (หรือรายการว่างถ้า API คืนมาเปล่า)
           final allMeds = dailyMeds.map((med) {
             final medicationObj = med['medication'] as Map<String, dynamic>?;
             final medicationName =
@@ -721,7 +732,16 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
               ],
             ),
             const SizedBox(height: 12),
-            ...(() {
+            if (medications.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'ไม่มีรายการยาสำหรับวันนี้',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              )
+            else
+              ...(() {
               // Group by medication name to avoid showing the same medication multiple times
               // (e.g., MORNING/NOON/EVENING intakes are separate rows from API)
               final Map<String, Map<String, dynamic>> grouped = {};
