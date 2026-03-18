@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:capyadoo/features/notifications/presentation/pages/notification_demo_page.dart';
 import 'package:capyadoo/features/notifications/presentation/pages/notification_list_page.dart';
 import 'package:capyadoo/features/notifications/presentation/pages/add_notification_page.dart';
 import 'package:capyadoo/features/notifications/presentation/pages/edit_notification_page.dart';
