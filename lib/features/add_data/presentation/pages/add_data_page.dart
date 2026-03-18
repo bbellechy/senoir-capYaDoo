@@ -139,100 +139,58 @@ class _AddDataPageState extends State<AddDataPage>
         children: [
           // Header with tabs
           Container(
-            height: 220,
+            height: 175,
             width: double.infinity,
-            decoration: const BoxDecoration(
-              color: AppColors.primaryBlue,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
-              ),
-            ),
+            color: AppColors.primaryBlue,
             child: SafeArea(
               bottom: false,
               child: Stack(
                 children: [
-                  // Decorative Circles
-                  Positioned(
-                    right: -50,
-                    top: -50,
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.05),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: -30,
-                    bottom: -30,
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.05),
-                      ),
-                    ),
-                  ),
                   Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Title
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            _headerTitle,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 36,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'Sarabun',
-                              letterSpacing: 1.2,
-                            ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Text(
+                          _headerTitle,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 36,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Sarabun',
                           ),
                         ),
                       ),
-
-                      // Tabs
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: SizedBox(
-                          height: 48,
-                          child: TabBar(
-                            controller: _tabController,
-                            labelColor: Colors.white,
-                            unselectedLabelColor: Colors.white70,
-                            dividerColor: Colors.transparent,
-                            indicatorSize: TabBarIndicatorSize.label,
-                            indicator: const UnderlineTabIndicator(
-                              borderSide: BorderSide(
-                                color: Colors.white,
-                                width: 3,
-                              ),
-                              insets: EdgeInsets.zero,
+                        child: TabBar(
+                          controller: _tabController,
+                          labelColor: Colors.white,
+                          unselectedLabelColor: Colors.white70,
+                          dividerColor: Colors.transparent,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          indicator: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.white, width: 2),
                             ),
-                            labelStyle: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'Sarabun',
-                            ),
-                            unselectedLabelStyle: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'Sarabun',
-                            ),
-                            tabs: const [
-                              Tab(text: 'ข้อมูลยา'),
-                              Tab(text: 'บันทึกอาการ'),
-                            ],
                           ),
+                          labelStyle: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Sarabun',
+                          ),
+                          unselectedLabelStyle: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w400,
+                            fontFamily: 'Sarabun',
+                          ),
+                          tabs: const [
+                            Tab(text: 'เพิ่มข้อมูลยา'),
+                            Tab(text: 'บันทึกอาการ'),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 8),
                     ],
                   ),
                 ],
@@ -341,18 +299,16 @@ class _AddDataPageState extends State<AddDataPage>
 
   Widget _buildEmptyState() {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Center(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: Align(
+        alignment: Alignment.topCenter,
         child: AppEmptyCard(
           title: 'ยังไม่มีรายการยา',
           subtitle: 'เพิ่มยาเพื่อเริ่มต้นใช้งาน',
-          onAddPressed: () async {
-            final result = await Navigator.pushNamed(
-              context,
-              AppRouter.addMedicineRoute,
-            );
-            if (result == true) _loadData();
-          },
+          iconColor: AppColors.textSublest,
+          borderColor: AppColors.blueBorder,
+          borderRadius: 10,
+          borderWidth: 2,
         ),
       ),
     );
@@ -440,19 +396,17 @@ class _AddDataPageState extends State<AddDataPage>
 
   Widget _buildEmptySymptomState() {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Center(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: Align(
+        alignment: Alignment.topCenter,
         child: AppEmptyCard(
           icon: Icons.assignment_outlined,
           title: 'ยังไม่มีบันทึกอาการ',
           subtitle: 'เริ่มบันทึกอาการเพื่อติดตามสุขภาพ',
-          onAddPressed: () async {
-            final result = await Navigator.pushNamed(
-              context,
-              AppRouter.addSymptomRoute,
-            );
-            if (result == true) _loadData();
-          },
+          iconColor: AppColors.textSublest,
+          borderColor: AppColors.blueBorder,
+          borderRadius: 10,
+          borderWidth: 2,
         ),
       ),
     );
