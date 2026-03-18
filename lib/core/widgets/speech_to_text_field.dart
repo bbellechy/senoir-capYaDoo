@@ -128,6 +128,8 @@ class _SpeechToTextFieldState extends State<SpeechToTextField> {
 
       // Create microphone icon button
       final micIcon = IconButton(
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 80),
         icon: Icon(
           _isListening ? Icons.mic : Icons.mic_none,
           color: _isListening
@@ -143,6 +145,7 @@ class _SpeechToTextFieldState extends State<SpeechToTextField> {
       if (existingSuffix != null) {
         combinedSuffix = Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [existingSuffix, micIcon],
         );
       } else {
@@ -164,6 +167,8 @@ class _SpeechToTextFieldState extends State<SpeechToTextField> {
         textInputAction: textField.textInputAction,
         style: textField.style,
         textAlignVertical: textField.textAlignVertical,
+        minLines: 1,
+        maxLines: 1,
         decoration: (decoration ?? const InputDecoration()).copyWith(
           suffixIcon: combinedSuffix,
         ),
@@ -174,7 +179,3 @@ class _SpeechToTextFieldState extends State<SpeechToTextField> {
     return widget.child;
   }
 }
-
-
-
-

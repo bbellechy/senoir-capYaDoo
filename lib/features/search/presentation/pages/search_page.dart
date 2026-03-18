@@ -93,7 +93,7 @@ class _SearchPageState extends State<SearchPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('ค้นหาไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'),
-            backgroundColor: Colors.red.shade400,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -112,140 +112,114 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    const double headerHeight = 175;
+    const double searchBoxHeight = 80;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
+      backgroundColor: AppColors.offwhite,
+      body: Stack(
         children: [
-          // Top Blue Header
-          Container(
-            height: 200,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: AppColors.primaryBlue,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Stack(
-                children: [
-                  // Decorative Circles
-                  Positioned(
-                    right: -40,
-                    top: -40,
-                    child: Container(
-                      width: 180,
-                      height: 180,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.05),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: -20,
-                    bottom: -20,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.05),
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.search_rounded,
-                          color: Colors.white70,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'ค้นหายา',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 36,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'Sarabun',
-                            letterSpacing: 1.2,
+          Column(
+            children: [
+              Container(
+                height: headerHeight,
+                width: double.infinity,
+                color: AppColors.primaryBlue,
+                child: SafeArea(
+                  bottom: false,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: (searchBoxHeight / 2) + 12,
+                        child: const Center(
+                          child: Text(
+                            'ค้นหายา',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 36,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'Sarabun',
+                            ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(top: searchBoxHeight / 2 + 12),
+                  child: _buildContent(),
+                ),
+              ),
+            ],
+          ),
+          Positioned(
+            top: headerHeight - (searchBoxHeight / 2),
+            left: 16,
+            right: 16,
+            child: Container(
+              height: searchBoxHeight,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.12),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-            ),
-          ),
-
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+              child: SpeechToTextField(
+                controller: _searchController,
+                onSearch: search,
+                child: TextField(
+                  controller: _searchController,
+                  textAlignVertical: TextAlignVertical.center,
+                  style: const TextStyle(fontSize: 16, height: 1.2),
+                  onChanged: (value) {
+                    if (value.isEmpty) {
+                      setState(() {
+                        results = [];
+                        hasSearched = false;
+                      });
+                    }
+                  },
+                  onSubmitted: (_) => search(),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: 'ค้นหายาที่ต้องการ...',
+                    hintStyle: TextStyle(
+                      color: AppColors.textSub,
+                      fontSize: 20,
                     ),
-                    child: SpeechToTextField(
-                      controller: _searchController,
-                      onSearch: search,
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (value) {
-                          if (value.isEmpty) {
-                            setState(() {
-                              results = [];
-                              hasSearched = false;
-                            });
-                          }
-                        },
-                        onSubmitted: (_) => search(),
-                        decoration: InputDecoration(
-                          hintText: 'ค้นหายาที่ต้องการ...',
-                          hintStyle: TextStyle(
-                            color: Colors.grey.shade400,
-                            fontSize: 14,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: Colors.grey.shade600,
-                            size: 22,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                        ),
-                      ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: AppColors.textSub,
+                      size: 26,
+                    ),
+                    prefixIconConstraints: const BoxConstraints(
+                      minWidth: 56,
+                      minHeight: 80,
+                    ),
+                    suffixIconConstraints: const BoxConstraints(
+                      minWidth: 56,
+                      minHeight: 80,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 0,
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-
-          // Content Section
-          Expanded(child: _buildContent()),
         ],
       ),
     );
@@ -258,13 +232,13 @@ class _SearchPageState extends State<SearchPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircularProgressIndicator(
-              color: const Color(0xFF2196F3),
+              color: AppColors.primaryBlue,
               strokeWidth: 3,
             ),
             const SizedBox(height: 16),
             Text(
               'กำลังค้นหา...',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              style: TextStyle(color: AppColors.textSub, fontSize: 14),
             ),
           ],
         ),
@@ -273,12 +247,17 @@ class _SearchPageState extends State<SearchPage> {
 
     if (!hasSearched) {
       return Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        child: Align(
+          alignment: Alignment.topCenter,
           child: AppEmptyCard(
             icon: Icons.search_rounded,
             title: 'ค้นหายา',
-            subtitle: 'ค้นหายาเพื่อดูข้อมูลและวิธีการทานยาอย่างละเอียด',
+            subtitle: 'ค้นหายาเพื่อดูข้อมูลรายละเอียด',
+            iconColor: AppColors.textSublest,
+            borderColor: AppColors.blueBorder,
+            borderRadius: 10,
+            borderWidth: 2,
           ),
         ),
       );
@@ -286,12 +265,17 @@ class _SearchPageState extends State<SearchPage> {
 
     if (results.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        child: Align(
+          alignment: Alignment.topCenter,
           child: AppEmptyCard(
             icon: Icons.search_off_rounded,
             title: 'ไม่พบรายการยา',
             subtitle: 'ไม่พบยาที่คุณค้นหา กรุณาลองตรวจสอบชื่อยาอีกครั้ง',
+            iconColor: AppColors.textSublest,
+            borderColor: AppColors.blueBorder,
+            borderRadius: 10,
+            borderWidth: 2,
           ),
         ),
       );
@@ -359,7 +343,7 @@ class _SearchPageState extends State<SearchPage> {
                           'รูปแบบยา: ${displayDoseForm(medication.doseFormTh, medication.doseFormEn)}',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey.shade600,
+                            color: AppColors.textSublest,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -370,7 +354,7 @@ class _SearchPageState extends State<SearchPage> {
                         'สรรพคุณ: ${medication.indication ?? "-"}',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.grey.shade600,
+                          color: AppColors.textSublest,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -382,7 +366,7 @@ class _SearchPageState extends State<SearchPage> {
                           'การใช้ประโยชน์: ${medication.categoryUse}',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey.shade600,
+                            color: AppColors.textSublest,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -391,11 +375,7 @@ class _SearchPageState extends State<SearchPage> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
-                  color: Colors.grey.shade400,
-                  size: 24,
-                ),
+                Icon(Icons.chevron_right, color: AppColors.textSub, size: 24),
               ],
             ),
           ),

@@ -6,6 +6,10 @@ class AppEmptyCard extends StatelessWidget {
   final String subtitle;
   final IconData? icon;
   final VoidCallback? onAddPressed;
+  final Color? iconColor;
+  final Color? borderColor;
+  final double borderRadius;
+  final double borderWidth;
 
   const AppEmptyCard({
     super.key,
@@ -13,6 +17,10 @@ class AppEmptyCard extends StatelessWidget {
     required this.subtitle,
     this.icon,
     this.onAddPressed,
+    this.iconColor,
+    this.borderColor,
+    this.borderRadius = 24,
+    this.borderWidth = 1,
   });
 
   @override
@@ -22,10 +30,10 @@ class AppEmptyCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F7FF), // Very light blue as in image
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: const Color(0xFFD0E4FF), // Light blue border
-          width: 1,
+          color: borderColor ?? const Color(0xFFD0E4FF),
+          width: borderWidth,
         ),
       ),
       child: Column(
@@ -34,7 +42,7 @@ class AppEmptyCard extends StatelessWidget {
           Icon(
             icon ?? Icons.medication_liquid_outlined,
             size: 80,
-            color: Colors.black12, // Subtle grey icon as in image
+            color: iconColor ?? Colors.black12,
           ),
           const SizedBox(height: 24),
           Text(
