@@ -38,7 +38,7 @@ class MedicineListCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.whitelist,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.blueBorder, width: 1.5),
         boxShadow: [
@@ -74,35 +74,58 @@ class MedicineListCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Name
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    // Name + Action buttons
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (onEdit != null || onDelete != null)
+                          const SizedBox(width: 8),
+                        if (onEdit != null)
+                          _ActionButton(
+                            icon: Icons.create_rounded,
+                            color: AppColors.textSub,
+                            onTap: onEdit,
+                          ),
+                        if (onEdit != null && onDelete != null)
+                          const SizedBox(width: 8),
+                        if (onDelete != null)
+                          _ActionButton(
+                            icon: Icons.delete_rounded,
+                            color: AppColors.error,
+                            onTap: onDelete,
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 8),
 
                     // Details
                     Text(
                       'ปริมาณ: $amount',
-                      style: TextStyle(fontSize: 14, color: AppColors.textSub),
+                      style: TextStyle(fontSize: 16, color: AppColors.textSub),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'จำนวนครั้ง: $frequency ครั้ง',
-                      style: TextStyle(fontSize: 14, color: AppColors.textSub),
+                      style: TextStyle(fontSize: 16, color: AppColors.textSub),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'รับประทาน: $mealTiming',
-                      style: TextStyle(fontSize: 14, color: AppColors.textSub),
+                      style: TextStyle(fontSize: 16, color: AppColors.textSub),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'หมดอายุ: $expiryDate',
-                      style: TextStyle(fontSize: 14, color: AppColors.textSub),
+                      style: TextStyle(fontSize: 16, color: AppColors.textSub),
                     ),
                     const SizedBox(height: 12),
 
@@ -120,27 +143,6 @@ class MedicineListCard extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-
-              // Action buttons
-              const SizedBox(width: 8),
-              Row(
-                children: [
-                  if (onEdit != null)
-                    _ActionButton(
-                      icon: Icons.edit,
-                      color: AppColors.textSub,
-                      onTap: onEdit,
-                    ),
-                  if (onEdit != null && onDelete != null)
-                    const SizedBox(width: 8),
-                  if (onDelete != null)
-                    _ActionButton(
-                      icon: Icons.delete,
-                      color: AppColors.error,
-                      onTap: onDelete,
-                    ),
-                ],
               ),
             ],
           ),

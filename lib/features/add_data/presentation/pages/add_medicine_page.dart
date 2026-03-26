@@ -48,6 +48,8 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
   DateTime? _endDate;
   String? _userId;
 
+  bool get _isEditMode => widget.medicationId != null;
+
   @override
   void initState() {
     super.initState();
@@ -328,11 +330,11 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                           ),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'เพิ่มข้อมูลยา',
+                            _isEditMode ? 'แก้ไขข้อมูลยา' : 'เพิ่มข้อมูลยา',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 32,
                               fontWeight: FontWeight.w500,

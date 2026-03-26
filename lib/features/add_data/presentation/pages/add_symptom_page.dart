@@ -28,6 +28,8 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
   double _severityLevel = 5.0;
   List<String> _userMedicationNames = [];
 
+  bool get _isEditMode => widget.symptomId != null;
+
   @override
   void initState() {
     super.initState();
@@ -148,11 +150,13 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                           ),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'เพิ่มบันทึกอาการ',
+                            _isEditMode
+                                ? 'แก้ไขบันทึกอาการ'
+                                : 'เพิ่มบันทึกอาการ',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 32,
                               fontWeight: FontWeight.w500,

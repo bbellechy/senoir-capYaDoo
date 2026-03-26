@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/widgets/medicine_list_card.dart';
 import 'package:capyadoo/core/widgets/symptom_list_card.dart';
-import 'package:capyadoo/core/widgets/medicine_list_card.dart';
-import 'package:capyadoo/core/widgets/symptom_list_card.dart';
+import 'package:capyadoo/core/widgets/delete_dialog.dart';
 import 'package:capyadoo/core/services/medication_service.dart';
 import 'package:capyadoo/core/services/symptom_service.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
@@ -62,22 +60,11 @@ class _AddDataPageState extends State<AddDataPage>
   }
 
   Future<void> _deleteMedicine(String id) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('ยืนยันการลบ'),
-        content: const Text('คุณตต้องการลบข้อมูลยานี้ใช่หรือไม่?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('ยกเลิก'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+    final confirmed = await showDeleteDialog(
+      context,
+      title: 'ยืนยันการลบ',
+      message:
+          'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้ ?\nการดำเนินการนี้ไม่สามารถย้อนกลับได้',
     );
 
     if (confirmed == true) {
@@ -92,22 +79,11 @@ class _AddDataPageState extends State<AddDataPage>
   }
 
   Future<void> _deleteSymptom(String id) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('ยืนยันการลบ'),
-        content: const Text('คุณต้องการลบบันทึกอาการนี้ใช่หรือไม่?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('ยกเลิก'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+    final confirmed = await showDeleteDialog(
+      context,
+      title: 'ยืนยันการลบ',
+      message:
+          'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้ ?\nการดำเนินการนี้ไม่สามารถย้อนกลับได้',
     );
 
     if (confirmed == true) {

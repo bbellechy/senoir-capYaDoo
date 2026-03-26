@@ -47,8 +47,8 @@ class AppNavBar extends StatelessWidget {
               ),
               _buildNavItem(
                 index: 2,
-                icon: Icons.add_circle_outline,
-                selectedIcon: Icons.add_circle,
+                icon: Icons.add_rounded,
+                selectedIcon: Icons.add_rounded,
                 label: 'เพิ่มข้อมูล',
               ),
               _buildNavItem(

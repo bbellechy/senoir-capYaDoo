@@ -69,7 +69,7 @@ class SymptomListCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.whitelist,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.blueBorder, width: 1.5),
         boxShadow: [
@@ -116,7 +116,7 @@ class SymptomListCard extends StatelessWidget {
                   // Action buttons
                   if (onEdit != null)
                     _ActionButton(
-                      icon: Icons.edit,
+                      icon: Icons.create_rounded,
                       color: AppColors.textSub,
                       onTap: onEdit,
                     ),
@@ -124,7 +124,7 @@ class SymptomListCard extends StatelessWidget {
                     const SizedBox(width: 8),
                   if (onDelete != null)
                     _ActionButton(
-                      icon: Icons.delete,
+                      icon: Icons.delete_rounded,
                       color: AppColors.error,
                       onTap: onDelete,
                     ),
@@ -136,7 +136,7 @@ class SymptomListCard extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize:24,
                   fontWeight: FontWeight.w600,
                 ),
               ),
