@@ -162,14 +162,13 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
 
     final success = await _controller.updateNotification(updatedNotification);
 
+    if (!mounted) return;
     setState(() {
       _isSaving = false;
     });
 
     if (success) {
-      if (mounted) {
-        Navigator.pop(context, true);
-      }
+      Navigator.pop(context, true);
     } else {
       _showError(_controller.error ?? 'ไม่สามารถอัปเดตการแจ้งเตือนได้');
     }
@@ -210,14 +209,13 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
       widget.notification.id!,
     );
 
+    if (!mounted) return;
     setState(() {
       _isDeleting = false;
     });
 
     if (success) {
-      if (mounted) {
-        Navigator.pop(context, true);
-      }
+      Navigator.pop(context, true);
     } else {
       _showError(_controller.error ?? 'ไม่สามารถลบการแจ้งเตือนได้');
     }

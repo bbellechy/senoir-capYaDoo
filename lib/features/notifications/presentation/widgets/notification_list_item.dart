@@ -8,8 +8,7 @@ class NotificationListItem extends StatelessWidget {
   final VoidCallback onTap;
   final ValueChanged<bool> onToggle;
   final bool isDeleteMode;
-  final bool isSelected;
-  final ValueChanged<bool?>? onSelectionChanged;
+  final VoidCallback? onDelete;
 
   const NotificationListItem({
     super.key,
@@ -17,25 +16,23 @@ class NotificationListItem extends StatelessWidget {
     required this.onTap,
     required this.onToggle,
     this.isDeleteMode = false,
-    this.isSelected = false,
-    this.onSelectionChanged,
+    this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
     final isEnabled = notification.isEnabled;
-    final iconColor = isEnabled
-        ? AppColors.primaryBlue
-        : const Color(0xFFEF5350);
+    final iconColor = isEnabled ? AppColors.primaryBlue : AppColors.error;
     final iconBgColor = isEnabled
         ? AppColors.primaryBlue.withOpacity(0.1)
-        : const Color(0xFFEF5350).withOpacity(0.1);
+        : AppColors.error.withOpacity(0.1);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.blueBorder, width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -47,27 +44,36 @@ class NotificationListItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: isDeleteMode
-              ? () => onSelectionChanged?.call(!isSelected)
-              : onTap,
+          onTap: isDeleteMode ? null : onTap,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 if (isDeleteMode) ...[
-                  Checkbox(
-                    value: isSelected,
-                    onChanged: (value) => onSelectionChanged?.call(value),
-                    activeColor: AppColors.primaryBlue,
+                  GestureDetector(
+                    onTap: onDelete,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        color: AppColors.error,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                 ],
 
                 // Icon or Image
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
                     color: iconBgColor,
                     borderRadius: BorderRadius.circular(12),
@@ -101,7 +107,7 @@ class NotificationListItem extends StatelessWidget {
                       Text(
                         notification.medicationName,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 20,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary,
                         ),
@@ -111,7 +117,7 @@ class NotificationListItem extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.access_time,
-                            size: 14,
+                            size: 20,
                             color: AppColors.primaryBlue,
                           ),
                           const SizedBox(width: 4),
@@ -120,8 +126,8 @@ class NotificationListItem extends StatelessWidget {
                                 ? notification.getFormattedTimes().first + ' น.'
                                 : '',
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+                              fontSize: 18,
+                              color: AppColors.textSub,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -130,7 +136,10 @@ class NotificationListItem extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         notification.getDayNames().join(', '),
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: AppColors.textSub,
+                        ),
                       ),
                     ],
                   ),
@@ -141,15 +150,15 @@ class NotificationListItem extends StatelessWidget {
                     value: isEnabled,
                     onChanged: onToggle,
                     activeColor: Colors.white,
-                    activeTrackColor: const Color(0xFF4CAF50),
+                    activeTrackColor: AppColors.success,
                     inactiveThumbColor: Colors.white,
-                    inactiveTrackColor: Colors.grey[300],
+                    inactiveTrackColor: AppColors.textSublest,
                   ),
                 ] else ...[
                   const Icon(
                     Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Colors.grey,
+                    size: 20,
+                    color: AppColors.textSub,
                   ),
                 ],
               ],

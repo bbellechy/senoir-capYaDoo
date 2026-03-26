@@ -12,23 +12,36 @@ class NotificationController extends ChangeNotifier {
   List<MedicationNotification> _notifications = [];
   bool _isLoading = false;
   String? _error;
+  bool _isDisposed = false;
 
   List<MedicationNotification> get notifications => _notifications;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  void _safeNotifyListeners() {
+    if (!_isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
   // Load notifications from local storage and backend
   Future<void> loadNotifications() async {
     _isLoading = true;
     _error = null;
-    notifyListeners();
+    _safeNotifyListeners();
 
     try {
       // Load from local storage first (for offline access)
       final localNotifications =
           await NotificationStorageService.loadNotifications();
       _notifications = _sortNotifications(localNotifications);
-      notifyListeners();
+      _safeNotifyListeners();
 
       // Then try to sync with backend (optional)
       try {
@@ -49,7 +62,7 @@ class NotificationController extends ChangeNotifier {
           _notifications = _sortNotifications(mergedNotifications);
           // Update local storage with merged data
           await NotificationStorageService.saveNotifications(_notifications);
-          notifyListeners();
+          _safeNotifyListeners();
         }
       } catch (backendError) {
         // Backend error is not critical, we can work with local storage
@@ -63,7 +76,7 @@ class NotificationController extends ChangeNotifier {
       print('Error loading notifications: $e');
     } finally {
       _isLoading = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -202,7 +215,7 @@ class NotificationController extends ChangeNotifier {
       return true;
     } catch (e) {
       _error = 'เกิดข้อผิดพลาด: $e';
-      notifyListeners();
+      _safeNotifyListeners();
       print('Error adding notification: $e');
       return false;
     }
@@ -261,12 +274,12 @@ class NotificationController extends ChangeNotifier {
         return true;
       } else {
         _error = 'ไม่สามารถอัปเดตการแจ้งเตือนได้';
-        notifyListeners();
+        _safeNotifyListeners();
         return false;
       }
     } catch (e) {
       _error = 'เกิดข้อผิดพลาด: $e';
-      notifyListeners();
+      _safeNotifyListeners();
       print('Error updating notification: $e');
       return false;
     }
@@ -304,12 +317,12 @@ class NotificationController extends ChangeNotifier {
         return true;
       } else {
         _error = 'ไม่สามารถลบการแจ้งเตือนได้';
-        notifyListeners();
+        _safeNotifyListeners();
         return false;
       }
     } catch (e) {
       _error = 'เกิดข้อผิดพลาด: $e';
-      notifyListeners();
+      _safeNotifyListeners();
       print('Error deleting notification: $e');
       return false;
     }
@@ -323,7 +336,7 @@ class NotificationController extends ChangeNotifier {
     final index = _notifications.indexWhere((n) => n.id == notification.id);
     if (index != -1) {
       _notifications[index] = updated;
-      notifyListeners();
+      _safeNotifyListeners();
     }
 
     // Rely on updateNotification to handle backend sync and scheduling/cancellation

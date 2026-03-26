@@ -142,14 +142,13 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
 
     final success = await _controller.addNotification(notification);
 
+    if (!mounted) return;
     setState(() {
       _isSaving = false;
     });
 
     if (success) {
-      if (mounted) {
-        Navigator.pop(context, true);
-      }
+      Navigator.pop(context, true);
     } else {
       _showError(_controller.error ?? 'ไม่สามารถบันทึกการแจ้งเตือนได้');
     }
