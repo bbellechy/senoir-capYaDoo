@@ -67,7 +67,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFBF6),
+      backgroundColor: AppColors.offwhite,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: AppColors.primaryBlue,
@@ -79,7 +79,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
           'รายละเอียดยา',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 20,
+            fontSize: 36,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -98,11 +98,11 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                   bottomRight: Radius.circular(24),
                 ),
               ),
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
@@ -116,7 +116,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                     ),
                     child: const Icon(
                       Icons.medication,
-                      size: 48,
+                      size: 36,
                       color: AppColors.primaryBlue,
                     ),
                   ),
@@ -124,7 +124,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                   Text(
                     widget.medication.tradenameTh ?? '-',
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -134,7 +134,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                   Text(
                     widget.medication.tradenameEn ?? '-',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 20,
                       color: Colors.white.withOpacity(0.9),
                     ),
                     textAlign: TextAlign.center,
@@ -237,6 +237,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.blueBorder, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -265,7 +266,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
                   child: Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A1A),
                     ),
@@ -304,7 +305,7 @@ class _MedicationDetailPageState extends State<MedicationDetailPage> {
               child: Text(
                 content.isNotEmpty ? content : 'ไม่มีข้อมูล',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   color: content.isNotEmpty
                       ? Colors.grey.shade800
                       : Colors.grey.shade400,

@@ -296,7 +296,10 @@ class _SearchPageState extends State<SearchPage> {
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: AppColors.blueBorder, width: 2),
+        ),
         elevation: 1,
         shadowColor: Colors.black.withOpacity(0.05),
         child: InkWell(
@@ -330,7 +333,7 @@ class _SearchPageState extends State<SearchPage> {
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A1A1A),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -342,8 +345,8 @@ class _SearchPageState extends State<SearchPage> {
                         Text(
                           'รูปแบบยา: ${displayDoseForm(medication.doseFormTh, medication.doseFormEn)}',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSublest,
+                            fontSize: 16,
+                            color: AppColors.textSub,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -354,7 +357,7 @@ class _SearchPageState extends State<SearchPage> {
                         'สรรพคุณ: ${medication.indication ?? "-"}',
                         style: TextStyle(
                           fontSize: 16,
-                          color: AppColors.textSublest,
+                          color: AppColors.textSub,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -365,8 +368,8 @@ class _SearchPageState extends State<SearchPage> {
                         Text(
                           'การใช้ประโยชน์: ${medication.categoryUse}',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSublest,
+                            fontSize: 16,
+                            color: AppColors.textSub,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
