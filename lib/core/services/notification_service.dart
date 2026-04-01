@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -11,8 +12,25 @@ import 'package:capyadoo/core/services/medication_schedule_service.dart';
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
+  static const String _phoneNotificationEnabledKey =
+      'phone_notifications_enabled';
 
   static const int _flagInsistent = 4;
+
+  static Future<bool> isPhoneNotificationsEnabled() async {
+    final value = await _storage.read(key: _phoneNotificationEnabledKey);
+    // Default to enabled for first-time users.
+    if (value == null) return true;
+    return value == 'true';
+  }
+
+  static Future<void> setPhoneNotificationsEnabled(bool enabled) async {
+    await _storage.write(
+      key: _phoneNotificationEnabledKey,
+      value: enabled.toString(),
+    );
+  }
 
   static Future<void> init() async {
     tz.initializeTimeZones();
@@ -269,6 +287,11 @@ class NotificationService {
     String? imagePath,
     String? payload,
   }) async {
+    if (!await isPhoneNotificationsEnabled()) {
+      print('NotificationService: Skipped showNotification (disabled by user)');
+      return;
+    }
+
     final image = imagePath != null ? await _loadImage(imagePath) : null;
     final androidDetails = _getAlarmAndroidDetails(title, body, image: image);
 
@@ -291,6 +314,13 @@ class NotificationService {
     String? imagePath,
     String? intakeId, // Pass intakeId for confirmation logic
   }) async {
+    if (!await isPhoneNotificationsEnabled()) {
+      print(
+        'NotificationService: Skipped scheduleWeeklyNotification (disabled by user)',
+      );
+      return;
+    }
+
     // Simplified: Just use the provided path.
     // The Controller already ensures the image is saved to app storage.
     // And _loadImage will handle reading it.
@@ -365,6 +395,13 @@ class NotificationService {
     required String medicationName,
     String? imagePath,
   }) async {
+    if (!await isPhoneNotificationsEnabled()) {
+      print(
+        'NotificationService: Skipped scheduleTestNotification (disabled by user)',
+      );
+      return;
+    }
+
     Future.delayed(const Duration(seconds: 10), () async {
       await showNotification(
         id: 999,
