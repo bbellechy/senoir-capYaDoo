@@ -30,7 +30,7 @@ class SimpleMedicineListCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.whitelist,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.blueBorder, width: 1.5),
       ),
@@ -92,7 +92,7 @@ class SimpleMedicineListCard extends StatelessWidget {
               // Delete button
               if (onDelete != null)
                 _ActionButton(
-                  icon: Icons.delete,
+                  icon: Icons.delete_rounded,
                   color: AppColors.error,
                   onTap: onDelete,
                 ),

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
+import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/services/storage/token_storage.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -11,9 +12,7 @@ import 'dart:async';
 class PillBoxService {
   // Replace with your actual backend URL
   // static const String _baseUrl = 'http://10.0.2.2:8080/api/medication-boxes';
-  static const String _baseUrl =
-      // 'https://concluded-conf-given-beans.trycloudflare.com/api/medication-boxes';
-      'http://172.20.10.8:8080/api/medication-boxes';
+  static String get _baseUrl => '${ApiConfig.baseUrl}/api/medication-boxes';
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   // Get token helper - use TokenStorage to match the rest of the app
@@ -115,7 +114,7 @@ class PillBoxService {
             body: json.encode(body),
           )
           .timeout(
-            const Duration(seconds: 30),
+            const Duration(seconds: 12),
             onTimeout: () {
               print('ERROR: Request timeout');
               throw Exception(

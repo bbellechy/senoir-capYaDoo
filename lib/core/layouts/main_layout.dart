@@ -24,6 +24,8 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   void initState() {
     super.initState();
+    // Keep local index aligned with global navigation service from first frame.
+    _currentIndex = PageNavigationService().currentIndex.value;
     _pages = const [
       HomePage(), // 0: หน้าหลัก
       SearchPage(), // 1: ค้นหา

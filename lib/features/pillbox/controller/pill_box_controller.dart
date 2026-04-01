@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
@@ -60,7 +61,9 @@ class PillBoxController extends ChangeNotifier {
       );
 
       print('Controller: Calling service.createPillBox...');
-      final created = await _service.createPillBox(newBox, imageFile);
+      final created = await _service
+          .createPillBox(newBox, imageFile)
+          .timeout(const Duration(seconds: 15));
       print(
         'Controller: Service returned: ${created != null ? "SUCCESS" : "NULL"}',
       );
@@ -75,6 +78,12 @@ class PillBoxController extends ChangeNotifier {
         print('Controller: Error - created is null');
         return false;
       }
+    } on TimeoutException catch (e, stackTrace) {
+      print('=== Controller: TimeoutException caught ===');
+      print('Exception: $e');
+      print('Stack trace: $stackTrace');
+      _error = 'การเชื่อมต่อช้าเกินไป กรุณาลองใหม่อีกครั้ง';
+      return false;
     } catch (e, stackTrace) {
       print('=== Controller: Exception caught ===');
       print('Exception type: ${e.runtimeType}');

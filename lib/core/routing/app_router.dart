@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:capyadoo/features/notifications/presentation/pages/notification_list_page.dart';
 import 'package:capyadoo/features/notifications/presentation/pages/add_notification_page.dart';
 import 'package:capyadoo/features/notifications/presentation/pages/edit_notification_page.dart';
-import 'package:capyadoo/features/tts/presentation/pages/tts_demo_page.dart';
 import 'package:capyadoo/features/home/presentation/pages/home_page.dart';
 import 'package:capyadoo/features/search/presentation/pages/search_page.dart';
 import 'package:capyadoo/features/add_data/presentation/pages/add_data_page.dart';
@@ -141,11 +140,6 @@ class AppRouter {
       case caregiversRoute:
         return MaterialPageRoute(
           builder: (_) => const CaregiversAndUsersPage(),
-          settings: settings,
-        );
-      case ttsDemoRoute:
-        return MaterialPageRoute(
-          builder: (_) => const TextToSpeechDemoPage(),
           settings: settings,
         );
       case widgetShowcaseRoute:

@@ -11,6 +11,8 @@ import 'package:capyadoo/features/notifications/presentation/widgets/unified_sel
 import 'package:capyadoo/core/services/auth_service.dart';
 import 'package:capyadoo/core/widgets/app_nav_bar.dart';
 import 'package:capyadoo/core/services/page_navigation_service.dart';
+import 'package:capyadoo/core/widgets/delete_dialog.dart';
+import 'package:capyadoo/features/pillbox/presentation/widgets/simple_medicine_list_card.dart';
 
 class PillBoxDetailPage extends StatefulWidget {
   final MedicationBox pillBox;
@@ -47,40 +49,25 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Fetch latest box contents from specific API (this will include updated medications)
       final boxDetails = await _pillBoxService.getBoxById(widget.pillBox.id!);
 
-      // 2. Fetch all user medications
       if (_userId == null) {
         final profile = await AuthService.getProfile();
         _userId = profile?.id;
       }
 
       if (_userId != null) {
-        // Refresh user medications to get latest data
         final userMeds = await _searchService.searchUserMedications(_userId!);
         if (mounted) {
           setState(() {
             if (boxDetails != null) {
               _currentBox = boxDetails;
-              print('DEBUG: Box medications array: ${_currentBox.medications}');
-              print('DEBUG: Box medicationIds: ${_currentBox.medicationIds}');
-              print(
-                'DEBUG: Box medications count: ${_currentBox.medications.length}',
-              );
             }
             _allUserMedications = userMeds;
-            print(
-              'All user medications: ${_allUserMedications.map((m) => m.id).toList()}',
-            );
-            print(
-              'Medications in box: ${_medicationsInBox.map((m) => m['name'] ?? 'ไม่ระบุชื่อ').toList()}',
-            );
             _isLoading = false;
           });
         }
       } else {
-        // Fallback or handle unauthenticated
         if (mounted) setState(() => _isLoading = false);
       }
     } catch (e) {
@@ -93,22 +80,8 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     }
   }
 
-  // Section 1: Medications in this box
-  // Use medications from box directly, or match with user medications if available
   List<Map<String, dynamic>> get _medicationsInBox {
-    print('DEBUG _medicationsInBox getter called');
-    print(
-      'DEBUG _medicationsInBox: _currentBox.medications.length: ${_currentBox.medications.length}',
-    );
-    print(
-      'DEBUG _medicationsInBox: _currentBox.medications: ${_currentBox.medications}',
-    );
-
-    // If box has medications array, use it directly
     if (_currentBox.medications.isNotEmpty) {
-      print(
-        'DEBUG _medicationsInBox: Using medications array, returning ${_currentBox.medications.length} items',
-      );
       final meds = List<Map<String, dynamic>>.from(_currentBox.medications);
       meds.sort((a, b) {
         final an = (a['name']?.toString() ?? '').trim().toLowerCase();
@@ -122,32 +95,21 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       return meds;
     }
 
-    print(
-      'DEBUG _medicationsInBox: medications array is empty, trying to match with user medications',
-    );
-    print(
-      'DEBUG _medicationsInBox: _currentBox.medicationIds: ${_currentBox.medicationIds}',
-    );
-    print(
-      'DEBUG _medicationsInBox: _allUserMedications.length: ${_allUserMedications.length}',
-    );
+    final matchedMeds =
+        _allUserMedications
+            .where((m) => _currentBox.medicationIds.contains(m.id))
+            .map((m) => {'id': m.id, 'name': m.displayName})
+            .toList()
+          ..sort((a, b) {
+            final an = (a['name']?.toString() ?? '').trim().toLowerCase();
+            final bn = (b['name']?.toString() ?? '').trim().toLowerCase();
+            final byName = an.compareTo(bn);
+            if (byName != 0) return byName;
+            final ai = (a['id']?.toString() ?? '');
+            final bi = (b['id']?.toString() ?? '');
+            return ai.compareTo(bi);
+          });
 
-    // Otherwise, try to match with user medications
-    final matchedMeds = _allUserMedications
-        .where((m) => _currentBox.medicationIds.contains(m.id))
-        .map((m) => {'id': m.id, 'name': m.displayName})
-        .toList()
-      ..sort((a, b) {
-        final an = (a['name']?.toString() ?? '').trim().toLowerCase();
-        final bn = (b['name']?.toString() ?? '').trim().toLowerCase();
-        final byName = an.compareTo(bn);
-        if (byName != 0) return byName;
-        final ai = (a['id']?.toString() ?? '');
-        final bi = (b['id']?.toString() ?? '');
-        return ai.compareTo(bi);
-      });
-
-    print('DEBUG _medicationsInBox: Matched ${matchedMeds.length} medications');
     return matchedMeds;
   }
 
@@ -173,22 +135,12 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       return;
     }
 
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('ลบยาออกจากกล่อง'),
-        content: Text('คุณต้องการลบ $medName ออกจากกล่องยานี้ใช่หรือไม่?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('ยกเลิก'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+    final confirm = await showDeleteDialog(
+      context,
+      title: 'ลบยาออกจากกล่อง',
+      message: 'คุณต้องการลบ $medName ออกจากกล่องยานี้ใช่หรือไม่?',
+      cancelText: 'ยกเลิก',
+      confirmText: 'ลบ',
     );
 
     if (confirm == true && _currentBox.id != null) {
@@ -239,18 +191,12 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     );
     print('DEBUG build: _isLoading: $_isLoading');
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9FF),
-      appBar: AppBar(
-        title: Text(_currentBox.name),
-        backgroundColor: AppColors.primaryBlue,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
+      backgroundColor: AppColors.offwhite,
       body: Column(
         children: [
-          // Header Section with Image
+          // Header section: back arrow + box info in the same row
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(12, 8, 24, 24),
             decoration: const BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
@@ -258,54 +204,71 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
                 bottomRight: Radius.circular(32),
               ),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                    image: _currentBox.imagePath != null
-                        ? DecorationImage(
-                            image: FileImage(File(_currentBox.imagePath!)),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
+            child: SafeArea(
+              bottom: false,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  child: _currentBox.imagePath == null
-                      ? const Icon(
-                          Icons.inventory_2,
-                          size: 48,
-                          color: Colors.white,
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _currentBox.name,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            image: _currentBox.imagePath != null
+                                ? DecorationImage(
+                                    image: FileImage(
+                                      File(_currentBox.imagePath!),
+                                    ),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: _currentBox.imagePath == null
+                              ? const Icon(
+                                  Icons.inventory_2,
+                                  size: 44,
+                                  color: Colors.white,
+                                )
+                              : null,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _currentBox.description ?? 'ไม่มีรายละเอียด',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white.withOpacity(0.8),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _currentBox.name,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _currentBox.description ?? 'ไม่มีรายละเอียด',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white.withOpacity(0.8),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -362,6 +325,47 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     PageNavigationService().setIndex(index);
   }
 
+  Widget _buildBoxImage() {
+    return Container(
+      width: 88,
+      height: 88,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+        image: _currentBox.imagePath != null
+            ? DecorationImage(
+                image: FileImage(File(_currentBox.imagePath!)),
+                fit: BoxFit.cover,
+              )
+            : null,
+      ),
+      child: _currentBox.imagePath == null
+          ? const Icon(Icons.inventory_2, size: 44, color: Colors.white)
+          : null,
+    );
+  }
+
+  Widget _buildBoxInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _currentBox.name,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _currentBox.description ?? 'ไม่มีรายละเอียด',
+          style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
+        ),
+      ],
+    );
+  }
+
   Widget _buildMedicationList(List<Map<String, dynamic>> meds) {
     print('DEBUG _buildMedicationList: meds count: ${meds.length}');
     print('DEBUG _buildMedicationList: meds: $meds');
@@ -387,7 +391,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
               ),
               const SizedBox(height: 24),
               Text(
-                'กรุณาค้นหาชื่อยาหรือพิมพ์ชื่อยาที่ต้องการเพิ่ม',
+                'เพิ่มยาเพื่อจัดการกล่องยาของคุณ',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
@@ -422,75 +426,60 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
             userMed = null;
           }
         }
-        final resolvedPath = userMed != null
-            ? _resolveImagePath(userMed.imagePath)
-            : null;
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(12),
-                  image: resolvedPath != null && resolvedPath.isNotEmpty
-                      ? DecorationImage(
-                          image: resolvedPath.startsWith('http')
-                              ? NetworkImage(resolvedPath) as ImageProvider
-                              : FileImage(File(resolvedPath)),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: resolvedPath == null || resolvedPath.isEmpty
-                    ? Icon(Icons.medication, color: AppColors.primaryBlue)
-                    : null,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(medName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    if (userMed != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        '${userMed.dosage ?? "-"} ${userMed.unit ?? "-"}',
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                      const SizedBox(height: 8),
-                      // Timing tags
-                      Wrap(spacing: 8, children: _buildTimingTags(userMed)),
-                    ],
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                onPressed: () {
-                  // Use medication from box directly (med object from _medicationsInBox)
-                  _removeMedicationFromBox(med);
-                },
-              ),
-            ],
-          ),
+        final amountText = _formatAmountText(userMed);
+        final mealTimes = userMed != null
+            ? _toThaiMealTimes(userMed.intakePeriods ?? const [])
+            : <String>[];
+
+        return SimpleMedicineListCard(
+          icon: Icons.medication,
+          iconColor: AppColors.primaryBlue,
+          iconBackgroundColor: AppColors.subBlue.withValues(alpha: 0.45),
+          name: medName,
+          amount: amountText,
+          mealTimes: mealTimes,
+          onDelete: () => _removeMedicationFromBox(med),
         );
       },
     );
+  }
+
+  List<String> _toThaiMealTimes(List<String> intakePeriods) {
+    final mapped = <String>[];
+    for (final p in intakePeriods) {
+      switch (p.trim().toLowerCase()) {
+        case 'morning':
+          mapped.add('เช้า');
+          break;
+        case 'noon':
+          mapped.add('กลางวัน');
+          break;
+        case 'evening':
+          mapped.add('เย็น');
+          break;
+        case 'bedtime':
+          mapped.add('ก่อนนอน');
+          break;
+      }
+    }
+    return mapped;
+  }
+
+  String _formatAmountText(UserMedication? userMed) {
+    if (userMed == null) return '1 เม็ด';
+
+    final rawDose = userMed.dosage?.toString().trim() ?? '';
+    final rawUnit = userMed.unit?.toString().trim() ?? '';
+
+    final unit = rawUnit.isEmpty ? 'เม็ด' : rawUnit;
+    if (rawDose.isEmpty) return '1 $unit';
+
+    final doseNumber = num.tryParse(rawDose);
+    if (doseNumber != null && doseNumber == doseNumber.roundToDouble()) {
+      return '${doseNumber.toInt()} $unit';
+    }
+
+    return '$rawDose $unit';
   }
 
   List<Widget> _buildTimingTags(UserMedication med) {

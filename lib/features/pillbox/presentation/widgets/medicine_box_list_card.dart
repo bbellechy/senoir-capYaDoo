@@ -29,9 +29,9 @@ class MedicineBoxListCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.whitelist,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.blueBorder, width: 1.5),
+        border: Border.all(color: AppColors.blueBorder, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -78,14 +78,14 @@ class MedicineBoxListCard extends StatelessWidget {
                         Icon(
                           Icons.medication,
                           size: 16,
-                          color: Colors.grey[600],
+                          color: AppColors.textSub,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '$medicineCount รายการยา',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[700],
+                            fontSize: 16,
+                            color: AppColors.textSub,
                           ),
                         ),
                       ],
@@ -97,14 +97,14 @@ class MedicineBoxListCard extends StatelessWidget {
               // Action buttons
               if (onEdit != null)
                 _ActionButton(
-                  icon: Icons.edit,
+                  icon: Icons.create_rounded,
                   color: AppColors.textSub,
                   onTap: onEdit,
                 ),
               if (onEdit != null && onDelete != null) const SizedBox(width: 8),
               if (onDelete != null)
                 _ActionButton(
-                  icon: Icons.delete,
+                  icon: Icons.delete_rounded,
                   color: AppColors.error,
                   onTap: onDelete,
                 ),
