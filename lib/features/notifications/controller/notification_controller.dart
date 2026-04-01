@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/model/medication_notification.dart';
 import 'package:capyadoo/core/services/notification_service.dart';
@@ -151,9 +152,12 @@ class NotificationController extends ChangeNotifier {
       if (notificationToSave.imagePath == null) {
         try {
           final pillBoxService = PillBoxService();
-          final boxes = await pillBoxService.getAllPillBoxes();
+          final boxes = await pillBoxService.getAllPillBoxes().timeout(
+            const Duration(seconds: 5),
+          );
 
           String? foundImagePath;
+          int scannedMedicationCount = 0;
 
           // Search for medication name in boxes
           // This is a heavy operation as we might need to fetch medication details
@@ -164,6 +168,9 @@ class NotificationController extends ChangeNotifier {
 
             // Check each medication in the box
             for (final medId in box.medicationIds) {
+              scannedMedicationCount++;
+              if (scannedMedicationCount > 20) break outerLoop;
+
               final med = await SearchMedicationApi.getById(medId);
               if (med != null) {
                 // Check Thai or English name
@@ -188,7 +195,9 @@ class NotificationController extends ChangeNotifier {
       // Try to send to backend first
       try {
         final createdNotification =
-            await NotificationApiService.createNotification(notificationToSave);
+            await NotificationApiService.createNotification(
+              notificationToSave,
+            ).timeout(const Duration(seconds: 10));
         if (createdNotification != null) {
           // Preserve local imagePath if backend doesn't return it
           notificationToSave = createdNotification.copyWith(
