@@ -29,10 +29,10 @@ class AppEmptyCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F7FF), // Very light blue as in image
+        color: AppColors.whitelist,
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: borderColor ?? const Color(0xFFD0E4FF),
+          color: borderColor ?? AppColors.blueBorder,
           width: borderWidth,
         ),
       ),
@@ -42,15 +42,15 @@ class AppEmptyCard extends StatelessWidget {
           Icon(
             icon ?? Icons.medication_liquid_outlined,
             size: 80,
-            color: iconColor ?? Colors.black12,
+            color: AppColors.textSublest,
           ),
           const SizedBox(height: 24),
           Text(
             title,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.w600,
-              color: Colors.black54,
+              color: AppColors.textSub,
               fontFamily: 'Sarabun',
             ),
             textAlign: TextAlign.center,
@@ -59,8 +59,8 @@ class AppEmptyCard extends StatelessWidget {
           Text(
             subtitle,
             style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[500],
+              fontSize: 16,
+              color: AppColors.textSub,
               fontFamily: 'Sarabun',
             ),
             textAlign: TextAlign.center,

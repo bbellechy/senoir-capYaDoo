@@ -164,215 +164,244 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text(
-          'เพิ่มการแจ้งเตือน',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: AppColors.primaryBlue,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // TOP CAPTURE SECTION
-            const Text(
-              'รูปภาพยา (ถ่ายภาพหรือเลือกจากอัลบั้ม)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: _showImageSourceSelector,
-              child: Container(
-                width: double.infinity,
-                height: 180,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey[300]!),
-                  image: _imagePath != null
-                      ? DecorationImage(
-                          image: FileImage(File(_imagePath!)),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: _imagePath == null
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.add_a_photo_outlined,
-                            size: 48,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'แตะเพื่อเพิ่มรูปภาพ',
-                            style: TextStyle(color: Colors.grey[500]),
-                          ),
-                        ],
-                      )
-                    : Align(
-                        alignment: Alignment.bottomRight,
-                        child: Container(
-                          margin: const EdgeInsets.all(12),
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.edit,
+      body: Column(
+        children: [
+          Container(
+            height: 140,
+            decoration: const BoxDecoration(color: AppColors.primaryBlue),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 30,
+                      right: 30,
+                      bottom: 20,
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
                             color: Colors.white,
-                            size: 20,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'เพิ่มการแจ้งเตือน',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Medication Selection
-            PillSelectionWidget(
-              onSelected: (name, _) {
-                setState(() {
-                  _medicationName = name;
-                });
-              },
-            ),
-            const SizedBox(height: 24),
-
-            // Time Selector
-            Row(
-              children: [
-                const Text(
-                  'เวลา',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                const Text(
-                  ' *',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: _selectTime,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                child: Text(
-                  _selectedTime != null
-                      ? '${_selectedTime!.split(':')[0]}:${_selectedTime!.split(':')[1]} น.'
-                      : 'ตั้งเวลา',
-                  style: TextStyle(
-                    color: _selectedTime != null
-                        ? Colors.black87
-                        : Colors.grey[500],
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Day Selector
-            Text(
-              'วันที่ต้องการแจ้งเตือน',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 16),
-            DaySelectorWidget(
-              selectedDays: _selectedDays,
-              onDaysChanged: (days) {
-                setState(() {
-                  _selectedDays = days;
-                });
-              },
-            ),
-            const SizedBox(height: 48),
-
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 50,
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.grey[600],
-                        side: BorderSide(color: Colors.grey[300]!),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        backgroundColor: Colors.grey[200],
-                      ),
-                      child: const Text(
-                        'ยกเลิก',
-                        style: TextStyle(fontSize: 16),
-                      ),
+                        const SizedBox(width: 48),
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: SizedBox(
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _isSaving ? null : _saveNotification,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'รูปภาพยา (ถ่ายภาพหรือเลือกจากอัลบั้ม)',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: _showImageSourceSelector,
+                    child: Container(
+                      width: double.infinity,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.grey[300]!),
+                        image: _imagePath != null
+                            ? DecorationImage(
+                                image: FileImage(File(_imagePath!)),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
                       ),
-                      child: _isSaving
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
+                      child: _imagePath == null
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_a_photo_outlined,
+                                  size: 48,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'แตะเพื่อเพิ่มรูปภาพ',
+                                  style: TextStyle(color: Colors.grey[500]),
+                                ),
+                              ],
                             )
-                          : const Text(
-                              'บันทึก',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                          : Align(
+                              alignment: Alignment.bottomRight,
+                              child: Container(
+                                margin: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                               ),
                             ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  PillSelectionWidget(
+                    onSelected: (name, imagePath) {
+                      setState(() {
+                        _medicationName = name;
+                        _imagePath = imagePath;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      const Text(
+                        'เวลา',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Text(
+                        ' *',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: _selectTime,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: Text(
+                        _selectedTime != null
+                            ? '${_selectedTime!.split(':')[0]}:${_selectedTime!.split(':')[1]} น.'
+                            : 'ตั้งเวลา',
+                        style: TextStyle(
+                          color: _selectedTime != null
+                              ? Colors.black87
+                              : Colors.grey[500],
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'วันที่ต้องการแจ้งเตือน',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 16),
+                  DaySelectorWidget(
+                    selectedDays: _selectedDays,
+                    onDaysChanged: (days) {
+                      setState(() {
+                        _selectedDays = days;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 48),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 50,
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.grey[600],
+                              side: BorderSide(color: Colors.grey[300]!),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              backgroundColor: Colors.grey[200],
+                            ),
+                            child: const Text(
+                              'ยกเลิก',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: SizedBox(
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _isSaving ? null : _saveNotification,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryBlue,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: _isSaving
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'บันทึก',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

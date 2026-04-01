@@ -231,6 +231,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
     }
 
     return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       itemCount: _controller.notifications.length,
       itemBuilder: (context, index) {
         final notification = _controller.notifications[index];
