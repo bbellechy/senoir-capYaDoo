@@ -21,6 +21,7 @@ class MedicineBoxReminderCard extends StatelessWidget {
   final DateTime scheduledTime;
   final MedicineBoxReminderStatus status;
   final VoidCallback? onConfirm;
+  final VoidCallback? onTap;
 
   const MedicineBoxReminderCard({
     super.key,
@@ -29,6 +30,7 @@ class MedicineBoxReminderCard extends StatelessWidget {
     required this.scheduledTime,
     required this.status,
     this.onConfirm,
+    this.onTap,
   });
 
   // ตรวจสอบว่าเลยเวลาหรือไม่
@@ -66,115 +68,126 @@ class MedicineBoxReminderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.whitelist,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.blueBorder, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header - ชื่อกล่องยา
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.inventory_2,
-                  size: 24,
-                  color: AppColors.primaryBlue,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  boxName,
-                  style: const TextStyle(
-                    fontFamily: 'Sarabun',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryBlue,
-                  ),
-                ),
-              ),
-              MedicineConfirmationButton(
-                status: _getConfirmationStatus(),
-                onConfirm: onConfirm,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.whitelist,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.blueBorder, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-
-          // รายการยาในกล่อง
-          ...medicines.map(
-            (medicine) => Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header - ชื่อกล่องยา
+              Row(
                 children: [
-                  const SizedBox(width: 12),
-                  const Icon(
-                    Icons.medication,
-                    size: 16,
-                    color: AppColors.textSub,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.inventory_2,
+                      size: 24,
+                      color: AppColors.primaryBlue,
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    medicine.name,
-                    style: const TextStyle(
-                      fontFamily: 'Sarabun',
-                      fontSize: 18,
-                      color: AppColors.textPrimary,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      boxName,
+                      style: const TextStyle(
+                        fontFamily: 'Sarabun',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryBlue,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
+                  MedicineConfirmationButton(
+                    status: _getConfirmationStatus(),
+                    onConfirm: onConfirm,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // รายการยาในกล่อง
+              ...medicines.map(
+                (medicine) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 12),
+                      const Icon(
+                        Icons.medication,
+                        size: 16,
+                        color: AppColors.textSub,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        medicine.name,
+                        style: const TextStyle(
+                          fontFamily: 'Sarabun',
+                          fontSize: 18,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '(${medicine.dosage})',
+                        style: const TextStyle(
+                          fontFamily: 'Sarabun',
+                          fontSize: 18,
+                          color: AppColors.textSub,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // เวลาและปุ่ม
+              Row(
+                children: [
+                  const SizedBox(width: 12),
+                  const Icon(
+                    Icons.access_time,
+                    size: 18,
+                    color: AppColors.textSub,
+                  ),
+                  const SizedBox(width: 4),
                   Text(
-                    '(${medicine.dosage})',
+                    _formatTime(scheduledTime),
                     style: const TextStyle(
                       fontFamily: 'Sarabun',
                       fontSize: 18,
                       color: AppColors.textSub,
                     ),
                   ),
+                  const Spacer(),
                 ],
               ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // เวลาและปุ่ม
-          Row(
-            children: [
-              const SizedBox(width: 12),
-              const Icon(Icons.access_time, size: 18, color: AppColors.textSub),
-              const SizedBox(width: 4),
-              Text(
-                _formatTime(scheduledTime),
-                style: const TextStyle(
-                  fontFamily: 'Sarabun',
-                  fontSize: 18,
-                  color: AppColors.textSub,
-                ),
-              ),
-              const Spacer(),
-              
             ],
           ),
-        ],
+        ),
       ),
     );
   }

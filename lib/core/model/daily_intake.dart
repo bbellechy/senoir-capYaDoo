@@ -12,6 +12,8 @@ class DailyIntake {
   /// intakeTiming ของยา (BEFORE_MEAL/AFTER_MEAL/WITH_MEAL/IMMEDIATE)
   final String? intakeTiming;
   final IntakeStatus status;
+  final double? dosage;
+  final String? unit;
   final String? imagePath;
   final int? remainingQuantity;
   final String? medicationId; // For matching with backend
@@ -23,6 +25,8 @@ class DailyIntake {
     this.periodKey,
     this.intakeTiming,
     required this.status,
+    this.dosage,
+    this.unit,
     this.imagePath,
     this.remainingQuantity,
     this.medicationId,
@@ -70,6 +74,25 @@ class DailyIntake {
       }
     }
 
+    // Get dosage and unit from root or nested medication object
+    double? dosage;
+    if (json['dosage'] != null) {
+      dosage = double.tryParse(json['dosage'].toString());
+    } else if (json['medication'] != null && json['medication'] is Map) {
+      final medication = json['medication'] as Map;
+      if (medication['dosage'] != null) {
+        dosage = double.tryParse(medication['dosage'].toString());
+      }
+    }
+
+    String? unit;
+    if (json['unit'] != null) {
+      unit = json['unit'].toString();
+    } else if (json['medication'] != null && json['medication'] is Map) {
+      final medication = json['medication'] as Map;
+      unit = medication['unit']?.toString();
+    }
+
     // Get imagePath from medication if available
     String? imagePath = json['imagePath']?.toString();
     if (imagePath == null &&
@@ -95,6 +118,8 @@ class DailyIntake {
       periodKey: json['periodKey']?.toString(),
       intakeTiming: intakeTiming,
       status: _parseStatus(json['status']),
+      dosage: dosage,
+      unit: unit,
       imagePath: imagePath,
       remainingQuantity: remainingQuantity,
       medicationId: medicationId,
@@ -125,6 +150,8 @@ class DailyIntake {
       'periodKey': periodKey,
       'intakeTiming': intakeTiming,
       'status': status.name,
+      'dosage': dosage,
+      'unit': unit,
       'imagePath': imagePath,
       'remainingQuantity': remainingQuantity,
       'medicationId': medicationId,

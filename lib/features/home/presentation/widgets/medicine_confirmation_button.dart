@@ -68,6 +68,31 @@ class MedicineConfirmationButton extends StatelessWidget {
         );
 
       case MedicineConfirmationStatus.overdue:
+        if (onConfirm != null) {
+          return SizedBox(
+            height: 40,
+            child: ElevatedButton(
+              onPressed: onConfirm,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'เกินกำหนด',
+                style: TextStyle(
+                  fontFamily: 'Sarabun',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          );
+        }
+
         return Container(
           height: 40,
           padding: const EdgeInsets.symmetric(horizontal: 16),

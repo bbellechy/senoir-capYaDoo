@@ -228,6 +228,8 @@ class MedicationScheduleService {
             periodKey: periodKey,
             intakeTiming: med.intakeTiming,
             status: IntakeStatus.PENDING, // Default status, backend will update
+            dosage: med.dosage,
+            unit: med.unit,
             imagePath: med.imagePath,
             remainingQuantity: med.remainingQuantity,
             medicationId: med.id, // Store medication ID for matching
@@ -438,6 +440,8 @@ class MedicationScheduleService {
                 periodKey: generated.periodKey,
                 intakeTiming: generated.intakeTiming,
                 status: backend.status, // Always use backend status
+                dosage: generated.dosage ?? backend.dosage,
+                unit: generated.unit ?? backend.unit,
                 imagePath: generated.imagePath ?? backend.imagePath,
                 remainingQuantity:
                     generated.remainingQuantity ?? backend.remainingQuantity,

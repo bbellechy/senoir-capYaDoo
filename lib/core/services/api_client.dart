@@ -5,6 +5,7 @@ import '../config/api_config.dart';
 
 class ApiClient {
   static String get baseUrl => '${ApiConfig.baseUrl}/api';
+  static const Duration _requestTimeout = Duration(seconds: 20);
 
   static String _previewBody(List<int> bytes) {
     try {
@@ -29,7 +30,7 @@ class ApiClient {
               'Authorization': 'Bearer $token',
             },
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(_requestTimeout);
       print('GET <= ${resp.statusCode} ${_previewBody(resp.bodyBytes)}');
       return resp;
     } catch (e) {
@@ -55,7 +56,7 @@ class ApiClient {
             },
             body: body != null ? jsonEncode(body) : null,
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(_requestTimeout);
       print('POST <= ${resp.statusCode} ${_previewBody(resp.bodyBytes)}');
       return resp;
     } catch (e) {
@@ -76,7 +77,7 @@ class ApiClient {
             headers: {'Content-Type': 'application/json'},
             body: body != null ? jsonEncode(body) : null,
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(_requestTimeout);
       print(
         'POST(no-token) <= ${resp.statusCode} ${_previewBody(resp.bodyBytes)}',
       );
@@ -104,7 +105,7 @@ class ApiClient {
             },
             body: body != null ? jsonEncode(body) : null,
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(_requestTimeout);
       print('PUT <= ${resp.statusCode} ${_previewBody(resp.bodyBytes)}');
       return resp;
     } catch (e) {
@@ -126,7 +127,7 @@ class ApiClient {
               'Authorization': 'Bearer $token',
             },
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(_requestTimeout);
       print('DELETE <= ${resp.statusCode} ${_previewBody(resp.bodyBytes)}');
       return resp;
     } catch (e) {

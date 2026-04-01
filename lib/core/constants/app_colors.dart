@@ -25,6 +25,7 @@ class AppColors {
 
   static const Color morning = Color(0xFFFFFFD4);
   static const Color morningBorder = Color(0xFFF3F394);
+  static const Color morningIcon = Color(0xFFFFC341);
   static const Color primaryYellow = Color(0xFFF9C31F);
 
   static const Color noon = Color(0xFFFFE2C2);
