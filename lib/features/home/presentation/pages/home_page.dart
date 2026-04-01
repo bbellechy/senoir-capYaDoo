@@ -7,12 +7,12 @@ import 'package:capyadoo/core/model/user.dart';
 import 'package:capyadoo/core/providers/auth_provider.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_list_page.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_detail_page.dart';
-import 'package:capyadoo/features/care/presentation/pages/care_management_page.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/services/page_navigation_service.dart';
 import 'package:capyadoo/features/home/presentation/widgets/medicine_box_reminder_card.dart';
 import 'package:capyadoo/features/home/presentation/widgets/medicine_reminder_card.dart';
+import 'package:capyadoo/features/caregivers/presentation/pages/caregivers_and_users_page.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -601,7 +601,7 @@ class _HomePageState extends State<HomePage> {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const CareManagementPage(),
+                      builder: (_) => const CaregiversAndUsersPage(),
                     ),
                   ),
                 ),
@@ -986,9 +986,12 @@ class _HomePageState extends State<HomePage> {
     final medicineItems = medications.map((med) {
       final medName = med['medicationName'] as String? ?? 'ไม่ระบุชื่อ';
       final medDosage = med['dosage'] as num?;
-      final medUnit = med['unit'] as String? ?? 'เม็ด';
+      final unitRaw = (med['unit'] as String?)?.trim() ?? '';
+      final medUnit = unitRaw.isEmpty ? 'เม็ด' : unitRaw;
       final dosageText = medDosage != null
-          ? '$medDosage $medUnit'
+          ? (medDosage == medDosage.roundToDouble()
+                ? '${medDosage.toInt()} $medUnit'
+                : '$medDosage $medUnit')
           : '1 $medUnit';
       return MedicineInBox(name: medName, dosage: dosageText);
     }).toList();

@@ -84,22 +84,31 @@ class MedicineReminderCard extends StatelessWidget {
                 Row(
                   children: [
                     const SizedBox(width: 8),
-                    Text(
-                      medicineName,
-                      style: const TextStyle(
-                        fontFamily: 'Sarabun',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                    Expanded(
+                      child: Text(
+                        medicineName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: 'Sarabun',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Text(
-                      dosage,
-                      style: const TextStyle(
-                        fontFamily: 'Sarabun',
-                        fontSize: 16,
-                        color: AppColors.textSub,
+                    Flexible(
+                      child: Text(
+                        dosage,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontFamily: 'Sarabun',
+                          fontSize: 16,
+                          color: AppColors.textSub,
+                        ),
                       ),
                     ),
                   ],

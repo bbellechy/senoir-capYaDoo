@@ -110,6 +110,8 @@ class MedicineBoxReminderCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       boxName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontFamily: 'Sarabun',
                         fontSize: 20,
@@ -140,21 +142,30 @@ class MedicineBoxReminderCard extends StatelessWidget {
                         color: AppColors.textSub,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        medicine.name,
-                        style: const TextStyle(
-                          fontFamily: 'Sarabun',
-                          fontSize: 18,
-                          color: AppColors.textPrimary,
+                      Expanded(
+                        child: Text(
+                          medicine.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'Sarabun',
+                            fontSize: 18,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        '(${medicine.dosage})',
-                        style: const TextStyle(
-                          fontFamily: 'Sarabun',
-                          fontSize: 18,
-                          color: AppColors.textSub,
+                      Flexible(
+                        child: Text(
+                          '(${medicine.dosage})',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontFamily: 'Sarabun',
+                            fontSize: 18,
+                            color: AppColors.textSub,
+                          ),
                         ),
                       ),
                     ],
