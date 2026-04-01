@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/services/care_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:capyadoo/features/care/presentation/pages/patient_detail_page.dart';
 import 'package:capyadoo/features/caregivers/presentation/widgets/caregiver_request_card.dart';
 import 'package:capyadoo/features/caregivers/presentation/widgets/caregiver_card.dart';
@@ -14,7 +14,7 @@ import '../widgets/add_username_section.dart';
 import '../widgets/empty_state_widget.dart';
 import 'package:capyadoo/core/services/page_navigation_service.dart';
 import 'package:capyadoo/core/widgets/app_empty_card.dart';
-import 'package:capyadoo/core/widgets/app_nav_bar.dart';
+import 'package:capyadoo/core/widgets/delete_dialog.dart';
 
 class CaregiversAndUsersPage extends StatefulWidget {
   const CaregiversAndUsersPage({super.key});
@@ -259,6 +259,35 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
     }
   }
 
+  Future<void> _cancelSentRequest(int index) async {
+    final request = patientRequests[index];
+    final confirmed = await showDeleteDialog(
+      context,
+      title: 'ยืนยันการยกเลิก',
+      message:
+          'คุณต้องการยกเลิกคำขอที่ส่งไปหา ${request.patientUsername} ใช่หรือไม่?',
+      confirmText: 'ยืนยัน',
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final success = await CareService.cancelSentRequest(request.id);
+      if (!mounted) return;
+
+      if (success) {
+        setState(() {
+          patientRequests.removeAt(index);
+        });
+        _showSnackBar('ยกเลิกคำขอเรียบร้อยแล้ว');
+      } else {
+        _showSnackBar('ไม่สามารถยกเลิกคำขอได้');
+      }
+    } catch (e) {
+      _showSnackBar('ไม่สามารถยกเลิกคำขอได้');
+    }
+  }
+
   void _viewPatientData(Patient patient) {
     Navigator.push(
       context,
@@ -311,33 +340,11 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
       backgroundColor: const Color(0xFFF8FAF8),
       body: Column(
         children: [
-          if (kDebugMode)
-            Container(
-              width: double.infinity,
-              color: Colors.black87,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Text(
-                'DEBUG caregiver=$isCaregiver showUi=$showCaregiverUi '
-                'loading=$_isLoadingPatients '
-                'sent=${patientRequests.length} patients=${acceptedPatients.length}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontFamily: 'monospace',
-                ),
-              ),
-            ),
           // Premium Caregiver Header
           Container(
-            height: 220,
+            height: 144,
             width: double.infinity,
-            decoration: const BoxDecoration(
-              color: AppColors.success,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
-              ),
-            ),
+            decoration: const BoxDecoration(color: AppColors.success),
             child: SafeArea(
               bottom: false,
               child: Stack(
@@ -367,68 +374,43 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 8,
-                    top: 0,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.white,
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 48),
+                            child: Text(
+                              'ผู้ดูแลและผู้ใช้งาน',
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: 'Sarabun',
+                                letterSpacing: 0.4,
+                                height: 1.15,
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              icon: const Icon(
+                                Icons.arrow_back_ios,
+                                color: Colors.white,
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ),
+                        ],
                       ),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(
-                          Icons.supervisor_account_rounded,
-                          color: Colors.white70,
-                          size: 48,
-                        ),
-                        SizedBox(height: 12),
-                        Text(
-                          'ผู้ดูแลและผู้ใช้งาน',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'Sarabun',
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    right: 8,
-                    top: 0,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          onPressed: () async {
-                            await _bootstrapCaregiverMode();
-                            if (mounted) {
-                              _showSnackBar(
-                                'รีเฟรชแล้ว (sent=${patientRequests.length}, patients=${acceptedPatients.length})',
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.refresh, color: Colors.white),
-                          tooltip: 'รีเฟรช',
-                        ),
-                        IconButton(
-                          onPressed: _showCareDebugInfo,
-                          icon: const Icon(
-                            Icons.info_outline,
-                            color: Colors.white,
-                          ),
-                          tooltip: 'ดูสถานะ',
-                        ),
-                      ],
                     ),
                   ),
                 ],
@@ -554,7 +536,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                                     'คำขอที่รอดำเนินการ (${patientRequests.length})',
                                     style: const TextStyle(
                                       fontFamily: 'Sarabun',
-                                      fontSize: 16,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
@@ -567,12 +549,13 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                                   'ยังไม่มีคำขอที่ส่งไป',
                                   style: TextStyle(
                                     fontFamily: 'Sarabun',
-                                    fontSize: 13,
+                                    fontSize: 16,
                                     color: AppColors.textSub,
                                   ),
                                 )
                               else
                                 ...patientRequests.asMap().entries.map((entry) {
+                                  final index = entry.key;
                                   final request = entry.value;
                                   return UserRequestCard(
                                     name: request.patientUsername.isNotEmpty
@@ -582,7 +565,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                                         ? '@${request.patientUsername}'
                                         : '',
                                     isPending: true,
-                                    onCancel: null,
+                                    onCancel: () => _cancelSentRequest(index),
                                   );
                                 }),
                             ],
@@ -593,7 +576,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
 
                       // ส่วนของผู้ใช้งาน - ถ้ายังไม่มีผู้ดูแล
                       // แสดงเฉพาะตอน "ยังไม่มีข้อมูลฝั่งผู้ดูแลเลยจริงๆ"
-                      if (!showCaregiverUi && acceptedCaregivers.isEmpty) ...[
+                      if (!showCaregiverUi) ...[
                         EmptyStateWidget(
                           icon: Icons.people_outline,
                           title: 'คุณยังไม่ได้เป็นผู้ดูแล',
@@ -639,7 +622,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                                       : 'รายชื่อผู้ดูแล (${acceptedCaregivers.length} คน)',
                                   style: const TextStyle(
                                     fontFamily: 'Sarabun',
-                                    fontSize: 16,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.textPrimary,
                                   ),
@@ -708,7 +691,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                                         : 'รายชื่อผู้ใช้งาน (${acceptedPatients.length} คน)',
                                     style: const TextStyle(
                                       fontFamily: 'Sarabun',
-                                      fontSize: 16,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
@@ -756,14 +739,6 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: AppNavBar(
-        currentIndex: 4, // Profile tab index
-        isCaregiverMode: true,
-        onTap: (index) {
-          Navigator.pop(context);
-          PageNavigationService().setIndex(index);
-        },
       ),
     );
   }

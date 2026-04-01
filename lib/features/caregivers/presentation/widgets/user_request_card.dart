@@ -58,6 +58,8 @@ class UserRequestCard extends StatelessWidget {
               children: [
                 Text(
                   name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontFamily: 'Sarabun',
                     fontSize: 16,
@@ -67,28 +69,34 @@ class UserRequestCard extends StatelessWidget {
                 ),
                 Text(
                   username,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontFamily: 'Sarabun',
-                    fontSize: 14,
+                    fontSize: 16,
                     color: AppColors.textSub,
                   ),
                 ),
                 if (isPending) ...[
                   const SizedBox(height: 4),
-                  const Row(
+                  Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.access_time,
                         size: 14,
                         color: AppColors.noonIcon,
                       ),
-                      SizedBox(width: 4),
-                      Text(
-                        'รอการยอมรับจากผู้ใช้งาน...',
-                        style: TextStyle(
-                          fontFamily: 'Sarabun',
-                          fontSize: 12,
-                          color: AppColors.noonIcon,
+                      const SizedBox(width: 4),
+                      const Expanded(
+                        child: Text(
+                          'รอการยอมรับจากผู้ใช้งาน...',
+                          style: TextStyle(
+                            fontFamily: 'Sarabun',
+                            fontSize: 14,
+                            color: AppColors.noonIcon,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -99,9 +107,10 @@ class UserRequestCard extends StatelessWidget {
           ),
 
           // ปุ่ม
+          if (isPending && onCancel != null) const SizedBox(width: 8),
           if (isPending && onCancel != null)
             SizedBox(
-              width: 90,
+              width: 80,
               height: 36,
               child: OutlinedButton(
                 onPressed: onCancel,

@@ -65,49 +65,55 @@ class AddUserSection extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: SpeechToTextField(
-                  controller: controller,
-                  onSearch: onSearch,
-                  child: TextField(
+                child: SizedBox(
+                  height: 50,
+                  child: SpeechToTextField(
                     controller: controller,
-                    decoration: InputDecoration(
-                      hintText: 'กรอก Username ของผู้ใช้งาน',
-                      hintStyle: const TextStyle(
+                    onSearch: onSearch,
+                    child: TextField(
+                      controller: controller,
+                      decoration: InputDecoration(
+                        hintText: 'กรอก Username ของผู้ใช้งาน',
+                        hintStyle: const TextStyle(
+                          fontFamily: 'Sarabun',
+                          color: AppColors.textSub,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                            color: AppColors.blueBorder,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                            color: AppColors.blueBorder,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                            color: AppColors.primaryBlue,
+                            width: 2,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      style: const TextStyle(
                         fontFamily: 'Sarabun',
-                        color: AppColors.textSub,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: AppColors.blueBorder,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: AppColors.blueBorder,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: AppColors.primaryBlue,
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                        fontSize: 16,
                       ),
                     ),
-                    style: const TextStyle(fontFamily: 'Sarabun', fontSize: 14),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               SizedBox(
                 width: 100,
-                height: 48,
+                height: 50,
                 child: ElevatedButton(
                   onPressed: () => onSearch(),
                   style: ElevatedButton.styleFrom(

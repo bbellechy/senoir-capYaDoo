@@ -16,7 +16,7 @@ class RoleSection extends StatelessWidget {
           'ดูข้อมูลยาของผู้ป่วยในความดูแล',
           style: TextStyle(
             fontFamily: 'Sarabun',
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
@@ -51,7 +51,7 @@ class RoleSection extends StatelessWidget {
                     'บทบาทของคุณ',
                     style: TextStyle(
                       fontFamily: 'Sarabun',
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
@@ -86,7 +86,7 @@ class RoleSection extends StatelessWidget {
         label,
         style: const TextStyle(
           fontFamily: 'Sarabun',
-          fontSize: 12,
+          fontSize: 16,
           fontWeight: FontWeight.w500,
           color: Colors.white,
         ),

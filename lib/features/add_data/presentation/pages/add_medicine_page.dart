@@ -337,7 +337,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 32,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),

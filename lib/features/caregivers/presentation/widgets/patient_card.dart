@@ -69,7 +69,7 @@ class PatientCard extends StatelessWidget {
                   username,
                   style: const TextStyle(
                     fontFamily: 'Sarabun',
-                    fontSize: 14,
+                    fontSize: 16,
                     color: AppColors.textSub,
                   ),
                 ),

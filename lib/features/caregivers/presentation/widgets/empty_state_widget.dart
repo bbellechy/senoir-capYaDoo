@@ -28,7 +28,7 @@ class EmptyStateWidget extends StatelessWidget {
       width: width,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: AppColors.whitelist,
         borderRadius: BorderRadius.circular(12),
         border: showBorder
             ? Border.all(color: AppColors.blueBorder, width: 1.5)
@@ -46,7 +46,7 @@ class EmptyStateWidget extends StatelessWidget {
             title,
             style: TextStyle(
               fontFamily: 'Sarabun',
-              fontSize: buttonText != null ? 16 : 14,
+              fontSize: buttonText != null ? 18 : 16,
               fontWeight: buttonText != null
                   ? FontWeight.w600
                   : FontWeight.normal,
@@ -90,7 +90,7 @@ class EmptyStateWidget extends StatelessWidget {
                       buttonText!,
                       style: const TextStyle(
                         fontFamily: 'Sarabun',
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

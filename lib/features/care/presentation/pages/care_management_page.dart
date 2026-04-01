@@ -201,11 +201,6 @@ class _CareManagementPageState extends State<CareManagementPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
-                        Icon(
-                          Icons.supervisor_account_rounded,
-                          color: Colors.white70,
-                          size: 48,
-                        ),
                         SizedBox(height: 12),
                         Text(
                           'ผู้ดูแลและผู้ใช้งาน',

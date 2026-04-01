@@ -65,7 +65,7 @@ class CaregiverRequestCard extends StatelessWidget {
                   username,
                   style: const TextStyle(
                     fontFamily: 'Sarabun',
-                    fontSize: 14,
+                    fontSize: 16,
                     color: AppColors.textSub,
                   ),
                 ),
@@ -74,8 +74,8 @@ class CaregiverRequestCard extends StatelessWidget {
                   'ขอเข้าถึงข้อมูลของคุณ',
                   style: TextStyle(
                     fontFamily: 'Sarabun',
-                    fontSize: 12,
-                    color: Color(0xFFFFA726),
+                    fontSize: 14,
+                    color: AppColors.noonIcon,
                   ),
                 ),
               ],
@@ -91,7 +91,7 @@ class CaregiverRequestCard extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: onAccept,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: AppColors.success,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -103,7 +103,7 @@ class CaregiverRequestCard extends StatelessWidget {
                     'ยอมรับ',
                     style: TextStyle(
                       fontFamily: 'Sarabun',
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -116,8 +116,8 @@ class CaregiverRequestCard extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: onReject,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFE57373),
-                    side: const BorderSide(color: Color(0xFFE57373)),
+                    foregroundColor: AppColors.error,
+                    side: const BorderSide(color: AppColors.error),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
