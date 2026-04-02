@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:capyadoo/core/providers/auth_provider.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/widgets/delete_dialog.dart';
+import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/services/notification_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:capyadoo/features/profile/presentation/pages/pin_settings_page.dart';
@@ -156,7 +157,12 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-          _buildArrowTile(title: 'เปลี่ยนรหัสผ่าน', onTap: () {}),
+          _buildArrowTile(
+            title: 'เปลี่ยนรหัสผ่าน',
+            onTap: () {
+              Navigator.pushNamed(context, AppRouter.changePasswordRoute);
+            },
+          ),
           const _SettingsDivider(),
           _buildArrowTile(
             title: 'ตั้งค่า PIN เข้าใช้งาน',

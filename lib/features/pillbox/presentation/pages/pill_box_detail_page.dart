@@ -9,8 +9,6 @@ import 'package:capyadoo/features/notifications/data/medication_search_service.d
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/unified_selection_dialog.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
-import 'package:capyadoo/core/widgets/app_nav_bar.dart';
-import 'package:capyadoo/core/services/page_navigation_service.dart';
 import 'package:capyadoo/core/widgets/delete_dialog.dart';
 import 'package:capyadoo/features/pillbox/presentation/widgets/simple_medicine_list_card.dart';
 
@@ -312,17 +310,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
           ),
         ],
       ),
-      bottomNavigationBar: AppNavBar(
-        currentIndex: 0, // Highlight home as it's the root for this
-        onTap: _onNavBarTap,
-      ),
     );
-  }
-
-  void _onNavBarTap(int index) {
-    // Navigate back to MainLayout and set index
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    PageNavigationService().setIndex(index);
   }
 
   Widget _buildBoxImage() {
