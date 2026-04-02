@@ -5,6 +5,7 @@ import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/widgets/app_logo.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
+import 'package:capyadoo/core/services/page_navigation_service.dart';
 import 'package:capyadoo/core/providers/auth_provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -41,6 +42,7 @@ class _LoginPageState extends State<LoginPage> {
         if (success) {
           await context.read<AuthProvider>().loadProfile();
           if (mounted) {
+            PageNavigationService().setIndex(0);
             Navigator.pushReplacementNamed(context, '/');
           }
         } else {

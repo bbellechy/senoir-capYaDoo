@@ -42,17 +42,6 @@ Future<bool> showDeleteDialog(
                         ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: AppColors.textSub,
-                        size: 30,
-                      ),
-                      splashRadius: 20,
-                      visualDensity: VisualDensity.compact,
-                      constraints: const BoxConstraints(),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 18),

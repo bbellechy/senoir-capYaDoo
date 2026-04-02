@@ -6,17 +6,59 @@ enum MedicineConfirmationStatus { pending, taken, overdue }
 class MedicineConfirmationButton extends StatelessWidget {
   final MedicineConfirmationStatus status;
   final VoidCallback? onConfirm;
+  final String pendingText;
 
   const MedicineConfirmationButton({
     super.key,
     required this.status,
     this.onConfirm,
+    this.pendingText = 'ยืนยันการทาน',
   });
 
   @override
   Widget build(BuildContext context) {
     switch (status) {
       case MedicineConfirmationStatus.pending:
+        if (pendingText == 'รอทาน') {
+          final waitingPill = Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppColors.warning,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.access_time, color: Colors.white, size: 18),
+                SizedBox(width: 6),
+                Text(
+                  'รอทาน',
+                  style: TextStyle(
+                    fontFamily: 'Sarabun',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          );
+
+          if (onConfirm == null) {
+            return waitingPill;
+          }
+
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onConfirm,
+              borderRadius: BorderRadius.circular(20),
+              child: waitingPill,
+            ),
+          );
+        }
+
         return SizedBox(
           height: 40,
           child: ElevatedButton(
@@ -29,8 +71,8 @@ class MedicineConfirmationButton extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'ยืนยันการทาน',
+            child: Text(
+              pendingText,
               style: TextStyle(
                 fontFamily: 'Sarabun',
                 fontSize: 16,
@@ -43,16 +85,20 @@ class MedicineConfirmationButton extends StatelessWidget {
       case MedicineConfirmationStatus.taken:
         return Container(
           height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
             color: AppColors.success,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.check_circle, color: Colors.white, size: 18),
+              const Icon(
+                Icons.check_circle_outline,
+                color: Colors.white,
+                size: 18,
+              ),
               const SizedBox(width: 6),
               const Text(
                 'ทานแล้ว',

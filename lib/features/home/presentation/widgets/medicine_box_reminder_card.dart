@@ -22,6 +22,7 @@ class MedicineBoxReminderCard extends StatelessWidget {
   final MedicineBoxReminderStatus status;
   final VoidCallback? onConfirm;
   final VoidCallback? onTap;
+  final String pendingButtonText;
 
   const MedicineBoxReminderCard({
     super.key,
@@ -31,6 +32,7 @@ class MedicineBoxReminderCard extends StatelessWidget {
     required this.status,
     this.onConfirm,
     this.onTap,
+    this.pendingButtonText = 'ยืนยันการทาน',
   });
 
   // ตรวจสอบว่าเลยเวลาหรือไม่
@@ -124,6 +126,7 @@ class MedicineBoxReminderCard extends StatelessWidget {
                   MedicineConfirmationButton(
                     status: _getConfirmationStatus(),
                     onConfirm: onConfirm,
+                    pendingText: pendingButtonText,
                   ),
                 ],
               ),

@@ -11,17 +11,21 @@ enum MedicineReminderStatus {
 class MedicineReminderCard extends StatelessWidget {
   final String medicineName;
   final String dosage; // เช่น "1 เม็ด"
+  final String? remainingQuantityText;
   final DateTime scheduledTime;
   final MedicineReminderStatus status;
   final VoidCallback? onConfirm;
+  final String pendingButtonText;
 
   const MedicineReminderCard({
     super.key,
     required this.medicineName,
     required this.dosage,
+    this.remainingQuantityText,
     required this.scheduledTime,
     required this.status,
     this.onConfirm,
+    this.pendingButtonText = 'ยืนยันการทาน',
   });
 
   // ตรวจสอบว่าเลยเวลาหรือไม่
@@ -110,6 +114,19 @@ class MedicineReminderCard extends StatelessWidget {
                               color: AppColors.textSub,
                             ),
                           ),
+                          if (remainingQuantityText != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              remainingQuantityText!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontFamily: 'Sarabun',
+                                fontSize: 14,
+                                color: AppColors.textSub,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -142,6 +159,7 @@ class MedicineReminderCard extends StatelessWidget {
           MedicineConfirmationButton(
             status: _getConfirmationStatus(),
             onConfirm: onConfirm,
+            pendingText: pendingButtonText,
           ),
         ],
       ),
