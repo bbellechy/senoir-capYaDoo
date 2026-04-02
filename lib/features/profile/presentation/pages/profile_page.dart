@@ -4,6 +4,8 @@ import 'package:capyadoo/core/providers/auth_provider.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/widgets/delete_dialog.dart';
 import 'package:capyadoo/core/services/notification_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:capyadoo/features/profile/presentation/pages/pin_settings_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -156,7 +158,15 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           _buildArrowTile(title: 'เปลี่ยนรหัสผ่าน', onTap: () {}),
           const _SettingsDivider(),
-          _buildArrowTile(title: 'ตั้งค่า PIN เข้าใช้งาน', onTap: () {}),
+          _buildArrowTile(
+            title: 'ตั้งค่า PIN เข้าใช้งาน',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PinSettingsPage()),
+              );
+            },
+          ),
           const _SettingsDivider(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 10),

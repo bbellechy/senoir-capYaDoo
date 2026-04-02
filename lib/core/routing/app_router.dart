@@ -15,6 +15,7 @@ import 'package:capyadoo/features/auth/presentation/pages/login_page.dart';
 import 'package:capyadoo/features/auth/presentation/pages/register_page.dart';
 import 'package:capyadoo/features/widget_showcase/widget_showcase_page.dart';
 import 'package:capyadoo/features/caregivers/presentation/pages/caregivers_and_users_page.dart';
+import 'package:capyadoo/features/profile/presentation/pages/pin_unlock_page.dart';
 import 'package:capyadoo/core/layouts/main_layout.dart';
 import 'package:capyadoo/core/model/medication_notification.dart';
 import 'package:capyadoo/core/model/symptom_record.dart';
@@ -23,6 +24,7 @@ class AppRouter {
   // Auth routes
   static const String loginRoute = '/login';
   static const String registerRoute = '/register';
+  static const String pinUnlockRoute = '/pin-unlock';
 
   // Main routes with bottom navigation
   static const String mainRoute = '/';
@@ -57,6 +59,11 @@ class AppRouter {
       case registerRoute:
         return MaterialPageRoute(
           builder: (_) => const RegisterPage(),
+          settings: settings,
+        );
+      case pinUnlockRoute:
+        return MaterialPageRoute(
+          builder: (_) => const PinUnlockPage(),
           settings: settings,
         );
       case mainRoute:
