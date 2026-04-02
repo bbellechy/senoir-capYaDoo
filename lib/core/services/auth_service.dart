@@ -66,6 +66,23 @@ class AuthService {
     }
   }
 
+  static Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await ApiClient.post('/auth/change-password', {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
+
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('Change password error: $e');
+      return false;
+    }
+  }
+
   static Future<void> logout() async {
     await TokenStorage.clear();
     // Clear local notifications data to prevent isolation issues

@@ -67,11 +67,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       _currentDiffers &&
       _confirmMatches;
 
-    bool get _showNewRulesPanel =>
+  bool get _showNewRulesPanel =>
       _activeField == _PasswordField.newPassword &&
       _newPasswordController.text.isNotEmpty;
 
-    bool get _showConfirmRulesPanel =>
+  bool get _showConfirmRulesPanel =>
       _activeField == _PasswordField.confirmPassword &&
       _confirmPasswordController.text.isNotEmpty;
 
@@ -379,7 +379,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               ),
               const SizedBox(height: 6),
               _buildRuleItem('อย่างน้อย 8 ตัวอักษร', _confirmHasMinLength),
-              _buildRuleItem('ตัวอักษรพิเศษ อย่างน้อย 1 ตัว', _confirmHasSpecial),
+              _buildRuleItem(
+                'ตัวอักษรพิเศษ อย่างน้อย 1 ตัว',
+                _confirmHasSpecial,
+              ),
               _buildRuleItem('ตัวเลข 0-9 อย่างน้อย 1 ตัว', _confirmHasDigit),
             ],
           ),
