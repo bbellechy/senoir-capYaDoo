@@ -76,4 +76,17 @@ class CareController extends ChangeNotifier {
     }
     return success;
   }
+
+  Future<bool> removePatient(String patientId) async {
+    _isLoading = true;
+    notifyListeners();
+    final success = await CareService.removePatient(patientId);
+    if (success) {
+      await loadData();
+    } else {
+      _isLoading = false;
+      notifyListeners();
+    }
+    return success;
+  }
 }

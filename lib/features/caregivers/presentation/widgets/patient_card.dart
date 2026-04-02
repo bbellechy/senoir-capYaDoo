@@ -107,9 +107,14 @@ class PatientCard extends StatelessWidget {
           // ปุ่มลบ
           IconButton(
             onPressed: onDelete,
-            icon: const Icon(Icons.delete, color: Color(0xFFE57373), size: 24),
+            icon: const Icon(
+              Icons.delete_rounded,
+              color: AppColors.error,
+              size: 22,
+            ),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFFE57373).withOpacity(0.1),
+              backgroundColor: AppColors.error.withOpacity(0.1),
+              fixedSize: const Size(40, 40),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

@@ -7,9 +7,9 @@ import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/services/care_service.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
-import 'package:capyadoo/features/care/presentation/pages/patient_pill_box_detail_page.dart';
-import 'package:capyadoo/core/widgets/app_nav_bar.dart';
-import 'package:capyadoo/core/services/page_navigation_service.dart';
+import 'package:capyadoo/features/caregivers/presentation/widgets/patient_pill_box_detail_page.dart';
+import 'package:capyadoo/features/home/presentation/widgets/medicine_reminder_card.dart';
+import 'package:capyadoo/features/home/presentation/widgets/medicine_box_reminder_card.dart';
 import 'package:intl/intl.dart';
 
 class PatientDetailPage extends StatefulWidget {
@@ -22,7 +22,8 @@ class PatientDetailPage extends StatefulWidget {
 
 class _PatientDetailPageState extends State<PatientDetailPage> {
   DateTime _selectedDate = DateTime.now();
-  bool _isCalendarSelected = false;
+  static const double _dateItemExtent = 58;
+  ScrollController? _dateScrollController;
   List<DailyIntake> _schedule = [];
   List<MedicationBox> _boxes = [];
   Map<String, List<Map<String, dynamic>>> _boxDailyMedications = {};
@@ -36,6 +37,26 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _reloadForDate(_selectedDate);
     });
+  }
+
+  @override
+  void dispose() {
+    _dateScrollController?.dispose();
+    super.dispose();
+  }
+
+  ScrollController _getDateScrollController(
+    DateTime minDate,
+    DateTime todayDate,
+  ) {
+    if (_dateScrollController != null) return _dateScrollController!;
+
+    final todayIndex = todayDate.difference(minDate).inDays;
+    final initialIndex = (todayIndex - 2).clamp(0, 1000000);
+    _dateScrollController = ScrollController(
+      initialScrollOffset: initialIndex * _dateItemExtent,
+    );
+    return _dateScrollController!;
   }
 
   Future<void> _reloadForDate(DateTime date) async {
@@ -62,8 +83,9 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
       final boxes = await boxesFuture;
       final boxesSorted = List<MedicationBox>.from(boxes)
         ..sort(
-          (a, b) =>
-              a.name.trim().toLowerCase().compareTo(b.name.trim().toLowerCase()),
+          (a, b) => a.name.trim().toLowerCase().compareTo(
+            b.name.trim().toLowerCase(),
+          ),
         );
 
       if (!mounted || requestSeq != _loadSeq) return;
@@ -171,15 +193,6 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
           ),
         ],
       ),
-      bottomNavigationBar: AppNavBar(
-        currentIndex: 0,
-        isCaregiverMode: true,
-        onTap: (index) {
-          // Reset navigation and pop back to home
-          Navigator.of(context).popUntil((route) => route.isFirst);
-          PageNavigationService().setIndex(index);
-        },
-      ),
     );
   }
 
@@ -229,21 +242,6 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
               ],
             ),
           ),
-          Column(
-            children: [
-              const Icon(Icons.person_pin, color: Colors.white, size: 36),
-              const SizedBox(height: 4),
-              const Text(
-                'PATIENT',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -251,6 +249,28 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
 
   Widget _buildDatePicker() {
     final thaiDateFormat = DateFormat('EEEE, d MMMM yyyy', 'th_TH');
+    final now = DateTime.now();
+    final todayDateOnly = DateTime(now.year, now.month, now.day);
+    final minDate = DateTime(now.year, now.month - 1, now.day);
+    final maxDate = DateTime(now.year, now.month + 1, now.day);
+    final itemCount = maxDate.difference(minDate).inDays + 1;
+
+    Future<void> openCalendar() async {
+      final picked = await showDatePicker(
+        context: context,
+        initialDate: _selectedDate,
+        firstDate: minDate,
+        lastDate: maxDate,
+      );
+      if (picked != null) {
+        final dateOnly = DateTime(picked.year, picked.month, picked.day);
+        setState(() {
+          _selectedDate = dateOnly;
+        });
+        await _reloadForDate(dateOnly);
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -265,89 +285,88 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         SizedBox(
           height: 80,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: 14,
-            itemBuilder: (context, index) {
-              final date = DateTime.now()
-                  .subtract(Duration(days: DateTime.now().weekday - 1))
-                  .add(Duration(days: index));
-              // index==0 เป็นปุ่มเปิดปฏิทิน ไม่ใช่ "วัน" จึงไม่ควรผูกกับ isSelected ของ date
-              final isSelected =
-                  index != 0 &&
-                  DateFormat('yyyy-MM-dd').format(date) ==
-                      DateFormat('yyyy-MM-dd').format(_selectedDate);
-              final isCalendarChipSelected = index == 0 && _isCalendarSelected;
-              final isHighlighted = isSelected || isCalendarChipSelected;
-
-              Future<void> openCalendar() async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDate,
-                  firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (picked != null) {
-                  setState(() {
-                    _selectedDate = picked;
-                    _isCalendarSelected = true;
-                  });
-                  await _reloadForDate(picked);
-                }
-              }
-
-              return GestureDetector(
-                onTap: () async {
-                  // index==0 เป็นปุ่มเปิดปฏิทิน (ไม่ใช่เลือกวัน)
-                  if (index == 0) {
-                    await openCalendar();
-                    return;
-                  }
-                  setState(() {
-                    _selectedDate = date;
-                    _isCalendarSelected = false;
-                  });
-                  await _reloadForDate(date);
-                },
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              GestureDetector(
+                onTap: openCalendar,
                 child: Container(
-                  width: 50,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: isHighlighted ? Colors.white : Colors.transparent,
-                    shape: BoxShape.circle,
-                    border: index == 0 && !isCalendarChipSelected
-                        ? Border.all(color: Colors.white.withOpacity(0.5))
-                        : null,
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Center(
-                    child: index == 0
-                        ? Icon(
-                            Icons.calendar_today_outlined,
-                            color: isCalendarChipSelected
-                                ? AppColors.success
-                                : Colors.white,
-                            size: 20,
-                          )
-                        : Text(
-                            '${date.day}',
-                            style: TextStyle(
-                              color: isSelected
-                                  ? AppColors.success
-                                  : Colors.white,
-                              fontSize: 18,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                          ),
+                  child: const Icon(
+                    Icons.calendar_today_outlined,
+                    color: AppColors.primaryBlue,
+                    size: 20,
                   ),
                 ),
-              );
-            },
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ListView.builder(
+                  controller: _getDateScrollController(minDate, todayDateOnly),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: itemCount,
+                  itemBuilder: (context, index) {
+                    final date = minDate.add(Duration(days: index));
+                    final dateOnly = DateTime(date.year, date.month, date.day);
+                    final isSelected =
+                        DateFormat('yyyy-MM-dd').format(dateOnly) ==
+                        DateFormat('yyyy-MM-dd').format(_selectedDate);
+                    final isFutureDate = dateOnly.isAfter(todayDateOnly);
+
+                    return GestureDetector(
+                      onTap: () async {
+                        setState(() {
+                          _selectedDate = dateOnly;
+                        });
+                        await _reloadForDate(dateOnly);
+                      },
+                      child: Center(
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.transparent,
+                            shape: BoxShape.circle,
+                            border: isFutureDate && !isSelected
+                                ? Border.all(
+                                    color: Colors.white.withOpacity(0.6),
+                                    width: 2,
+                                  )
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${date.day}',
+                              style: TextStyle(
+                                color: isSelected
+                                    ? AppColors.primaryBlue
+                                    : Colors.white,
+                                fontSize: 18,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+            ],
           ),
         ),
       ],
@@ -358,7 +377,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.offwhite,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(40),
           topRight: Radius.circular(40),
@@ -373,32 +392,36 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
             _buildTimeSection(
               'เช้า',
               'morning',
-              const Color(0xFFFFF9C4),
-              const Color(0xFFFBC02D),
+              AppColors.morning,
+              AppColors.morningBorder,
+              AppColors.morningIcon,
               Icons.wb_sunny_outlined,
             ),
             const SizedBox(height: 16),
             _buildTimeSection(
               'กลางวัน',
               'afternoon',
-              const Color(0xFFFFE0B2),
-              const Color(0xFFF57C00),
+              AppColors.noon,
+              AppColors.noonBorder,
+              AppColors.noonIcon,
               Icons.wb_sunny,
             ),
             const SizedBox(height: 16),
             _buildTimeSection(
               'เย็น',
               'evening',
-              const Color(0xFFE1F5FE),
-              const Color(0xFF0288D1),
+              AppColors.dinner,
+              AppColors.dinnerBorder,
+              AppColors.primaryBlue,
               Icons.cloud_outlined,
             ),
             const SizedBox(height: 16),
             _buildTimeSection(
               'ก่อนนอน',
               'night',
-              const Color(0xFFEDE7F6),
-              const Color(0xFF673AB7),
+              AppColors.sleep,
+              AppColors.sleepBorder,
+              AppColors.sleepIcon,
               Icons.nightlight_round_outlined,
             ),
           ],
@@ -411,6 +434,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     String title,
     String period,
     Color bgColor,
+    Color borderColor,
     Color iconColor,
     IconData icon,
   ) {
@@ -433,8 +457,9 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: bgColor.withOpacity(0.4),
+        color: bgColor.withOpacity(0.5),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: borderColor, width: 2),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -451,26 +476,43 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                 child: Icon(icon, color: iconColor, size: 24),
               ),
               const SizedBox(width: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '$totalCount รายการ',
-                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                  Text(
+                    '$totalCount รายการ',
+                    style: const TextStyle(
+                      color: AppColors.textSub,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
           const SizedBox(height: 16),
           if (items.isEmpty && boxItems.isEmpty)
             Center(
-              child: Text(
-                'ไม่มีในรายการช่วงนี้',
-                style: TextStyle(color: Colors.grey[400]),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.medication_outlined,
+                    color: AppColors.textSub,
+                    size: 32,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'ไม่มียาในช่วงนี้',
+                    style: TextStyle(color: AppColors.textSub),
+                  ),
+                ],
               ),
             )
           else ...[
@@ -534,6 +576,11 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
             final statusRaw = med['status'] as String? ?? 'PENDING';
             final status = statusRaw.toUpperCase();
             final intakeId = med['id'] as String? ?? '';
+            final medRemainingRaw =
+                med['remainingQuantity'] ?? medicationObj?['remainingQuantity'];
+            final medRemaining = medRemainingRaw == null
+                ? null
+                : int.tryParse(medRemainingRaw.toString());
 
             return {
               'id': intakeId,
@@ -542,6 +589,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
               'status': status,
               'dosage': med['dosage'] ?? 1,
               'unit': med['unit'] ?? 'เม็ด',
+              'remainingQuantity': medRemaining,
             };
           }).toList();
 
@@ -549,8 +597,10 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
           final uniqueMeds = <String, Map<String, dynamic>>{};
           for (final med in allMeds) {
             final rawName = (med['medicationName'] as String? ?? '');
-            final normName =
-                rawName.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+            final normName = rawName.trim().toLowerCase().replaceAll(
+              RegExp(r'\s+'),
+              ' ',
+            );
             final key = '$normName|${med['scheduledTime']}';
             if (!uniqueMeds.containsKey(key)) {
               uniqueMeds[key] = med;
@@ -559,10 +609,12 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
 
           final medsSorted = uniqueMeds.values.toList()
             ..sort((a, b) {
-              final an =
-                  (a['medicationName'] as String? ?? '').trim().toLowerCase();
-              final bn =
-                  (b['medicationName'] as String? ?? '').trim().toLowerCase();
+              final an = (a['medicationName'] as String? ?? '')
+                  .trim()
+                  .toLowerCase();
+              final bn = (b['medicationName'] as String? ?? '')
+                  .trim()
+                  .toLowerCase();
               final byName = an.compareTo(bn);
               if (byName != 0) return byName;
               final at = (a['scheduledTime'] as String? ?? '');
@@ -653,9 +705,38 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     final isOverdue =
         anyOverdue || (allPending && _isTimePassed(formattedTime));
 
-    return GestureDetector(
+    final boxStatus = isTaken
+        ? MedicineBoxReminderStatus.taken
+        : (isOverdue
+              ? MedicineBoxReminderStatus.overdue
+              : MedicineBoxReminderStatus.pending);
+
+    final groupedByName = <String, MedicineInBox>{};
+    for (final med in medications) {
+      final medName = med['medicationName'] as String? ?? 'ไม่ระบุชื่อ';
+      final medDosage = med['dosage'] as num?;
+      final medUnit = med['unit'] as String? ?? 'เม็ด';
+      final remaining = med['remainingQuantity'] as int?;
+      final dosageText = medDosage != null
+          ? '$medDosage $medUnit'
+          : '1 $medUnit';
+      final fullDosageText = (remaining != null && remaining > 0)
+          ? '$dosageText | เหลือ $remaining เม็ด'
+          : dosageText;
+      groupedByName[medName] = MedicineInBox(
+        name: medName,
+        dosage: fullDosageText,
+      );
+    }
+
+    return MedicineBoxReminderCard(
+      boxName: box.name,
+      medicines: groupedByName.values.toList(),
+      scheduledTime: _combineSelectedDateWithTime(formattedTime),
+      status: boxStatus,
+      onConfirm: null,
+      pendingButtonText: 'รอทาน',
       onTap: () {
-        // Navigate to patient pill box detail page
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -664,414 +745,53 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
           ),
         );
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(8),
-                    image: _resolveImagePath(box.imagePath) != null
-                        ? DecorationImage(
-                            image:
-                                _resolveImagePath(
-                                  box.imagePath,
-                                )!.startsWith('http')
-                                ? NetworkImage(
-                                    _resolveImagePath(box.imagePath)!,
-                                  )
-                                : FileImage(
-                                        File(_resolveImagePath(box.imagePath)!),
-                                      )
-                                      as ImageProvider,
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-                  ),
-                  child: _resolveImagePath(box.imagePath) == null
-                      ? const Icon(
-                          Icons.inventory_2_outlined,
-                          size: 20,
-                          color: Colors.blue,
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    box.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 14,
-                  color: Colors.grey,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (medications.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  'ไม่มีรายการยาสำหรับวันนี้',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                ),
-              )
-            else
-              ...(() {
-              // Group by medication name to avoid showing the same medication multiple times
-              // (e.g., MORNING/NOON/EVENING intakes are separate rows from API)
-              final Map<String, Map<String, dynamic>> grouped = {};
-              for (final med in medications) {
-                final medName =
-                    med['medicationName'] as String? ?? 'ไม่ระบุชื่อ';
-                final medDosage = med['dosage'] as num?;
-                final medUnit = med['unit'] as String? ?? 'เม็ด';
-                final medStatus = med['status'] as String? ?? 'PENDING';
-                final scheduledTime = med['scheduledTime'] as String? ?? '';
-
-                final entry = grouped.putIfAbsent(medName, () {
-                  return {
-                    'medicationName': medName,
-                    'dosage': medDosage,
-                    'unit': medUnit,
-                    'times': <String>{},
-                    'statuses': <String>[],
-                  };
-                });
-
-                (entry['times'] as Set<String>).add(scheduledTime);
-                (entry['statuses'] as List<String>).add(medStatus);
-              }
-
-              return grouped.values.map((g) {
-                final medName = g['medicationName'] as String;
-                final medDosage = g['dosage'] as num?;
-                final medUnit = g['unit'] as String? ?? 'เม็ด';
-                // ผู้ดูแล: ไม่แสดงเวลา แสดงแค่ก่อนอาหาร/หลังอาหาร
-
-                final dosageText = medDosage != null
-                    ? '$medDosage $medUnit'
-                    : '1 $medUnit';
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.medication_outlined,
-                        size: 16,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          '$medName ($dosageText)',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList();
-            })(),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                if (_mealTimingLabel(box.intakeTiming).isNotEmpty) ...[
-                  Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    _mealTimingLabel(box.intakeTiming),
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                  ),
-                ],
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isTaken
-                        ? const Color(0xFF2ECC71)
-                        : isOverdue
-                        ? Colors.red
-                        : Colors.orange,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: isTaken
-                      ? const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.check_circle_outline,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              'ทานแล้ว',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        )
-                      : isOverdue
-                      ? Text(
-                          'เกินกำหนด',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      : const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.schedule, color: Colors.white, size: 18),
-                            SizedBox(width: 4),
-                            Text(
-                              'รอทาน',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 
   Widget _buildMedicationCard(DailyIntake item) {
-    final bool isTaken = item.status == IntakeStatus.TAKEN;
-    final bool isNotTaken = item.status == IntakeStatus.NOT_TAKEN;
-    final bool isMissed = item.status == IntakeStatus.MISSED;
-
     final bool isOverdue =
         item.status == IntakeStatus.OVERDUE ||
         item.status == IntakeStatus.MISSED ||
         (_isTimePassed(item.time) && item.status == IntakeStatus.PENDING);
 
-    final resolvedPath = _resolveImagePath(item.imagePath);
+    final reminderStatus = item.status == IntakeStatus.TAKEN
+        ? MedicineReminderStatus.taken
+        : (isOverdue
+              ? MedicineReminderStatus.overdue
+              : MedicineReminderStatus.pending);
 
-    final bool isLowQuantity =
-        item.remainingQuantity != null && item.remainingQuantity! < 7;
+    final dosageNumber = item.dosage;
+    final dosageUnit = (item.unit == null || item.unit!.isEmpty)
+        ? 'เม็ด'
+        : item.unit!;
+    final baseDosageText = dosageNumber != null
+        ? '${dosageNumber.toString().replaceAll(RegExp(r'\.0$'), '')} $dosageUnit'
+        : '1 $dosageUnit';
+    final dosageText =
+        (item.remainingQuantity != null && item.remainingQuantity! > 0)
+        ? '($baseDosageText | เหลือ ${item.remainingQuantity} เม็ด)'
+        : '($baseDosageText)';
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(12),
-              image: resolvedPath != null && resolvedPath.isNotEmpty
-                  ? DecorationImage(
-                      image: resolvedPath.startsWith('http')
-                          ? NetworkImage(resolvedPath) as ImageProvider
-                          : FileImage(File(resolvedPath)),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            child: resolvedPath == null || resolvedPath.isEmpty
-                ? Icon(
-                    Icons.medication_outlined,
-                    color: Colors.grey[400],
-                    size: 24,
-                  )
-                : null,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.medicationName,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                if (_mealTimingLabel(item.intakeTiming).isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 14,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _mealTimingLabel(item.intakeTiming),
-                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ],
-                if (item.remainingQuantity != null) ...[
-                  const SizedBox(height: 4),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.medication_liquid,
-                        size: 14,
-                        color: isLowQuantity ? Colors.red : Colors.grey[600],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'เหลือ ${item.remainingQuantity} เม็ด',
-                        style: TextStyle(
-                          color: isLowQuantity ? Colors.red : Colors.grey[600],
-                          fontSize: 13,
-                          fontWeight: isLowQuantity
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (isTaken)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2ECC71),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.check_circle_outline,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  SizedBox(width: 4),
-                  Text(
-                    'ทานแล้ว',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else if (isNotTaken)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey[400],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                'ไม่กินยา',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-          else if (isMissed)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.cancel_outlined, color: Colors.white, size: 18),
-                  SizedBox(width: 4),
-                  Text(
-                    'Missed',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isOverdue ? Colors.red : Colors.orange,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: isOverdue
-                  ? const Text(
-                      'เกินกำหนด',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  : const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.schedule, color: Colors.white, size: 18),
-                        SizedBox(width: 4),
-                        Text(
-                          'รอทาน',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-        ],
-      ),
+    return MedicineReminderCard(
+      medicineName: item.medicationName,
+      dosage: dosageText,
+      scheduledTime: _combineSelectedDateWithTime(item.time),
+      status: reminderStatus,
+      onConfirm: null,
+      pendingButtonText: 'รอทาน',
+    );
+  }
+
+  DateTime _combineSelectedDateWithTime(String time) {
+    final parts = time.split(':');
+    final hour = parts.isNotEmpty ? int.tryParse(parts[0]) ?? 0 : 0;
+    final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+    return DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      hour,
+      minute,
     );
   }
 

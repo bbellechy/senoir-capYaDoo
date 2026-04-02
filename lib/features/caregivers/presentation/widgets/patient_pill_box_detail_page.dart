@@ -5,8 +5,6 @@ import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
-import 'package:capyadoo/core/widgets/app_nav_bar.dart';
-import 'package:capyadoo/core/services/page_navigation_service.dart';
 
 class PatientPillBoxDetailPage extends StatefulWidget {
   final MedicationBox box;
@@ -61,36 +59,21 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9FF),
-      appBar: AppBar(
-        title: Text(widget.box.name),
-        backgroundColor: AppColors.success,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+      backgroundColor: AppColors.offwhite,
       body: Column(
         children: [
           _buildBoxHeader(),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(
-                  Icons.medication,
-                  color: AppColors.success,
-                  size: 28,
-                ),
-                const SizedBox(width: 8),
                 Text(
                   'รายการยาในกล่อง (${_groupedMedications.length})',
                   style: const TextStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.success,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -103,18 +86,12 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
           ),
         ],
       ),
-      bottomNavigationBar: AppNavBar(currentIndex: 0, onTap: _onNavBarTap),
     );
-  }
-
-  void _onNavBarTap(int index) {
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    PageNavigationService().setIndex(index);
   }
 
   Widget _buildBoxHeader() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(12, 8, 24, 24),
       decoration: const BoxDecoration(
         color: AppColors.success,
         borderRadius: BorderRadius.only(
@@ -122,60 +99,85 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
           bottomRight: Radius.circular(32),
         ),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              image: _resolveImagePath(widget.box.imagePath) != null
-                  ? DecorationImage(
-                      image:
-                          _resolveImagePath(
-                            widget.box.imagePath,
-                          )!.startsWith('http')
-                          ? NetworkImage(
-                                  _resolveImagePath(widget.box.imagePath)!,
-                                )
-                                as ImageProvider
-                          : FileImage(
-                              File(_resolveImagePath(widget.box.imagePath)!),
-                            ),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
             ),
-            child: _resolveImagePath(widget.box.imagePath) == null
-                ? const Icon(Icons.inventory_2, size: 40, color: Colors.white)
-                : null,
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.box.name,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+            const SizedBox(width: 8),
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    width: 88,
+                    height: 88,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      image: _resolveImagePath(widget.box.imagePath) != null
+                          ? DecorationImage(
+                              image:
+                                  _resolveImagePath(
+                                    widget.box.imagePath,
+                                  )!.startsWith('http')
+                                  ? NetworkImage(
+                                          _resolveImagePath(
+                                            widget.box.imagePath,
+                                          )!,
+                                        )
+                                        as ImageProvider
+                                  : FileImage(
+                                      File(
+                                        _resolveImagePath(
+                                          widget.box.imagePath,
+                                        )!,
+                                      ),
+                                    ),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: _resolveImagePath(widget.box.imagePath) == null
+                        ? const Icon(
+                            Icons.inventory_2,
+                            size: 44,
+                            color: Colors.white,
+                          )
+                        : null,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.box.description ?? 'ไม่มีรายละเอียด',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white.withOpacity(0.8),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.box.name,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.box.description ?? 'ไม่มีรายละเอียด',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -208,10 +210,8 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
     }
     final list = grouped.values.toList();
     list.sort((a, b) {
-      final an =
-          (a['medicationName'] as String? ?? '').trim().toLowerCase();
-      final bn =
-          (b['medicationName'] as String? ?? '').trim().toLowerCase();
+      final an = (a['medicationName'] as String? ?? '').trim().toLowerCase();
+      final bn = (b['medicationName'] as String? ?? '').trim().toLowerCase();
       return an.compareTo(bn);
     });
     return list;
@@ -257,8 +257,9 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.blueBorder, width: 1.5),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
@@ -301,6 +302,7 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         if (mealTiming.isNotEmpty) ...[
