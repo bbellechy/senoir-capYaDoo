@@ -288,7 +288,7 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('เพิ่มด้วยชื่อ'),
+                      child: const Text('บันทึก'),
                     ),
                   ),
                 ],

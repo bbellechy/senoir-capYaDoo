@@ -10,6 +10,7 @@ import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_detail_pag
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/services/page_navigation_service.dart';
+import 'package:capyadoo/core/widgets/confirm_intake_dialog.dart';
 import 'package:capyadoo/features/home/presentation/widgets/medicine_box_reminder_card.dart';
 import 'package:capyadoo/features/home/presentation/widgets/medicine_reminder_card.dart';
 import 'package:capyadoo/features/caregivers/presentation/pages/caregivers_and_users_page.dart';
@@ -283,6 +284,22 @@ class _HomePageState extends State<HomePage> {
         );
       }
     }
+  }
+
+  Future<void> _confirmAndMarkAsTaken(
+    DailyIntake item, {
+    bool isLate = false,
+  }) async {
+    final confirmed = await showConfirmIntakeDialog(
+      context,
+      message: 'คุณต้องการที่จะยืนยันการทานยาตัวนี้ใช่หรือไม่',
+    );
+
+    if (!confirmed || !mounted) {
+      return;
+    }
+
+    await _markAsTakenSmart(item, isLate: isLate);
   }
 
   Future<void> _markAsTakenSmart(
@@ -1064,6 +1081,15 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
+    final confirmed = await showConfirmIntakeDialog(
+      context,
+      message: 'คุณต้องการที่จะยืนยันการทานยากล่องนี้ใช่หรือไม่',
+    );
+
+    if (!confirmed || !mounted) {
+      return;
+    }
+
     final userId = context.read<AuthProvider>().user?.id;
     final success = await _pillBoxService.markBoxAsTaken(
       box.id!,
@@ -1180,13 +1206,13 @@ class _HomePageState extends State<HomePage> {
       status: cardStatus,
       onConfirm: cardStatus == MedicineReminderStatus.pending
           ? (canConfirmToday
-                ? () => _markAsTakenSmart(item, isLate: false)
+                ? () => _confirmAndMarkAsTaken(item, isLate: false)
                 : null)
           : (cardStatus == MedicineReminderStatus.overdue &&
                     canConfirmToday &&
                     !isNotTaken &&
                     !isMissed
-                ? () => _markAsTakenSmart(item, isLate: true)
+                ? () => _confirmAndMarkAsTaken(item, isLate: true)
                 : null),
     );
   }
