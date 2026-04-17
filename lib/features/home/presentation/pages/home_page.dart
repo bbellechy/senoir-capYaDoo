@@ -563,97 +563,102 @@ class _HomePageState extends State<HomePage> {
           topRight: Radius.circular(40),
         ),
       ),
-      child: RefreshIndicator(
-        onRefresh: _loadData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: Column(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+            child: Row(
               children: [
-                // Top Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildTopButton(
-                        'กล่องยา',
-                        Icons.shopping_bag_outlined,
-                        AppColors.dinner,
-                        AppColors.primaryBlue,
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const PillBoxListPage(),
-                          ),
-                        ).then((_) => _loadData()),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildTopButton(
-                        'ผู้ดูแล',
-                        Icons.people_outline,
-                        AppColors.dinner,
-                        AppColors.primaryBlue,
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const CaregiversAndUsersPage(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                if (_isLoading)
-                  const Center(child: CircularProgressIndicator())
-                else ...[
-                  _buildTimeSection(
-                    'เช้า',
-                    '${_getFilteredSchedule("morning").length} รายการ',
-                    AppColors.morning,
-                    AppColors.morningBorder,
-                    AppColors.morningIcon,
-                    Icons.wb_sunny_outlined,
-                    _getFilteredSchedule('morning'),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTimeSection(
-                    'กลางวัน',
-                    '${_getFilteredSchedule("afternoon").length} รายการ',
-                    AppColors.noon,
-                    AppColors.noonBorder,
-                    AppColors.noonIcon,
-                    Icons.wb_sunny,
-                    _getFilteredSchedule('afternoon'),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTimeSection(
-                    'เย็น',
-                    '${_getFilteredSchedule("evening").length} รายการ',
+                Expanded(
+                  child: _buildTopButton(
+                    'กล่องยา',
+                    Icons.shopping_bag_outlined,
                     AppColors.dinner,
-                    AppColors.dinnerBorder,
                     AppColors.primaryBlue,
-                    Icons.cloud_outlined,
-                    _getFilteredSchedule('evening'),
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PillBoxListPage(),
+                      ),
+                    ).then((_) => _loadData()),
                   ),
-                  const SizedBox(height: 16),
-                  _buildTimeSection(
-                    'ก่อนนอน',
-                    '${_getFilteredSchedule("night").length} รายการ',
-                    AppColors.sleep,
-                    AppColors.sleepBorder,
-                    AppColors.sleepIcon,
-                    Icons.nightlight_round_outlined,
-                    _getFilteredSchedule('night'),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildTopButton(
+                    'ผู้ดูแล',
+                    Icons.people_outline,
+                    AppColors.dinner,
+                    AppColors.primaryBlue,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CaregiversAndUsersPage(),
+                      ),
+                    ),
                   ),
-                ],
+                ),
               ],
             ),
           ),
-        ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadData,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                children: [
+                  if (_isLoading)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 24),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else ...[
+                    _buildTimeSection(
+                      'เช้า',
+                      '${_getFilteredSchedule("morning").length} รายการ',
+                      AppColors.morning,
+                      AppColors.morningBorder,
+                      AppColors.morningIcon,
+                      Icons.wb_sunny_outlined,
+                      _getFilteredSchedule('morning'),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTimeSection(
+                      'กลางวัน',
+                      '${_getFilteredSchedule("afternoon").length} รายการ',
+                      AppColors.noon,
+                      AppColors.noonBorder,
+                      AppColors.noonIcon,
+                      Icons.wb_sunny,
+                      _getFilteredSchedule('afternoon'),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTimeSection(
+                      'เย็น',
+                      '${_getFilteredSchedule("evening").length} รายการ',
+                      AppColors.dinner,
+                      AppColors.dinnerBorder,
+                      AppColors.primaryBlue,
+                      Icons.cloud_outlined,
+                      _getFilteredSchedule('evening'),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTimeSection(
+                      'ก่อนนอน',
+                      '${_getFilteredSchedule("night").length} รายการ',
+                      AppColors.sleep,
+                      AppColors.sleepBorder,
+                      AppColors.sleepIcon,
+                      Icons.nightlight_round_outlined,
+                      _getFilteredSchedule('night'),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
