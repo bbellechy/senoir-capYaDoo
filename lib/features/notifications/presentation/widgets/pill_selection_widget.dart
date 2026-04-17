@@ -58,6 +58,9 @@ class _PillSelectionWidgetState extends State<PillSelectionWidget> {
         userId: _userId!,
         title: 'เลือกยาหรือกล่องยา',
         showBoxes: true,
+        showMasterMedications: false,
+        allowFreeText: false,
+        loadAllMedicationsOnOpen: true,
       ),
     );
 

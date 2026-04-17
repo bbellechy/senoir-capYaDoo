@@ -522,10 +522,10 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       builder: (context) => UnifiedSelectionDialog(
         userId: _userId!,
         title: 'เพิ่มยาลงในกล่อง',
-        showMasterMedications: true,
+        showMasterMedications: false,
         showBoxes: false,
-        allowFreeText: true,
-        loadAllMedicationsOnOpen: false,
+        allowFreeText: false,
+        loadAllMedicationsOnOpen: true,
       ),
     );
 
