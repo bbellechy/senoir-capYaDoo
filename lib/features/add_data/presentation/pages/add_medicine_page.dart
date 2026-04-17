@@ -49,6 +49,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
   String? _userId;
 
   bool get _isEditMode => widget.medicationId != null;
+  String? _selectedMasterId;
 
   @override
   void initState() {
@@ -90,6 +91,11 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
       final type = result['type'] as String;
       setState(() {
         _medicineName = result['name'] as String;
+        if (type == 'medication') {
+          _selectedMasterId = result['id']?.toString();
+        } else {
+          _selectedMasterId = null;
+        }
 
         // If it's a UserMedication or filtered master medication, we might have more data
         // For now, let's see if we can get the full object or if we need to fetch it
@@ -932,7 +938,40 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
         if (_endDate != null)
           'endDate': _endDate!.toIso8601String().split('T')[0],
         if (imagePathForApi != null) 'imagePath': imagePathForApi,
+        if (_selectedMasterId != null) 'masterId': _selectedMasterId,
       };
+
+      if (!_isEditMode) {
+        final interactionResponse = await MedicationService.checkInteraction(
+          medicationName: _medicineName,
+          masterMedicationId: _selectedMasterId,
+        );
+        if (interactionResponse != null && interactionResponse['hasInteraction'] == true) {
+          final bool? shouldProceed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('คำเตือน: ปฏิกิริยาระหว่างยา', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              content: Text(interactionResponse['message'] ?? 'ยานี้อาจมีปฏิกิริยากับยาที่คุณกำลังทานอยู่'),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('ยกเลิก', style: TextStyle(color: Colors.grey)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('เพิ่มยา', style: TextStyle(color: Colors.red)),
+                ),
+              ],
+            ),
+          );
+
+          if (shouldProceed != true) {
+            if (mounted) setState(() => _isSubmitting = false);
+            return; // Cancel saving
+          }
+        }
+      }
 
       final result = widget.medicationId != null
           ? await MedicationService.updateMedication(
