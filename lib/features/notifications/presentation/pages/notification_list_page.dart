@@ -74,22 +74,56 @@ class _NotificationListPageState extends State<NotificationListPage> {
         children: [
           // Premium Header
           Container(
-            height: 175,
+            height: 160,
             width: double.infinity,
-            color: AppColors.primaryBlue,
+            decoration: const BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+            ),
             child: SafeArea(
               bottom: false,
-              child: Align(
-                alignment: Alignment.center,
-                child: const Text(
-                  'การแจ้งเตือน',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'Sarabun',
+              child: Stack(
+                children: [
+                  Positioned(
+                    right: -50,
+                    top: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    left: -30,
+                    bottom: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  const Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'การแจ้งเตือน',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 36,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Sarabun',
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

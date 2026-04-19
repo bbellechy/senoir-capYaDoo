@@ -341,9 +341,15 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
         children: [
           // Premium Caregiver Header
           Container(
-            height: 144,
+            height: 160,
             width: double.infinity,
-            decoration: const BoxDecoration(color: AppColors.success),
+            decoration: const BoxDecoration(
+              color: AppColors.success,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+            ),
             child: SafeArea(
               bottom: false,
               child: Stack(

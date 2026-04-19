@@ -130,6 +130,30 @@ class _SearchPageState extends State<SearchPage> {
                   child: Stack(
                     children: [
                       Positioned(
+                        right: -50,
+                        top: -50,
+                        child: Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.08),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: -30,
+                        bottom: -30,
+                        child: Container(
+                          width: 140,
+                          height: 140,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.08),
+                          ),
+                        ),
+                      ),
+                      Positioned(
                         left: 0,
                         right: 0,
                         bottom: (searchBoxHeight / 2) + 12,

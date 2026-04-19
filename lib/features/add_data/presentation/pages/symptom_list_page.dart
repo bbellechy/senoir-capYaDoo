@@ -51,37 +51,71 @@ class _SymptomListPageState extends State<SymptomListPage> {
         children: [
           // Header
           Container(
-            height: 120,
-            decoration: const BoxDecoration(color: AppColors.primaryBlue),
+            height: 160,
+            decoration: const BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+            ),
             child: SafeArea(
               bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.white,
-                        size: 24,
+              child: Stack(
+                children: [
+                  Positioned(
+                    right: -50,
+                    top: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
                       ),
-                      onPressed: () => Navigator.pop(context),
                     ),
-                    const Expanded(
-                      child: Text(
-                        'บันทึกอาการ',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Sarabun',
+                  ),
+                  Positioned(
+                    left: -30,
+                    bottom: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                      ),
+                        const Expanded(
+                          child: Text(
+                            'บันทึกอาการ',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Sarabun',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 48), // Balance the back button
+                      ],
                     ),
-                    const SizedBox(width: 48), // Balance the back button
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -141,7 +175,8 @@ class _SymptomListPageState extends State<SymptomListPage> {
                     itemCount: _symptoms.length,
                     itemBuilder: (context, index) {
                       final symptom = _symptoms[index];
-                      String timeStr = 'บันทึกเมื่อ ${symptom.time.substring(0, symptom.time.length >= 5 ? 5 : symptom.time.length)} น.';
+                      String timeStr =
+                          'บันทึกเมื่อ ${symptom.time.substring(0, symptom.time.length >= 5 ? 5 : symptom.time.length)} น.';
                       if (symptom.date.isNotEmpty) {
                         try {
                           final dt = DateTime.parse(
@@ -159,8 +194,8 @@ class _SymptomListPageState extends State<SymptomListPage> {
                         title: (symptom.symptom?.trim().isNotEmpty ?? false)
                             ? symptom.symptom!
                             : (symptom.medicationName.trim().isNotEmpty
-                                ? symptom.medicationName
-                                : 'ไม่ระบุอาการ'),
+                                  ? symptom.medicationName
+                                  : 'ไม่ระบุอาการ'),
                         description: symptom.medicationName,
                         dateTime: timeStr,
                         onEdit: () async {

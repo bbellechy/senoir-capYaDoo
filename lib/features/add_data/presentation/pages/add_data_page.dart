@@ -117,11 +117,41 @@ class _AddDataPageState extends State<AddDataPage>
           Container(
             height: 175,
             width: double.infinity,
-            color: AppColors.primaryBlue,
+            decoration: const BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+            ),
             child: SafeArea(
               bottom: false,
               child: Stack(
                 children: [
+                  Positioned(
+                    right: -50,
+                    top: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: -30,
+                    bottom: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

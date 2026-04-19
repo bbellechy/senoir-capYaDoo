@@ -167,42 +167,76 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
       body: Column(
         children: [
           Container(
-            height: 140,
-            decoration: const BoxDecoration(color: AppColors.primaryBlue),
+            height: 160,
+            decoration: const BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+            ),
             child: SafeArea(
               bottom: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
+              child: Stack(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 30,
-                      right: 30,
-                      bottom: 20,
+                  Positioned(
+                    right: -50,
+                    top: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios,
-                            color: Colors.white,
-                          ),
-                          onPressed: () => Navigator.pop(context),
+                  ),
+                  Positioned(
+                    left: -30,
+                    bottom: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 30,
+                          right: 30,
+                          bottom: 20,
                         ),
-                        const Expanded(
-                          child: Text(
-                            'เพิ่มการแจ้งเตือน',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back_ios,
+                                color: Colors.white,
+                              ),
+                              onPressed: () => Navigator.pop(context),
                             ),
-                          ),
+                            const Expanded(
+                              child: Text(
+                                'เพิ่มการแจ้งเตือน',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 48),
+                          ],
                         ),
-                        const SizedBox(width: 48),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),

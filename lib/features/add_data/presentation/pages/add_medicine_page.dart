@@ -314,42 +314,78 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
         children: [
           // Blue header
           Container(
-            height: 140,
-            decoration: const BoxDecoration(color: AppColors.primaryBlue),
+            height: 160,
+            decoration: const BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+            ),
             child: SafeArea(
               bottom: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
+              child: Stack(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 30,
-                      right: 30,
-                      bottom: 20,
+                  Positioned(
+                    right: -50,
+                    top: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios,
-                            color: Colors.white,
-                          ),
-                          onPressed: () => Navigator.pop(context),
+                  ),
+                  Positioned(
+                    left: -30,
+                    bottom: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 30,
+                          right: 30,
+                          bottom: 20,
                         ),
-                        Expanded(
-                          child: Text(
-                            _isEditMode ? 'แก้ไขข้อมูลยา' : 'เพิ่มข้อมูลยา',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back_ios,
+                                color: Colors.white,
+                              ),
+                              onPressed: () => Navigator.pop(context),
                             ),
-                          ),
+                            Expanded(
+                              child: Text(
+                                _isEditMode ? 'แก้ไขข้อมูลยา' : 'เพิ่มข้อมูลยา',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 48,
+                            ), // Balance the back button
+                          ],
                         ),
-                        const SizedBox(width: 48), // Balance the back button
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -946,21 +982,39 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
           medicationName: _medicineName,
           masterMedicationId: _selectedMasterId,
         );
-        if (interactionResponse != null && interactionResponse['hasInteraction'] == true) {
+        if (interactionResponse != null &&
+            interactionResponse['hasInteraction'] == true) {
           final bool? shouldProceed = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('คำเตือน: ปฏิกิริยาระหว่างยา', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-              content: Text(interactionResponse['message'] ?? 'ยานี้อาจมีปฏิกิริยากับยาที่คุณกำลังทานอยู่'),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Text(
+                'คำเตือน: ปฏิกิริยาระหว่างยา',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Text(
+                interactionResponse['message'] ??
+                    'ยานี้อาจมีปฏิกิริยากับยาที่คุณกำลังทานอยู่',
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('ยกเลิก', style: TextStyle(color: Colors.grey)),
+                  child: const Text(
+                    'ยกเลิก',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('เพิ่มยา', style: TextStyle(color: Colors.red)),
+                  child: const Text(
+                    'เพิ่มยา',
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ),
               ],
             ),
