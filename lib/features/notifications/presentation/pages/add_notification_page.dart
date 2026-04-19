@@ -162,6 +162,13 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final path = _imagePath;
+    final ImageProvider? imageProvider = (path == null || path.isEmpty)
+        ? null
+        : (path.startsWith('http://') || path.startsWith('https://'))
+        ? NetworkImage(path)
+        : FileImage(File(path));
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -262,9 +269,9 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.grey[300]!),
-                        image: _imagePath != null
+                        image: imageProvider != null
                             ? DecorationImage(
-                                image: FileImage(File(_imagePath!)),
+                                image: imageProvider,
                                 fit: BoxFit.cover,
                               )
                             : null,
@@ -305,10 +312,9 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
                   ),
                   const SizedBox(height: 24),
                   PillSelectionWidget(
-                    onSelected: (name, imagePath) {
+                    onSelected: (name, _) {
                       setState(() {
                         _medicationName = name;
-                        _imagePath = imagePath;
                       });
                     },
                   ),
