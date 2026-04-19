@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/widgets/app_time_chip.dart' as time_chip;
@@ -7,6 +9,7 @@ class SimpleMedicineListCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final Color iconBackgroundColor;
+  final String? imagePath;
   final String name;
   final String amount;
   final List<String> mealTimes;
@@ -18,6 +21,7 @@ class SimpleMedicineListCard extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     required this.iconBackgroundColor,
+    this.imagePath,
     required this.name,
     required this.amount,
     required this.mealTimes,
@@ -42,15 +46,7 @@ class SimpleMedicineListCard extends StatelessWidget {
           child: Row(
             children: [
               // Icon
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: iconBackgroundColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 28, color: iconColor),
-              ),
+              _buildLeadingVisual(),
               const SizedBox(width: 12),
 
               // Content
@@ -100,6 +96,48 @@ class SimpleMedicineListCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  bool _isNetworkPath(String path) {
+    return path.startsWith('http://') || path.startsWith('https://');
+  }
+
+  Widget _buildLeadingVisual() {
+    final path = imagePath?.trim();
+    if (path == null || path.isEmpty) {
+      return _buildFallbackIcon();
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        width: 56,
+        height: 56,
+        child: _isNetworkPath(path)
+            ? Image.network(
+                path,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildFallbackIcon(),
+              )
+            : Image.file(
+                File(path),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildFallbackIcon(),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackIcon() {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: iconBackgroundColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(icon, size: 28, color: iconColor),
     );
   }
 

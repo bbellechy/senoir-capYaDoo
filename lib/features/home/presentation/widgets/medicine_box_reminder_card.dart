@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'medicine_confirmation_button.dart';
@@ -11,12 +13,18 @@ enum MedicineBoxReminderStatus {
 class MedicineInBox {
   final String name;
   final String dosage;
+  final String? imagePath;
 
-  const MedicineInBox({required this.name, required this.dosage});
+  const MedicineInBox({
+    required this.name,
+    required this.dosage,
+    this.imagePath,
+  });
 }
 
 class MedicineBoxReminderCard extends StatelessWidget {
   final String boxName;
+  final String? boxImagePath;
   final List<MedicineInBox> medicines;
   final DateTime scheduledTime;
   final MedicineBoxReminderStatus status;
@@ -27,6 +35,7 @@ class MedicineBoxReminderCard extends StatelessWidget {
   const MedicineBoxReminderCard({
     super.key,
     required this.boxName,
+    this.boxImagePath,
     required this.medicines,
     required this.scheduledTime,
     required this.status,
@@ -68,6 +77,55 @@ class MedicineBoxReminderCard extends StatelessWidget {
     return '$hour:$minute น.';
   }
 
+  bool _isNetworkPath(String path) {
+    return path.startsWith('http://') || path.startsWith('https://');
+  }
+
+  Widget _buildImage(
+    String? path, {
+    double size = 40,
+    IconData fallbackIcon = Icons.medication,
+  }) {
+    final imagePath = path?.trim();
+
+    if (imagePath == null || imagePath.isEmpty) {
+      return _buildFallbackImage(size: size, icon: fallbackIcon);
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: _isNetworkPath(imagePath)
+            ? Image.network(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    _buildFallbackImage(size: size, icon: fallbackIcon),
+              )
+            : Image.file(
+                File(imagePath),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    _buildFallbackImage(size: size, icon: fallbackIcon),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackImage({required double size, required IconData icon}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: AppColors.blueBorder.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(icon, size: size * 0.52, color: AppColors.textSub),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -96,17 +154,10 @@ class MedicineBoxReminderCard extends StatelessWidget {
               // Header - ชื่อกล่องยา
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.inventory_2,
-                      size: 24,
-                      color: AppColors.primaryBlue,
-                    ),
+                  _buildImage(
+                    boxImagePath,
+                    size: 40,
+                    fallbackIcon: Icons.inventory_2,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -139,12 +190,8 @@ class MedicineBoxReminderCard extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(width: 12),
-                      const Icon(
-                        Icons.medication,
-                        size: 16,
-                        color: AppColors.textSub,
-                      ),
+                      const SizedBox(width: 4),
+                      _buildImage(medicine.imagePath, size: 28),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Column(

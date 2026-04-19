@@ -1010,12 +1010,17 @@ class _HomePageState extends State<HomePage> {
       final medDosage = med['dosage'] as num?;
       final unitRaw = (med['unit'] as String?)?.trim() ?? '';
       final medUnit = unitRaw.isEmpty ? 'เม็ด' : unitRaw;
+      final medImagePath = (med['imagePath'] as String?)?.trim();
       final dosageText = medDosage != null
           ? (medDosage == medDosage.roundToDouble()
                 ? '${medDosage.toInt()} $medUnit'
                 : '$medDosage $medUnit')
           : '1 $medUnit';
-      return MedicineInBox(name: medName, dosage: dosageText);
+      return MedicineInBox(
+        name: medName,
+        dosage: dosageText,
+        imagePath: medImagePath,
+      );
     }).toList();
 
     final parsedHour = int.tryParse(formattedTime.split(':').first) ?? 8;
@@ -1030,6 +1035,7 @@ class _HomePageState extends State<HomePage> {
 
     return MedicineBoxReminderCard(
       boxName: box.name,
+      boxImagePath: box.imagePath,
       medicines: medicineItems,
       scheduledTime: scheduledAt,
       status: cardStatus,
@@ -1196,6 +1202,7 @@ class _HomePageState extends State<HomePage> {
     return MedicineReminderCard(
       medicineName: item.medicationName,
       dosage: '1 เม็ด',
+      imagePath: item.imagePath,
       scheduledTime: DateTime(
         _selectedDate.year,
         _selectedDate.month,

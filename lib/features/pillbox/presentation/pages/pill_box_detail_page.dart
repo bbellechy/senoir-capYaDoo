@@ -5,7 +5,6 @@ import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/features/pillbox/controller/pill_box_controller.dart';
-import 'package:capyadoo/features/notifications/data/medication_search_service.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/unified_selection_dialog.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
@@ -25,7 +24,6 @@ class PillBoxDetailPage extends StatefulWidget {
 class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
   final PillBoxController _controller = PillBoxController();
   final PillBoxService _pillBoxService = PillBoxService();
-  final MedicationSearchService _searchService = MedicationSearchService();
   late MedicationBox _currentBox;
 
   List<UserMedication> _allUserMedications = [];
@@ -56,7 +54,8 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       }
 
       if (_userId != null) {
-        final userMeds = await _searchService.searchUserMedications(_userId!);
+        // Use the same API source as medicine list page to keep imagePath consistent.
+        final userMeds = await MedicationService.getUserMedications(_userId!);
         if (mounted) {
           setState(() {
             if (boxDetails != null) {
@@ -97,7 +96,13 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     final matchedMeds =
         _allUserMedications
             .where((m) => _currentBox.medicationIds.contains(m.id))
-            .map((m) => {'id': m.id, 'name': m.displayName})
+            .map(
+              (m) => {
+                'id': m.id,
+                'name': m.displayName,
+                'imagePath': m.imagePath,
+              },
+            )
             .toList()
           ..sort((a, b) {
             final an = (a['name']?.toString() ?? '').trim().toLowerCase();
@@ -399,8 +404,14 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       itemCount: meds.length,
       itemBuilder: (context, index) {
         final med = meds[index];
-        final medId = med['id'] as String? ?? '';
-        final medName = med['name'] as String? ?? 'ไม่ระบุชื่อ';
+        final medId = med['id']?.toString() ?? '';
+        final medName =
+            (med['name'] as String?) ??
+            (med['medicationName'] as String?) ??
+            'ไม่ระบุชื่อ';
+        final boxMedImagePath = _resolveImagePath(
+          (med['imagePath'] as String?) ?? (med['image'] as String?),
+        );
 
         // Try to find matching user medication for image
         UserMedication? userMed;
@@ -409,7 +420,10 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
         } catch (e) {
           try {
             userMed = _allUserMedications.firstWhere(
-              (m) => m.displayName == medName,
+              (m) =>
+                  m.displayName.trim().toLowerCase() ==
+                      medName.trim().toLowerCase() ||
+                  m.name.trim().toLowerCase() == medName.trim().toLowerCase(),
             );
           } catch (e2) {
             userMed = null;
@@ -419,11 +433,14 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
         final mealTimes = userMed != null
             ? _toThaiMealTimes(userMed.intakePeriods ?? const [])
             : <String>[];
+        final medImagePath =
+            _resolveImagePath(userMed?.imagePath) ?? boxMedImagePath;
 
         return SimpleMedicineListCard(
           icon: Icons.medication,
           iconColor: AppColors.primaryBlue,
           iconBackgroundColor: AppColors.subBlue.withValues(alpha: 0.45),
+          imagePath: medImagePath,
           name: medName,
           amount: amountText,
           mealTimes: mealTimes,
@@ -480,23 +497,24 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       String label;
       switch (p.trim().toLowerCase()) {
         case 'morning':
-          color = const Color(0xFFFFF9C4);
+          color = AppColors.morning;
+          ;
           label = 'เช้า';
           break;
         case 'noon':
-          color = const Color(0xFFFFE0B2);
+          color = AppColors.noon;
           label = 'กลางวัน';
           break;
         case 'evening':
-          color = const Color(0xFFE1F5FE);
+          color = AppColors.dinner;
           label = 'เย็น';
           break;
         case 'bedtime':
-          color = const Color(0xFFEDE7F6);
+          color = AppColors.sleep;
           label = 'ก่อนนอน';
           break;
         default:
-          color = Colors.grey[200]!;
+          color = AppColors.textSub;
           label = p;
       }
 
@@ -541,22 +559,37 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
         medicationName: medName,
         masterMedicationId: type == 'medication' ? medId : null,
       );
-      if (interactionResponse != null && interactionResponse['hasInteraction'] == true) {
+      if (interactionResponse != null &&
+          interactionResponse['hasInteraction'] == true) {
         setState(() => _isLoading = false);
         final bool? shouldProceed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('คำเตือน: ปฏิกิริยาระหว่างยา', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-            content: Text(interactionResponse['message'] ?? 'ยานี้อาจมีปฏิกิริยากับยาที่คุณกำลังทานอยู่'),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text(
+              'คำเตือน: ปฏิกิริยาระหว่างยา',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              interactionResponse['message'] ??
+                  'ยานี้อาจมีปฏิกิริยากับยาที่คุณกำลังทานอยู่',
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('ยกเลิก', style: TextStyle(color: Colors.grey)),
+                child: const Text(
+                  'ยกเลิก',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('เพิ่มยา', style: TextStyle(color: Colors.red)),
+                child: const Text(
+                  'เพิ่มยา',
+                  style: TextStyle(color: Colors.red),
+                ),
               ),
             ],
           ),
@@ -602,11 +635,11 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       } else {
         setState(() => _isLoading = false);
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text(_controller.error ?? 'ไม่สามารถเพิ่มยาได้')),
-           );
-         }
-       }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(_controller.error ?? 'ไม่สามารถเพิ่มยาได้')),
+          );
+        }
+      }
     }
   }
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'medicine_confirmation_button.dart';
@@ -11,6 +13,7 @@ enum MedicineReminderStatus {
 class MedicineReminderCard extends StatelessWidget {
   final String medicineName;
   final String dosage; // เช่น "1 เม็ด"
+  final String? imagePath;
   final String? remainingQuantityText;
   final DateTime scheduledTime;
   final MedicineReminderStatus status;
@@ -21,6 +24,7 @@ class MedicineReminderCard extends StatelessWidget {
     super.key,
     required this.medicineName,
     required this.dosage,
+    this.imagePath,
     this.remainingQuantityText,
     required this.scheduledTime,
     required this.status,
@@ -61,6 +65,48 @@ class MedicineReminderCard extends StatelessWidget {
     return '$hour:$minute น.';
   }
 
+  bool _isNetworkPath(String path) {
+    return path.startsWith('http://') || path.startsWith('https://');
+  }
+
+  Widget _buildMedicineImage() {
+    final path = imagePath?.trim();
+    if (path == null || path.isEmpty) {
+      return _buildFallbackImage();
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: _isNetworkPath(path)
+            ? Image.network(
+                path,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildFallbackImage(),
+              )
+            : Image.file(
+                File(path),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildFallbackImage(),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackImage() {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: AppColors.blueBorder.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: const Icon(Icons.medication, size: 22, color: AppColors.textSub),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -87,7 +133,8 @@ class MedicineReminderCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const SizedBox(width: 8),
+                    _buildMedicineImage(),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

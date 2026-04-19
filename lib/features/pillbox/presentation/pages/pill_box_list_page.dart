@@ -5,6 +5,7 @@ import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_add_page.d
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_detail_page.dart';
 import 'package:capyadoo/core/widgets/app_empty_card.dart';
 import 'package:capyadoo/features/pillbox/presentation/widgets/medicine_box_list_card.dart';
+import 'package:capyadoo/core/config/api_config.dart';
 
 class PillBoxListPage extends StatefulWidget {
   const PillBoxListPage({super.key});
@@ -248,6 +249,7 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
                       icon: Icons.shopping_bag,
                       iconColor: AppColors.primaryBlue,
                       iconBackgroundColor: const Color(0xFFE3F2FD),
+                      imagePath: _resolveImagePath(box.imagePath),
                       name: box.name,
                       medicineCount: box.medicationIds.length,
                       onTap: () => _navigateToDetail(box.id!),
@@ -262,5 +264,23 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
         ],
       ),
     );
+  }
+
+  String? _resolveImagePath(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+
+    if (path.contains(':') ||
+        path.startsWith('/') ||
+        path.contains('Documents/') ||
+        path.contains('data/user/')) {
+      return path;
+    }
+
+    if (path.startsWith('uploads/')) {
+      return '${ApiConfig.baseUrl}/$path';
+    }
+
+    return '${ApiConfig.baseUrl}/$path';
   }
 }

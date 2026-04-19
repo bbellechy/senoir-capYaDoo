@@ -168,9 +168,25 @@ class AppDatePicker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
-          Text(
-            label!,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          Row(
+            children: [
+              Text(
+                label!,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (isRequired)
+                const Text(
+                  ' *',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red,
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
         ],

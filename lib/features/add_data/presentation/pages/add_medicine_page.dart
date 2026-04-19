@@ -609,13 +609,13 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                     // Start date
                     AppDatePicker(
                       label: 'วันที่เริ่มทานยา',
+                      isRequired: true,
                       hint: 'เลือกวันที่',
                       selectedDate: _startDate,
                       firstDate: DateTime.now().subtract(
                         const Duration(days: 365),
                       ),
                       lastDate: DateTime.now().add(const Duration(days: 365)),
-                      isRequired: true,
                       onDateSelected: (date) {
                         setState(() {
                           _startDate = date;
@@ -627,6 +627,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                     // End date (optional)
                     AppDatePicker(
                       label: 'วันที่สิ้นสุดการทานยา (ไม่บังคับ)',
+                      isRequired: false,
                       hint: 'เลือกวันที่ (ถ้ามี)',
                       selectedDate: _endDate,
                       firstDate: _startDate ?? DateTime.now(),
@@ -782,6 +783,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                     // Expiry date
                     AppDatePicker(
                       label: 'วันที่หมดอายุ',
+                      isRequired: false,
                       hint: 'เลือกวันที่',
                       selectedDate: _expiryDate,
                       firstDate: DateTime.now(),

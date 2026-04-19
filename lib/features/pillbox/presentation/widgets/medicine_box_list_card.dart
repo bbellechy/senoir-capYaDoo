@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
@@ -6,6 +8,7 @@ class MedicineBoxListCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final Color iconBackgroundColor;
+  final String? imagePath;
   final String name;
   final int medicineCount;
   final VoidCallback? onEdit;
@@ -17,6 +20,7 @@ class MedicineBoxListCard extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     required this.iconBackgroundColor,
+    this.imagePath,
     required this.name,
     required this.medicineCount,
     this.onEdit,
@@ -48,15 +52,7 @@ class MedicineBoxListCard extends StatelessWidget {
           child: Row(
             children: [
               // Icon
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: iconBackgroundColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, size: 32, color: iconColor),
-              ),
+              _buildLeadingVisual(),
               const SizedBox(width: 16),
 
               // Content
@@ -112,6 +108,48 @@ class MedicineBoxListCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  bool _isNetworkPath(String path) {
+    return path.startsWith('http://') || path.startsWith('https://');
+  }
+
+  Widget _buildLeadingVisual() {
+    final path = imagePath?.trim();
+    if (path == null || path.isEmpty) {
+      return _buildFallbackIcon();
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        width: 64,
+        height: 64,
+        child: _isNetworkPath(path)
+            ? Image.network(
+                path,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildFallbackIcon(),
+              )
+            : Image.file(
+                File(path),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildFallbackIcon(),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackIcon() {
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        color: iconBackgroundColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, size: 32, color: iconColor),
     );
   }
 }

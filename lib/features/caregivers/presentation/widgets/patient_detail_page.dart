@@ -717,6 +717,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
       final medDosage = med['dosage'] as num?;
       final medUnit = med['unit'] as String? ?? 'เม็ด';
       final remaining = med['remainingQuantity'] as int?;
+      final medImagePath = _resolveImagePath(med['imagePath'] as String?);
       final dosageText = medDosage != null
           ? '$medDosage $medUnit'
           : '1 $medUnit';
@@ -726,11 +727,13 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
       groupedByName[medName] = MedicineInBox(
         name: medName,
         dosage: fullDosageText,
+        imagePath: medImagePath,
       );
     }
 
     return MedicineBoxReminderCard(
       boxName: box.name,
+      boxImagePath: _resolveImagePath(box.imagePath),
       medicines: groupedByName.values.toList(),
       scheduledTime: _combineSelectedDateWithTime(formattedTime),
       status: boxStatus,
@@ -775,6 +778,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     return MedicineReminderCard(
       medicineName: item.medicationName,
       dosage: dosageText,
+      imagePath: _resolveImagePath(item.imagePath),
       scheduledTime: _combineSelectedDateWithTime(item.time),
       status: reminderStatus,
       onConfirm: null,
