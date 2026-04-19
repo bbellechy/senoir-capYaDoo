@@ -181,4 +181,30 @@ class MedicationService {
       return null;
     }
   }
+
+  static Future<Map<String, dynamic>?> checkInteraction({
+    String? medicationName,
+    String? masterMedicationId,
+  }) async {
+    try {
+      final queryParams = <String>[];
+      if (medicationName != null && medicationName.isNotEmpty) {
+        queryParams.add('medicationName=$medicationName');
+      }
+      if (masterMedicationId != null && masterMedicationId.isNotEmpty) {
+        queryParams.add('masterMedicationId=$masterMedicationId');
+      }
+      
+      final queryString = queryParams.isNotEmpty ? '?${queryParams.join('&')}' : '';
+      final response = await ApiClient.get('/medications/interactions/check$queryString');
+      
+      if (response.statusCode == 200) {
+        return jsonDecode(utf8.decode(response.bodyBytes));
+      }
+      return null;
+    } catch (e) {
+      print('Error checking drug interaction: $e');
+      return null;
+    }
+  }
 }

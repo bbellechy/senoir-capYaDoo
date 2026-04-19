@@ -11,6 +11,7 @@ import 'package:capyadoo/features/notifications/presentation/widgets/unified_sel
 import 'package:capyadoo/core/services/auth_service.dart';
 import 'package:capyadoo/core/widgets/delete_dialog.dart';
 import 'package:capyadoo/features/pillbox/presentation/widgets/simple_medicine_list_card.dart';
+import 'package:capyadoo/core/services/medication_service.dart';
 
 class PillBoxDetailPage extends StatefulWidget {
   final MedicationBox pillBox;
@@ -535,6 +536,38 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
 
       setState(() => _isLoading = true);
 
+      // Check for drug interactions
+      final interactionResponse = await MedicationService.checkInteraction(
+        medicationName: medName,
+        masterMedicationId: type == 'medication' ? medId : null,
+      );
+      if (interactionResponse != null && interactionResponse['hasInteraction'] == true) {
+        setState(() => _isLoading = false);
+        final bool? shouldProceed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('คำเตือน: ปฏิกิริยาระหว่างยา', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            content: Text(interactionResponse['message'] ?? 'ยานี้อาจมีปฏิกิริยากับยาที่คุณกำลังทานอยู่'),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('ยกเลิก', style: TextStyle(color: Colors.grey)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('เพิ่มยา', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldProceed != true) {
+          return; // Cancel adding to box
+        }
+        setState(() => _isLoading = true);
+      }
+
       bool success = false;
 
       if (type == 'user_medication' && medId != null) {
@@ -569,11 +602,11 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       } else {
         setState(() => _isLoading = false);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_controller.error ?? 'ไม่สามารถเพิ่มยาได้')),
-          );
-        }
-      }
+           ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(content: Text(_controller.error ?? 'ไม่สามารถเพิ่มยาได้')),
+           );
+         }
+       }
     }
   }
 

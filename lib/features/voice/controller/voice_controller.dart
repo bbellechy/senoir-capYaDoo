@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../data/voice_api.dart';
 import 'package:capyadoo/core/services/page_navigation_service.dart';
+import 'package:capyadoo/core/routing/app_router.dart';
+import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_list_page.dart';
 
 class VoiceController {
   final BuildContext context;
@@ -34,6 +36,29 @@ class VoiceController {
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
+        break;
+
+      case 'GO_PILL_BOX':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PillBoxListPage()),
+        );
+        break;
+
+      case 'GO_CAREGIVER':
+        Navigator.pushNamed(context, AppRouter.caregiversRoute);
+        break;
+
+      case 'GO_ADD_RECORD':
+        PageNavigationService().setIndex(2);
+        break;
+
+      case 'GO_ADD_SYMPTOM':
+        Navigator.pushNamed(context, AppRouter.addSymptomRoute);
+        break;
+
+      case 'GO_ADD_MEDICATION':
+        Navigator.pushNamed(context, AppRouter.addMedicineRoute);
         break;
         
       default:
