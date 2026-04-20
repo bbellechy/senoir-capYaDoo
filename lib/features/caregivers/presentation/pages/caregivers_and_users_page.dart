@@ -5,7 +5,6 @@ import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/features/caregivers/presentation/controller/care_controller.dart';
 import 'package:capyadoo/features/caregivers/presentation/widgets/patient_detail_page.dart';
 import 'package:capyadoo/features/caregivers/presentation/widgets/caregiver_request_card.dart';
-import 'package:capyadoo/features/caregivers/presentation/widgets/caregiver_card.dart';
 import 'package:capyadoo/features/caregivers/presentation/widgets/user_request_card.dart';
 import 'package:capyadoo/features/caregivers/presentation/widgets/patient_card.dart';
 import '../widgets/role_section.dart';
@@ -31,7 +30,6 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
 
   // ข้อมูล caregivers (สำหรับผู้ใช้งาน)
   List<CareRequest> caregiverRequests = [];
-  List<Map<String, String>> acceptedCaregivers = [];
 
   // ข้อมูล patients (สำหรับผู้ดูแล)
   List<SentCareRequest> patientRequests = [];
@@ -171,38 +169,6 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
     }
 
     _showSnackBar('ไม่สามารถปฏิเสธคำขอได้');
-  }
-
-  void _removeCaregiver(int index) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'ยืนยันการลบ',
-          style: TextStyle(fontFamily: 'Sarabun'),
-        ),
-        content: const Text(
-          'คุณต้องการลบผู้ดูแลคนนี้ใช่หรือไม่?',
-          style: TextStyle(fontFamily: 'Sarabun'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('ยกเลิก'),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                acceptedCaregivers.removeAt(index);
-              });
-              Navigator.pop(context);
-              _showSnackBar('ลบผู้ดูแลแล้ว');
-            },
-            child: const Text('ลบ'),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _removePatient(int index) async {
@@ -498,6 +464,68 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                         const SizedBox(height: 24),
                       ],
 
+                      // ส่วนของผู้ดูแล - คำขอที่ส่งไปแล้ว (รอดำเนินการ)
+                      if (showCaregiverUi && patientRequests.isNotEmpty) ...[
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.noonIcon,
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.access_time,
+                                    color: AppColors.noonIcon,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'คำขอที่รอดำเนินการ (${patientRequests.length})',
+                                    style: const TextStyle(
+                                      fontFamily: 'Sarabun',
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              ...patientRequests.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final request = entry.value;
+                                return UserRequestCard(
+                                  name: request.patientUsername.isNotEmpty
+                                      ? request.patientUsername
+                                      : 'ไม่ระบุชื่อ',
+                                  username: request.patientUsername.isNotEmpty
+                                      ? '@${request.patientUsername}'
+                                      : '',
+                                  isPending: true,
+                                  onCancel: () => _cancelSentRequest(index),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+
                       // ส่วนของผู้ดูแล - เพิ่มผู้ใช้งาน
                       if (showCaregiverUi) ...[
                         AddUserSection(
@@ -581,78 +609,6 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                         const SizedBox(height: 24),
                       ],
 
-                      // ส่วนของผู้ดูแล - คำขอที่ส่งไปแล้ว (รอดำเนินการ)
-                      if (showCaregiverUi) ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppColors.noonIcon,
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.access_time,
-                                    color: AppColors.noonIcon,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'คำขอที่รอดำเนินการ (${patientRequests.length})',
-                                    style: const TextStyle(
-                                      fontFamily: 'Sarabun',
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              if (patientRequests.isEmpty)
-                                const Text(
-                                  'ยังไม่มีคำขอที่ส่งไป',
-                                  style: TextStyle(
-                                    fontFamily: 'Sarabun',
-                                    fontSize: 16,
-                                    color: AppColors.textSub,
-                                  ),
-                                )
-                              else
-                                ...patientRequests.asMap().entries.map((entry) {
-                                  final index = entry.key;
-                                  final request = entry.value;
-                                  return UserRequestCard(
-                                    name: request.patientUsername.isNotEmpty
-                                        ? request.patientUsername
-                                        : 'ไม่ระบุชื่อ',
-                                    username: request.patientUsername.isNotEmpty
-                                        ? '@${request.patientUsername}'
-                                        : '',
-                                    isPending: true,
-                                    onCancel: () => _cancelSentRequest(index),
-                                  );
-                                }),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
                       // ส่วนของผู้ใช้งาน - ถ้ายังไม่มีผู้ดูแล
                       // แสดงเฉพาะตอน "ยังไม่มีข้อมูลฝั่งผู้ดูแลเลยจริงๆ"
                       if (!showCaregiverUi) ...[
@@ -665,73 +621,6 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                         ),
                         const SizedBox(height: 24),
                       ],
-
-                      // รายชื่อผู้ดูแล (สำหรับผู้ใช้งาน)
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.blueBorder,
-                            width: 1.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.people,
-                                  color: AppColors.primaryBlue,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  acceptedCaregivers.isEmpty
-                                      ? 'รายชื่อผู้ดูแล'
-                                      : 'รายชื่อผู้ดูแล (${acceptedCaregivers.length} คน)',
-                                  style: const TextStyle(
-                                    fontFamily: 'Sarabun',
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            if (acceptedCaregivers.isEmpty)
-                              const EmptyStateWidget(
-                                icon: Icons.person_outline,
-                                title: 'ยังไม่มีผู้ดูแลในการดูแลคุณ',
-                                subtitle:
-                                    'เพิ่มผู้ดูแลโดยใช้ Username ของผู้ใช้งาน',
-                                showBorder: false,
-                              )
-                            else
-                              ...acceptedCaregivers.asMap().entries.map((
-                                entry,
-                              ) {
-                                final index = entry.key;
-                                final caregiver = entry.value;
-                                return CaregiverCard(
-                                  name: caregiver['name']!,
-                                  username: caregiver['username']!,
-                                  onDelete: () => _removeCaregiver(index),
-                                );
-                              }),
-                          ],
-                        ),
-                      ),
 
                       const SizedBox(height: 32),
                     ],
