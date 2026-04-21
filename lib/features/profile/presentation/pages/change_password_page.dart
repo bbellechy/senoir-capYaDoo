@@ -3,6 +3,7 @@ import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/widgets/app_input_text.dart';
+import 'package:capyadoo/core/validators/password_validation.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -39,22 +40,24 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     if (mounted) setState(() {});
   }
 
-  bool get _hasMinLength => _newPasswordController.text.length >= 8;
-  bool get _hasSpecial => RegExp(
-    r'[!@#\$%\^&*(),.?":{}|<>\[\]\\\/\-_+=~`]',
-  ).hasMatch(_newPasswordController.text);
-  bool get _hasDigit => RegExp(r'\d').hasMatch(_newPasswordController.text);
+  bool get _hasMinLength =>
+      PasswordValidation.hasMinLength(_newPasswordController.text);
+  bool get _hasSpecial =>
+      PasswordValidation.hasSpecialCharacter(_newPasswordController.text);
+  bool get _hasDigit =>
+      PasswordValidation.hasDigit(_newPasswordController.text);
 
-  bool get _confirmHasMinLength => _confirmPasswordController.text.length >= 8;
-  bool get _confirmHasSpecial => RegExp(
-    r'[!@#\$%\^&*(),.?":{}|<>\[\]\\\/\-_+=~`]',
-  ).hasMatch(_confirmPasswordController.text);
+  bool get _confirmHasMinLength =>
+      PasswordValidation.hasMinLength(_confirmPasswordController.text);
+  bool get _confirmHasSpecial =>
+      PasswordValidation.hasSpecialCharacter(_confirmPasswordController.text);
   bool get _confirmHasDigit =>
-      RegExp(r'\d').hasMatch(_confirmPasswordController.text);
+      PasswordValidation.hasDigit(_confirmPasswordController.text);
 
-  bool get _confirmMatches =>
-      _confirmPasswordController.text.isNotEmpty &&
-      _confirmPasswordController.text == _newPasswordController.text;
+  bool get _confirmMatches => PasswordValidation.matches(
+    _confirmPasswordController.text,
+    _newPasswordController.text,
+  );
 
   bool get _currentDiffers =>
       _currentPasswordController.text.isNotEmpty &&
@@ -83,6 +86,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     final success = await AuthService.changePassword(
       currentPassword: _currentPasswordController.text,
       newPassword: _newPasswordController.text,
+      confirmNewPassword: _confirmPasswordController.text,
     );
 
     if (!mounted) return;
@@ -261,22 +265,18 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                               });
                             },
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'กรุณากรอกรหัสผ่านใหม่';
+                              final passwordError =
+                                  PasswordValidation.validateRequiredPassword(
+                                    value,
+                                    requiredMessage: 'กรุณากรอกรหัสผ่านใหม่',
+                                  );
+                              if (passwordError != null) {
+                                return passwordError;
                               }
-                              if (!_hasMinLength) {
-                                return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
-                              }
-                              if (!_hasSpecial) {
-                                return 'ต้องมีตัวอักษรพิเศษอย่างน้อย 1 ตัว';
-                              }
-                              if (!_hasDigit) {
-                                return 'ต้องมีตัวเลขอย่างน้อย 1 ตัว';
-                              }
-                              if (!_currentDiffers) {
-                                return 'รหัสผ่านใหม่ต้องไม่ซ้ำรหัสผ่านเดิม';
-                              }
-                              return null;
+                              return PasswordValidation.validateDifferentFromCurrent(
+                                value,
+                                _currentPasswordController.text,
+                              );
                             },
                           ),
                           if (_showNewRulesPanel) ...[
@@ -295,15 +295,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                                 _activeField = _PasswordField.confirmPassword;
                               });
                             },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'กรุณายืนยันรหัสผ่านใหม่';
-                              }
-                              if (value != _newPasswordController.text) {
-                                return 'รหัสผ่านไม่ตรงกัน';
-                              }
-                              return null;
-                            },
+                            validator: (value) =>
+                                PasswordValidation.validateConfirmPassword(
+                                  value,
+                                  _newPasswordController.text,
+                                ),
                           ),
                           if (_showConfirmRulesPanel) ...[
                             const SizedBox(height: 10),

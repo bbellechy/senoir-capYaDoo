@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/widgets/app_input_text.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/widgets/app_logo.dart';
@@ -61,10 +62,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _handleForgotPassword() {
-    // TODO: Implement forgot password
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('ฟีเจอร์ลืมรหัสผ่าน')));
+    Navigator.pushNamed(context, AppRouter.forgotPasswordOtpRoute);
   }
 
   @override

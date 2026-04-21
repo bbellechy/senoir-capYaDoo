@@ -11,7 +11,11 @@ import 'package:capyadoo/features/add_data/presentation/pages/add_symptom_page.d
 import 'package:capyadoo/features/add_data/presentation/pages/medicine_list_page.dart';
 import 'package:capyadoo/features/add_data/presentation/pages/symptom_list_page.dart';
 import 'package:capyadoo/features/profile/presentation/pages/profile_page.dart';
+import 'package:capyadoo/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:capyadoo/features/profile/presentation/pages/change_password_page.dart';
+import 'package:capyadoo/features/auth/presentation/pages/forgot_password_page.dart';
+import 'package:capyadoo/features/auth/presentation/pages/forgot_password_otp_page.dart';
+import 'package:capyadoo/features/auth/presentation/pages/forgot_password_otp_verify_page.dart';
 import 'package:capyadoo/features/auth/presentation/pages/login_page.dart';
 import 'package:capyadoo/features/auth/presentation/pages/register_page.dart';
 import 'package:capyadoo/features/widget_showcase/widget_showcase_page.dart';
@@ -25,8 +29,13 @@ class AppRouter {
   // Auth routes
   static const String loginRoute = '/login';
   static const String registerRoute = '/register';
+  static const String forgotPasswordRoute = '/forgot-password';
+  static const String forgotPasswordOtpRoute = '/forgot-password/otp';
+  static const String forgotPasswordOtpVerifyRoute =
+      '/forgot-password/otp/verify';
   static const String pinUnlockRoute = '/pin-unlock';
   static const String changePasswordRoute = '/profile/change-password';
+  static const String personalInfoRoute = '/profile/personal-info';
 
   // Main routes with bottom navigation
   static const String mainRoute = '/';
@@ -63,6 +72,21 @@ class AppRouter {
           builder: (_) => const RegisterPage(),
           settings: settings,
         );
+      case forgotPasswordRoute:
+        return MaterialPageRoute(
+          builder: (_) => const ForgotPasswordPage(),
+          settings: settings,
+        );
+      case forgotPasswordOtpRoute:
+        return MaterialPageRoute(
+          builder: (_) => const ForgotPasswordOtpPage(),
+          settings: settings,
+        );
+      case forgotPasswordOtpVerifyRoute:
+        return MaterialPageRoute(
+          builder: (_) => const ForgotPasswordOtpVerifyPage(),
+          settings: settings,
+        );
       case pinUnlockRoute:
         return MaterialPageRoute(
           builder: (_) => const PinUnlockPage(),
@@ -71,6 +95,11 @@ class AppRouter {
       case changePasswordRoute:
         return MaterialPageRoute(
           builder: (_) => const ChangePasswordPage(),
+          settings: settings,
+        );
+      case personalInfoRoute:
+        return MaterialPageRoute(
+          builder: (_) => const PersonalInfoPage(),
           settings: settings,
         );
       case mainRoute:

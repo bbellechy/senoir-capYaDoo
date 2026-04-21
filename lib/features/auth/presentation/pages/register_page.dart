@@ -4,6 +4,7 @@ import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/widgets/app_logo.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
+import 'package:capyadoo/core/validators/password_validation.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -17,6 +18,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _usernameController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
@@ -26,6 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _usernameController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _phoneNumberController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -40,6 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
       final success = await AuthService.register(
         _usernameController.text.trim(),
         fullName,
+        PasswordValidation.normalizeThaiPhone(_phoneNumberController.text),
         _passwordController.text,
       );
 
@@ -166,6 +170,29 @@ class _RegisterPageState extends State<RegisterPage> {
                             }
                             return null;
                           },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Phone Field
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'เบอร์โทรศัพท์',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primaryBlue,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        AppInputText(
+                          controller: _phoneNumberController,
+                          hintText: 'กรอกเบอร์โทรศัพท์',
+                          keyboardType: TextInputType.phone,
+                          validator: PasswordValidation.validateThaiPhone,
                         ),
                       ],
                     ),
