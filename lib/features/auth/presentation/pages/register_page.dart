@@ -20,6 +20,18 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
+  _RegisterField _activeField = _RegisterField.none;
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_refresh);
+    _confirmPasswordController.addListener(_refresh);
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
 
   @override
   void dispose() {
@@ -30,6 +42,32 @@ class _RegisterPageState extends State<RegisterPage> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
+
+  bool get _hasMinLength =>
+      PasswordValidation.hasMinLength(_passwordController.text);
+  bool get _hasSpecial =>
+      PasswordValidation.hasSpecialCharacter(_passwordController.text);
+  bool get _hasDigit => PasswordValidation.hasDigit(_passwordController.text);
+
+  bool get _confirmHasMinLength =>
+      PasswordValidation.hasMinLength(_confirmPasswordController.text);
+  bool get _confirmHasSpecial =>
+      PasswordValidation.hasSpecialCharacter(_confirmPasswordController.text);
+  bool get _confirmHasDigit =>
+      PasswordValidation.hasDigit(_confirmPasswordController.text);
+
+  bool get _confirmMatches => PasswordValidation.matches(
+    _confirmPasswordController.text,
+    _passwordController.text,
+  );
+
+  bool get _showPasswordRulesPanel =>
+      _activeField == _RegisterField.password &&
+      _passwordController.text.isNotEmpty;
+
+  bool get _showConfirmRulesPanel =>
+      _activeField == _RegisterField.confirmPassword &&
+      _confirmPasswordController.text.isNotEmpty;
 
   void _handleRegister() async {
     if (_formKey.currentState!.validate()) {
@@ -188,16 +226,18 @@ class _RegisterPageState extends State<RegisterPage> {
                           controller: _passwordController,
                           hintText: 'กรอกรหัสผ่าน',
                           isPassword: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกรหัสผ่าน';
-                            }
-                            if (value.length < 6) {
-                              return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-                            }
-                            return null;
+                          onTap: () {
+                            setState(() {
+                              _activeField = _RegisterField.password;
+                            });
                           },
+                          validator:
+                              PasswordValidation.validateRequiredPassword,
                         ),
+                        if (_showPasswordRulesPanel) ...[
+                          const SizedBox(height: 10),
+                          _buildInlinePasswordRulesPanel(),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -219,16 +259,23 @@ class _RegisterPageState extends State<RegisterPage> {
                           controller: _confirmPasswordController,
                           hintText: 'กรอกรหัสผ่านอีกครั้ง',
                           isPassword: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณายืนยันรหัสผ่าน';
-                            }
-                            if (value != _passwordController.text) {
-                              return 'รหัสผ่านไม่ตรงกัน';
-                            }
-                            return null;
+                          onTap: () {
+                            setState(() {
+                              _activeField = _RegisterField.confirmPassword;
+                            });
                           },
+                          validator: (value) =>
+                              PasswordValidation.validateConfirmPassword(
+                                value,
+                                _passwordController.text,
+                                requiredMessage: 'กรุณายืนยันรหัสผ่าน',
+                                mismatchMessage: 'รหัสผ่านไม่ตรงกัน',
+                              ),
                         ),
+                        if (_showConfirmRulesPanel) ...[
+                          const SizedBox(height: 10),
+                          _buildInlineConfirmRulesPanel(),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -280,4 +327,115 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
+
+  Widget _buildInlinePasswordRulesPanel() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.subBlue,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'รหัสผ่านต้องประกอบไปด้วย',
+            style: TextStyle(
+              fontFamily: 'Sarabun',
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          _buildRuleItem('อย่างน้อย 8 ตัวอักษร', _hasMinLength),
+          _buildRuleItem('ตัวอักษรพิเศษ อย่างน้อย 1 ตัว', _hasSpecial),
+          _buildRuleItem('ตัวเลข 0-9 อย่างน้อย 1 ตัว', _hasDigit),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInlineConfirmRulesPanel() {
+    final mismatch =
+        _confirmPasswordController.text.isNotEmpty && !_confirmMatches;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (mismatch)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 6),
+            child: Text(
+              'รหัสผ่านไม่ตรงกัน',
+              style: TextStyle(
+                fontFamily: 'Sarabun',
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.error,
+              ),
+            ),
+          ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.subBlue,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'รหัสผ่านต้องประกอบไปด้วย',
+                style: TextStyle(
+                  fontFamily: 'Sarabun',
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              _buildRuleItem('อย่างน้อย 8 ตัวอักษร', _confirmHasMinLength),
+              _buildRuleItem(
+                'ตัวอักษรพิเศษ อย่างน้อย 1 ตัว',
+                _confirmHasSpecial,
+              ),
+              _buildRuleItem('ตัวเลข 0-9 อย่างน้อย 1 ตัว', _confirmHasDigit),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRuleItem(String text, bool isSatisfied) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(
+            isSatisfied ? Icons.check_circle : Icons.radio_button_unchecked,
+            color: isSatisfied ? Colors.green : AppColors.textSublest,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontFamily: 'Sarabun',
+                fontSize: 15,
+                color: isSatisfied ? AppColors.textPrimary : AppColors.textSub,
+                fontWeight: isSatisfied ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+enum _RegisterField { none, password, confirmPassword }
