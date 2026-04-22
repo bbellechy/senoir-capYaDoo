@@ -206,6 +206,17 @@ class _HomePageState extends State<HomePage> {
     return fmt.format(_selectedDate) == fmt.format(DateTime.now());
   }
 
+  bool _isSelectedDateTodayOrPast() {
+    final now = DateTime.now();
+    final selectedDateOnly = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+    final todayOnly = DateTime(now.year, now.month, now.day);
+    return !selectedDateOnly.isAfter(todayOnly);
+  }
+
   Future<void> _markAsTaken(
     String intakeId,
     String name, {
@@ -292,7 +303,10 @@ class _HomePageState extends State<HomePage> {
   }) async {
     final confirmed = await showConfirmIntakeDialog(
       context,
-      message: 'คุณต้องการที่จะยืนยันการทานยาตัวนี้ใช่หรือไม่',
+      title: isLate ? 'ยืนยันการทานยาย้อนหลัง' : 'ยืนยันการทานยา',
+      message: isLate
+          ? 'คุณต้องการบันทึกการทานยาย้อนหลังสำหรับรายการที่เกินกำหนดนี้ใช่หรือไม่'
+          : 'คุณต้องการที่จะยืนยันการทานยาตัวนี้ใช่หรือไม่',
     );
 
     if (!confirmed || !mounted) {
@@ -998,6 +1012,7 @@ class _HomePageState extends State<HomePage> {
             (allStatuses.any((s) => s.toUpperCase() == 'PENDING') &&
                 _isTimePassedForSelectedDate(formattedTime)));
     final canConfirmToday = _isSelectedDateToday();
+    final canConfirmLate = _isSelectedDateTodayOrPast();
 
     final cardStatus = isTaken
         ? MedicineBoxReminderStatus.taken
@@ -1050,7 +1065,7 @@ class _HomePageState extends State<HomePage> {
                 ? () => _markWholeBoxAsTaken(box, period, isLate: false)
                 : null)
           : (cardStatus == MedicineBoxReminderStatus.overdue &&
-                    canConfirmToday &&
+                    canConfirmLate &&
                     !isNotTaken &&
                     !isMissed
                 ? () => _markWholeBoxAsTaken(box, period, isLate: true)
@@ -1089,7 +1104,10 @@ class _HomePageState extends State<HomePage> {
 
     final confirmed = await showConfirmIntakeDialog(
       context,
-      message: 'คุณต้องการที่จะยืนยันการทานยากล่องนี้ใช่หรือไม่',
+      title: isLate ? 'ยืนยันการทานยาย้อนหลัง' : 'ยืนยันการทานยา',
+      message: isLate
+          ? 'คุณต้องการบันทึกการทานยาย้อนหลังของกล่องยานี้ใช่หรือไม่'
+          : 'คุณต้องการที่จะยืนยันการทานยากล่องนี้ใช่หรือไม่',
     );
 
     if (!confirmed || !mounted) {
@@ -1188,6 +1206,7 @@ class _HomePageState extends State<HomePage> {
             (_isTimePassedForSelectedDate(item.time) &&
                 item.status == IntakeStatus.PENDING));
     final bool canConfirmToday = _isSelectedDateToday();
+    final bool canConfirmLate = _isSelectedDateTodayOrPast();
 
     final cardStatus = isTaken
         ? MedicineReminderStatus.taken
@@ -1216,7 +1235,7 @@ class _HomePageState extends State<HomePage> {
                 ? () => _confirmAndMarkAsTaken(item, isLate: false)
                 : null)
           : (cardStatus == MedicineReminderStatus.overdue &&
-                    canConfirmToday &&
+                    canConfirmLate &&
                     !isNotTaken &&
                     !isMissed
                 ? () => _confirmAndMarkAsTaken(item, isLate: true)

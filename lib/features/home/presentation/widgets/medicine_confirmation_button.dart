@@ -114,7 +114,7 @@ class MedicineConfirmationButton extends StatelessWidget {
         );
 
       case MedicineConfirmationStatus.overdue:
-        return Container(
+        final overduePill = Container(
           height: 40,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
@@ -131,6 +131,19 @@ class MedicineConfirmationButton extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
+          ),
+        );
+
+        if (onConfirm == null) {
+          return overduePill;
+        }
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onConfirm,
+            borderRadius: BorderRadius.circular(12),
+            child: overduePill,
           ),
         );
     }
