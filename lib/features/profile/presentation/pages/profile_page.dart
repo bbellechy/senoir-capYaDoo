@@ -191,6 +191,13 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           _buildArrowTile(
+            title: 'ข้อมูลผู้ใช้งาน',
+            onTap: () {
+              Navigator.pushNamed(context, AppRouter.personalInfoRoute);
+            },
+          ),
+          const _SettingsDivider(),
+          _buildArrowTile(
             title: 'เปลี่ยนรหัสผ่าน',
             onTap: () {
               Navigator.pushNamed(context, AppRouter.changePasswordRoute);
