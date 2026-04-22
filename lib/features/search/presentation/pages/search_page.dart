@@ -21,6 +21,7 @@ class _SearchPageState extends State<SearchPage> {
   List<dynamic> results = []; // Can contain both Medication and UserMedication
   bool hasSearched = false;
   int _lastSearchId = 0;
+  String _lastSearchedQuery = '';
   final MedicationSearchService _searchService = MedicationSearchService();
 
   String displayTradeName(String? th, String? en) {
@@ -55,11 +56,14 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void search() async {
-    if (_searchController.text.trim().isEmpty) {
+    final query = _searchController.text.trim();
+
+    if (query.isEmpty) {
       if (mounted) {
         setState(() {
           results = [];
           hasSearched = false;
+          _lastSearchedQuery = '';
         });
       }
       return;
@@ -68,13 +72,12 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {
       loading = true;
       hasSearched = true;
+      _lastSearchedQuery = query;
     });
 
     final currentSearchId = ++_lastSearchId;
 
     try {
-      final query = _searchController.text.trim();
-
       // Only search master medications
       final List<Medication> masterMeds = await _searchService
           .searchMasterMedications(query);
@@ -104,6 +107,17 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  void _clearSearch() {
+    _searchController.clear();
+    FocusScope.of(context).unfocus();
+    setState(() {
+      results = [];
+      hasSearched = false;
+      loading = false;
+      _lastSearchedQuery = '';
+    });
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -114,6 +128,12 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     const double headerHeight = 175;
     const double searchBoxHeight = 80;
+    final query = _searchController.text.trim();
+    final hasQuery = query.isNotEmpty;
+    final hasCurrentSearch =
+        hasSearched &&
+        query == _lastSearchedQuery &&
+        _lastSearchedQuery.isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.offwhite,
@@ -206,10 +226,12 @@ class _SearchPageState extends State<SearchPage> {
                   textAlignVertical: TextAlignVertical.center,
                   style: const TextStyle(fontSize: 16, height: 1.2),
                   onChanged: (value) {
+                    setState(() {});
                     if (value.isEmpty) {
                       setState(() {
                         results = [];
                         hasSearched = false;
+                        _lastSearchedQuery = '';
                       });
                     }
                   },
@@ -230,6 +252,27 @@ class _SearchPageState extends State<SearchPage> {
                       minWidth: 56,
                       minHeight: 80,
                     ),
+                    suffixIcon: hasQuery
+                        ? IconButton(
+                            tooltip: hasCurrentSearch
+                                ? 'ล้างการค้นหา'
+                                : 'ค้นหา',
+                            onPressed: loading
+                                ? null
+                                : (hasCurrentSearch ? _clearSearch : search),
+                            icon: Icon(
+                              hasCurrentSearch
+                                  ? Icons.close_rounded
+                                  : Icons.arrow_forward_rounded,
+                              color: loading
+                                  ? AppColors.textSublest
+                                  : (hasCurrentSearch
+                                        ? AppColors.textSub
+                                        : AppColors.primaryBlue),
+                              size: 28,
+                            ),
+                          )
+                        : null,
                     suffixIconConstraints: const BoxConstraints(
                       minWidth: 56,
                       minHeight: 80,
