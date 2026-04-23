@@ -7,6 +7,7 @@ import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/services/care_service.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
+import 'package:capyadoo/core/utils/intake_timing_label.dart';
 import 'package:capyadoo/features/caregivers/presentation/widgets/patient_pill_box_detail_page.dart';
 import 'package:capyadoo/features/home/presentation/widgets/medicine_reminder_card.dart';
 import 'package:capyadoo/features/home/presentation/widgets/medicine_box_reminder_card.dart';
@@ -736,6 +737,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
       boxImagePath: _resolveImagePath(box.imagePath),
       medicines: groupedByName.values.toList(),
       scheduledTime: _combineSelectedDateWithTime(formattedTime),
+      intakeTimingLabel: toThaiIntakeTimingLabel(box.intakeTiming),
       status: boxStatus,
       onConfirm: null,
       pendingButtonText: 'รอทาน',
@@ -780,6 +782,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
       dosage: dosageText,
       imagePath: _resolveImagePath(item.imagePath),
       scheduledTime: _combineSelectedDateWithTime(item.time),
+      intakeTimingLabel: toThaiIntakeTimingLabel(item.intakeTiming),
       status: reminderStatus,
       onConfirm: null,
       pendingButtonText: 'รอทาน',

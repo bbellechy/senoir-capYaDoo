@@ -10,6 +10,7 @@ import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_detail_pag
 import 'package:capyadoo/core/services/pill_box_service.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/services/page_navigation_service.dart';
+import 'package:capyadoo/core/utils/intake_timing_label.dart';
 import 'package:capyadoo/core/widgets/confirm_intake_dialog.dart';
 import 'package:capyadoo/features/home/presentation/widgets/medicine_box_reminder_card.dart';
 import 'package:capyadoo/features/home/presentation/widgets/medicine_reminder_card.dart';
@@ -1053,6 +1054,7 @@ class _HomePageState extends State<HomePage> {
       boxImagePath: box.imagePath,
       medicines: medicineItems,
       scheduledTime: scheduledAt,
+      intakeTimingLabel: toThaiIntakeTimingLabel(box.intakeTiming),
       status: cardStatus,
       onTap: () {
         Navigator.push(
@@ -1229,6 +1231,7 @@ class _HomePageState extends State<HomePage> {
         hour,
         minute,
       ),
+      intakeTimingLabel: toThaiIntakeTimingLabel(item.intakeTiming),
       status: cardStatus,
       onConfirm: cardStatus == MedicineReminderStatus.pending
           ? (canConfirmToday

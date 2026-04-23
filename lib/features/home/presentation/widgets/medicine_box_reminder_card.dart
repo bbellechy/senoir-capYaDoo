@@ -27,6 +27,7 @@ class MedicineBoxReminderCard extends StatelessWidget {
   final String? boxImagePath;
   final List<MedicineInBox> medicines;
   final DateTime scheduledTime;
+  final String? intakeTimingLabel;
   final MedicineBoxReminderStatus status;
   final VoidCallback? onConfirm;
   final VoidCallback? onTap;
@@ -38,6 +39,7 @@ class MedicineBoxReminderCard extends StatelessWidget {
     this.boxImagePath,
     required this.medicines,
     required this.scheduledTime,
+    this.intakeTimingLabel,
     required this.status,
     this.onConfirm,
     this.onTap,
@@ -128,6 +130,9 @@ class MedicineBoxReminderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final normalizedTiming = intakeTimingLabel?.trim();
+    final hasTimingLabel = normalizedTiming != null && normalizedTiming.isNotEmpty;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -232,14 +237,14 @@ class MedicineBoxReminderCard extends StatelessWidget {
               Row(
                 children: [
                   const SizedBox(width: 12),
-                  const Icon(
-                    Icons.access_time,
+                  Icon(
+                    hasTimingLabel ? Icons.restaurant_rounded : Icons.access_time,
                     size: 18,
                     color: AppColors.textSub,
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    _formatTime(scheduledTime),
+                    hasTimingLabel ? normalizedTiming : _formatTime(scheduledTime),
                     style: const TextStyle(
                       fontFamily: 'Sarabun',
                       fontSize: 18,

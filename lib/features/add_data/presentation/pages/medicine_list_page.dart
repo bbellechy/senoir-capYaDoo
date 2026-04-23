@@ -5,6 +5,7 @@ import 'package:capyadoo/core/widgets/medicine_list_card.dart';
 import 'package:capyadoo/core/services/medication_service.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
+import 'package:capyadoo/core/utils/intake_timing_label.dart';
 
 class MedicineListPage extends StatefulWidget {
   const MedicineListPage({super.key});
@@ -174,11 +175,8 @@ class _MedicineListPageState extends State<MedicineListPage> {
                     itemCount: _medicines.length,
                     itemBuilder: (context, index) {
                       final med = _medicines[index];
-                      String mealTimingTxt = med.intakeTiming == 'BEFORE_MEAL'
-                          ? 'ก่อนอาหาร'
-                          : med.intakeTiming == 'AFTER_MEAL'
-                          ? 'หลังอาหาร'
-                          : 'ทานทันที';
+                      final mealTimingTxt =
+                          toThaiIntakeTimingLabel(med.intakeTiming) ?? '-';
 
                       List<String> mealTimes = (med.intakePeriods ?? []).map((
                         t,

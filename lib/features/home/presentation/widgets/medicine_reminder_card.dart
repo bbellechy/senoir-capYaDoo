@@ -16,6 +16,7 @@ class MedicineReminderCard extends StatelessWidget {
   final String? imagePath;
   final String? remainingQuantityText;
   final DateTime scheduledTime;
+  final String? intakeTimingLabel;
   final MedicineReminderStatus status;
   final VoidCallback? onConfirm;
   final String pendingButtonText;
@@ -27,6 +28,7 @@ class MedicineReminderCard extends StatelessWidget {
     this.imagePath,
     this.remainingQuantityText,
     required this.scheduledTime,
+    this.intakeTimingLabel,
     required this.status,
     this.onConfirm,
     this.pendingButtonText = 'ยืนยันการทาน',
@@ -109,6 +111,9 @@ class MedicineReminderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final normalizedTiming = intakeTimingLabel?.trim();
+    final hasTimingLabel = normalizedTiming != null && normalizedTiming.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -182,14 +187,14 @@ class MedicineReminderCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.access_time,
+                    Icon(
+                      hasTimingLabel ? Icons.restaurant_rounded : Icons.access_time,
                       size: 18,
                       color: AppColors.textSub,
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _formatTime(scheduledTime),
+                      hasTimingLabel ? normalizedTiming : _formatTime(scheduledTime),
                       style: const TextStyle(
                         fontFamily: 'Sarabun',
                         fontSize: 18,

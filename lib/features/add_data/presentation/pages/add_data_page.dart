@@ -9,6 +9,7 @@ import 'package:capyadoo/core/services/symptom_service.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
 import 'package:capyadoo/core/model/symptom_record.dart';
+import 'package:capyadoo/core/utils/intake_timing_label.dart';
 import 'add_medicine_page.dart';
 import 'add_symptom_page.dart';
 import 'package:capyadoo/core/widgets/app_empty_card.dart';
@@ -419,16 +420,7 @@ class _AddDataPageState extends State<AddDataPage>
   }
 
   String _formatMealTiming(String? timing) {
-    switch (timing) {
-      case 'BEFORE_MEAL':
-        return 'ก่อนอาหาร';
-      case 'AFTER_MEAL':
-        return 'หลังอาหาร';
-      case 'WITH_MEAL':
-        return 'ทานทันที';
-      default:
-        return timing ?? '-';
-    }
+    return toThaiIntakeTimingLabel(timing) ?? timing ?? '-';
   }
 
   String _formatIntakePeriod(String period) {

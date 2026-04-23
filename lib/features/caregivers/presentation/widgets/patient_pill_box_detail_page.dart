@@ -5,6 +5,7 @@ import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/services/pill_box_service.dart';
+import 'package:capyadoo/core/utils/intake_timing_label.dart';
 
 class PatientPillBoxDetailPage extends StatefulWidget {
   final MedicationBox box;
@@ -218,15 +219,7 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
   }
 
   String _mealTimingLabel(String? intakeTiming) {
-    if (intakeTiming == null || intakeTiming.isEmpty) return '';
-    switch (intakeTiming.toUpperCase()) {
-      case 'BEFORE_MEAL':
-        return 'ก่อนอาหาร';
-      case 'AFTER_MEAL':
-        return 'หลังอาหาร';
-      default:
-        return '';
-    }
+    return toThaiIntakeTimingLabel(intakeTiming) ?? '';
   }
 
   Widget _buildMedicationList() {
