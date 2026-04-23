@@ -131,7 +131,8 @@ class MedicineBoxReminderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final normalizedTiming = intakeTimingLabel?.trim();
-    final hasTimingLabel = normalizedTiming != null && normalizedTiming.isNotEmpty;
+    final hasTimingLabel =
+        normalizedTiming != null && normalizedTiming.isNotEmpty;
 
     return Material(
       color: Colors.transparent,
@@ -238,13 +239,17 @@ class MedicineBoxReminderCard extends StatelessWidget {
                 children: [
                   const SizedBox(width: 12),
                   Icon(
-                    hasTimingLabel ? Icons.restaurant_rounded : Icons.access_time,
+                    hasTimingLabel
+                        ? Icons.restaurant_rounded
+                        : Icons.access_time,
                     size: 18,
                     color: AppColors.textSub,
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    hasTimingLabel ? normalizedTiming : _formatTime(scheduledTime),
+                    hasTimingLabel
+                        ? normalizedTiming
+                        : _formatTime(scheduledTime),
                     style: const TextStyle(
                       fontFamily: 'Sarabun',
                       fontSize: 18,
