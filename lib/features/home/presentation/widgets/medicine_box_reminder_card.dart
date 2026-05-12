@@ -8,6 +8,7 @@ enum MedicineBoxReminderStatus {
   pending, // รอยืนยัน
   taken, // ทานแล้ว
   overdue, // เกินกำหนด
+  taken_late, // ทานล่าช้า
 }
 
 class MedicineInBox {
@@ -70,6 +71,8 @@ class MedicineBoxReminderCard extends StatelessWidget {
         return MedicineConfirmationStatus.taken;
       case MedicineBoxReminderStatus.overdue:
         return MedicineConfirmationStatus.overdue;
+      case MedicineBoxReminderStatus.taken_late:
+        return MedicineConfirmationStatus.taken_late;
     }
   }
 

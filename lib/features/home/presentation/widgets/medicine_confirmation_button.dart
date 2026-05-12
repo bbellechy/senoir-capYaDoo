@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
-enum MedicineConfirmationStatus { pending, taken, overdue }
+enum MedicineConfirmationStatus { pending, taken, overdue, taken_late }
 
 class MedicineConfirmationButton extends StatelessWidget {
   final MedicineConfirmationStatus status;
@@ -144,6 +144,37 @@ class MedicineConfirmationButton extends StatelessWidget {
             onTap: onConfirm,
             borderRadius: BorderRadius.circular(12),
             child: overduePill,
+          ),
+        );
+
+      case MedicineConfirmationStatus.taken_late:
+        return Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 255, 173, 20),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.check_circle_outline,
+                color: Colors.white,
+                size: 18,
+              ),
+              SizedBox(width: 6),
+              Text(
+                'ทานล่าช้า',
+                style: TextStyle(
+                  fontFamily: 'Sarabun',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         );
     }

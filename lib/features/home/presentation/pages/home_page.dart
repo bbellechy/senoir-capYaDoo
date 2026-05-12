@@ -253,25 +253,8 @@ class _HomePageState extends State<HomePage> {
             duration: const Duration(seconds: 2),
           ),
         );
-        // อัพเดทเฉพาะ item ที่เปลี่ยน ไม่ต้อง reload ทั้งหน้า
-        setState(() {
-          final index = _schedule.indexWhere(
-            (item) => item.intakeId == intakeId,
-          );
-          if (index != -1) {
-            _schedule[index] = DailyIntake(
-              intakeId: _schedule[index].intakeId,
-              medicationName: _schedule[index].medicationName,
-              time: _schedule[index].time,
-              periodKey: _schedule[index].periodKey,
-              intakeTiming: _schedule[index].intakeTiming,
-              status: IntakeStatus.TAKEN,
-              imagePath: _schedule[index].imagePath,
-              remainingQuantity: _schedule[index].remainingQuantity,
-              medicationId: _schedule[index].medicationId,
-            );
-          }
-        });
+        // อัพเดทข้อมูลจากหลังบ้านเพื่อให้ UI ตรงกันเสมอ (แก้ปัญหา refresh แล้วกลับเป็นค่าเดิม)
+        await _loadSchedule(showLoading: false);
       }
     } else {
       if (mounted) {
@@ -999,7 +982,10 @@ class _HomePageState extends State<HomePage> {
         .toList();
     final isTaken =
         medications.isNotEmpty &&
-        allStatuses.every((s) => s.toUpperCase() == 'TAKEN');
+        allStatuses.every((s) => s.toUpperCase() == 'TAKEN' || s.toUpperCase() == 'TAKEN_LATE');
+    final hasLateIntake = 
+        medications.isNotEmpty &&
+        allStatuses.any((s) => s.toUpperCase() == 'TAKEN_LATE');
     final isNotTaken =
         medications.isNotEmpty &&
         allStatuses.every((s) => s.toUpperCase() == 'NOT_TAKEN');
@@ -1016,7 +1002,7 @@ class _HomePageState extends State<HomePage> {
     final canConfirmLate = _isSelectedDateTodayOrPast();
 
     final cardStatus = isTaken
-        ? MedicineBoxReminderStatus.taken
+        ? (hasLateIntake ? MedicineBoxReminderStatus.taken_late : MedicineBoxReminderStatus.taken)
         : (isOverdue || isNotTaken || isMissed)
         ? MedicineBoxReminderStatus.overdue
         : MedicineBoxReminderStatus.pending;
@@ -1137,49 +1123,8 @@ class _HomePageState extends State<HomePage> {
             duration: const Duration(seconds: 2),
           ),
         );
-        // อัพเดทเฉพาะ intake ของกล่องนี้ใน period นี้ ไม่ต้อง reload ทั้งหน้า
-        if (box.id != null) {
-          final dailyMeds = _boxDailyMedications[box.id] ?? [];
-          final updatedMeds = dailyMeds.map((med) {
-            // ตรวจสอบว่า intake นี้อยู่ใน period นี้หรือไม่
-            final intakeTime =
-                med['intakeTime'] as String? ??
-                med['scheduledTime'] as String? ??
-                '';
-            if (intakeTime.isNotEmpty) {
-              final timeParts = intakeTime.split(':');
-              if (timeParts.length >= 2) {
-                final hour = int.tryParse(timeParts[0]) ?? 0;
-                bool isInPeriod = false;
-                switch (period) {
-                  case 'MORNING':
-                    isInPeriod = hour >= 5 && hour < 11;
-                    break;
-                  case 'NOON':
-                    isInPeriod = hour >= 11 && hour < 16;
-                    break;
-                  case 'EVENING':
-                    isInPeriod = hour >= 16 && hour < 21;
-                    break;
-                  case 'BEDTIME':
-                    isInPeriod = hour >= 21 || hour < 5;
-                    break;
-                }
-                if (isInPeriod) {
-                  // อัพเดทสถานะเป็น TAKEN
-                  final updated = Map<String, dynamic>.from(med);
-                  updated['status'] = 'TAKEN';
-                  return updated;
-                }
-              }
-            }
-            return med;
-          }).toList();
-
-          setState(() {
-            _boxDailyMedications[box.id!] = updatedMeds;
-          });
-        }
+        // อัพเดทข้อมูลจากหลังบ้าน
+        await _loadSchedule(showLoading: false);
       }
     } else {
       if (mounted) {
@@ -1195,6 +1140,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildMedicationCard(DailyIntake item) {
     final bool isTaken = item.status == IntakeStatus.TAKEN;
+    final bool isLateIntake = item.status == IntakeStatus.TAKEN_LATE;
     final bool isNotTaken = item.status == IntakeStatus.NOT_TAKEN;
     final bool isMissed = item.status == IntakeStatus.MISSED;
 
@@ -1202,6 +1148,7 @@ class _HomePageState extends State<HomePage> {
     // Don't mark as overdue if already TAKEN or NOT_TAKEN
     final bool isOverdue =
         !isTaken &&
+        !isLateIntake &&
         !isNotTaken &&
         (item.status == IntakeStatus.OVERDUE ||
             item.status == IntakeStatus.MISSED ||
@@ -1212,6 +1159,8 @@ class _HomePageState extends State<HomePage> {
 
     final cardStatus = isTaken
         ? MedicineReminderStatus.taken
+        : isLateIntake
+        ? MedicineReminderStatus.taken_late
         : (isOverdue || isNotTaken || isMissed)
         ? MedicineReminderStatus.overdue
         : MedicineReminderStatus.pending;
