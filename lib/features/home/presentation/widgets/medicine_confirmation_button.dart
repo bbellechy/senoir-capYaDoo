@@ -152,18 +152,14 @@ class MedicineConfirmationButton extends StatelessWidget {
           height: 40,
           padding: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 255, 173, 20),
+            color: AppColors.noonIcon,
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.check_circle_outline,
-                color: Colors.white,
-                size: 18,
-              ),
+              Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
               SizedBox(width: 6),
               Text(
                 'ทานล่าช้า',

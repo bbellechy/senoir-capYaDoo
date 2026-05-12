@@ -693,9 +693,13 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
               .map((m) => (m['status'] as String? ?? 'PENDING').toUpperCase())
               .toList();
 
-    // กล่องถูกทานแล้วถ้ามี intake ใดๆ ที่ status = TAKEN
+    // กล่องถูกทานแล้วถ้ามี intake ใดๆ ที่ status = TAKEN หรือ TAKEN_LATE
     final isTaken =
-        statusesToCheck.isNotEmpty && statusesToCheck.any((s) => s == 'TAKEN');
+        statusesToCheck.isNotEmpty &&
+        statusesToCheck.any((s) => s == 'TAKEN' || s == 'TAKEN_LATE');
+    final hasLateIntake =
+        statusesToCheck.isNotEmpty &&
+        statusesToCheck.any((s) => s == 'TAKEN_LATE');
     final anyOverdue = statusesToCheck.any(
       (s) => s == 'OVERDUE' || s == 'MISSED',
     );
@@ -707,7 +711,9 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
         anyOverdue || (allPending && _isTimePassed(formattedTime));
 
     final boxStatus = isTaken
-        ? MedicineBoxReminderStatus.taken
+        ? (hasLateIntake
+              ? MedicineBoxReminderStatus.taken_late
+              : MedicineBoxReminderStatus.taken)
         : (isOverdue
               ? MedicineBoxReminderStatus.overdue
               : MedicineBoxReminderStatus.pending);
@@ -761,9 +767,11 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
 
     final reminderStatus = item.status == IntakeStatus.TAKEN
         ? MedicineReminderStatus.taken
-        : (isOverdue
-              ? MedicineReminderStatus.overdue
-              : MedicineReminderStatus.pending);
+        : (item.status == IntakeStatus.TAKEN_LATE
+              ? MedicineReminderStatus.taken_late
+              : (isOverdue
+                    ? MedicineReminderStatus.overdue
+                    : MedicineReminderStatus.pending));
 
     final dosageNumber = item.dosage;
     final dosageUnit = (item.unit == null || item.unit!.isEmpty)

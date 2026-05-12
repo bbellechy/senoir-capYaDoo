@@ -982,8 +982,10 @@ class _HomePageState extends State<HomePage> {
         .toList();
     final isTaken =
         medications.isNotEmpty &&
-        allStatuses.every((s) => s.toUpperCase() == 'TAKEN' || s.toUpperCase() == 'TAKEN_LATE');
-    final hasLateIntake = 
+        allStatuses.every(
+          (s) => s.toUpperCase() == 'TAKEN' || s.toUpperCase() == 'TAKEN_LATE',
+        );
+    final hasLateIntake =
         medications.isNotEmpty &&
         allStatuses.any((s) => s.toUpperCase() == 'TAKEN_LATE');
     final isNotTaken =
@@ -1002,7 +1004,9 @@ class _HomePageState extends State<HomePage> {
     final canConfirmLate = _isSelectedDateTodayOrPast();
 
     final cardStatus = isTaken
-        ? (hasLateIntake ? MedicineBoxReminderStatus.taken_late : MedicineBoxReminderStatus.taken)
+        ? (hasLateIntake
+              ? MedicineBoxReminderStatus.taken_late
+              : MedicineBoxReminderStatus.taken)
         : (isOverdue || isNotTaken || isMissed)
         ? MedicineBoxReminderStatus.overdue
         : MedicineBoxReminderStatus.pending;
