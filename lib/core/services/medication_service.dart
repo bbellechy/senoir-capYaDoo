@@ -9,18 +9,37 @@ class MedicationService {
   static const _storage = FlutterSecureStorage();
   static const _imageKeyPrefix = 'medication_image_';
 
-  static Future<String> _saveImageLocally(File imageFile) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final imagesDir = Directory('${directory.path}/medication_images');
-    if (!await imagesDir.exists()) {
-      await imagesDir.create(recursive: true);
+  static Future<String> saveImageToStorage(File imageFile) async {
+    try {
+      if (!await imageFile.exists()) {
+        print('Warning: Source image file does not exist: ${imageFile.path}');
+        return imageFile.path;
+      }
+
+      final directory = await getApplicationDocumentsDirectory();
+      final imagesDir = Directory('${directory.path}/medication_images');
+
+      // If already in permanent storage, return current path
+      if (imageFile.path.contains('medication_images')) {
+        return imageFile.path;
+      }
+
+      if (!await imagesDir.exists()) {
+        await imagesDir.create(recursive: true);
+      }
+
+      final ext = imageFile.path.split('.').length > 1
+          ? imageFile.path.split('.').last.toLowerCase()
+          : 'jpg';
+      final fileName = 'med_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final targetPath = '${imagesDir.path}/$fileName';
+
+      final savedImage = await imageFile.copy(targetPath);
+      return savedImage.path;
+    } catch (e) {
+      print('Error saving image locally: $e');
+      return imageFile.path;
     }
-    final ext = imageFile.path.split('.').length > 1
-        ? imageFile.path.split('.').last.toLowerCase()
-        : 'jpg';
-    final fileName = 'med_${DateTime.now().millisecondsSinceEpoch}.$ext';
-    final savedImage = await imageFile.copy('${imagesDir.path}/$fileName');
-    return savedImage.path;
   }
 
   static Future<void> _saveLocalImageMapping(String medicationId, String path) async {
@@ -35,12 +54,13 @@ class MedicationService {
     await _storage.delete(key: '$_imageKeyPrefix$medicationId');
   }
 
-  /// บันทึกรูปยาในเครื่องและแมปกับ medication id (ใช้หลัง create/update สำเร็จ)
+  /// บันทึกรูปยาในเครื่องและแมปกับ medication id
   static Future<void> saveMedicationImageLocally(
     String medicationId,
     File imageFile,
   ) async {
-    final path = await _saveImageLocally(imageFile);
+    if (!await imageFile.exists()) return;
+    final path = await saveImageToStorage(imageFile);
     await _saveLocalImageMapping(medicationId, path);
   }
 

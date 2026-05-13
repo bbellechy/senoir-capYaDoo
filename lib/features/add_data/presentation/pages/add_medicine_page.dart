@@ -405,11 +405,20 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                     AppImagePicker(
                       imageFile: _selectedImage,
                       imageUrl: _initialImageUrl,
-                      onImageSelected: (File? imageFile) {
-                        setState(() {
-                          _selectedImage = imageFile;
-                          _initialImageUrl = null;
-                        });
+                      onImageSelected: (File? imageFile) async {
+                        if (imageFile != null) {
+                          // Save to permanent storage immediately to avoid cache issues
+                          final permanentPath = await MedicationService.saveImageToStorage(imageFile);
+                          setState(() {
+                            _selectedImage = File(permanentPath);
+                            _initialImageUrl = null;
+                          });
+                        } else {
+                          setState(() {
+                            _selectedImage = null;
+                            _initialImageUrl = null;
+                          });
+                        }
                       },
                     ),
                     const SizedBox(height: 24),
