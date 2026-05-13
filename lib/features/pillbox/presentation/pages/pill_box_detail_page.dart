@@ -126,8 +126,19 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       medicationId = med.id;
       medName = med.name;
     } else if (med is Map<String, dynamic>) {
-      medicationId = med['id']?.toString();
-      medName = med['name']?.toString() ?? 'ไม่ระบุชื่อ';
+      final Map? nestedMed = (med['medication'] as Map?) ??
+          (med['userMedication'] as Map?) ??
+          (med['user_medication'] as Map?) ??
+          (med['medication_entity'] as Map?);
+
+      medicationId = (nestedMed?['id']?.toString()) ?? med['id']?.toString();
+      medName = (nestedMed?['name']?.toString()) ??
+          (nestedMed?['medicationName']?.toString()) ??
+          (nestedMed?['tradenameEn']?.toString()) ??
+          (nestedMed?['tradenameTh']?.toString()) ??
+          med['name']?.toString() ??
+          med['medicationName']?.toString() ??
+          'ไม่ระบุชื่อ';
     } else {
       return;
     }
@@ -189,11 +200,6 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('DEBUG build: _medicationsInBox.length: ${_medicationsInBox.length}');
-    print(
-      'DEBUG build: _currentBox.medications.length: ${_currentBox.medications.length}',
-    );
-    print('DEBUG build: _isLoading: $_isLoading');
     return Scaffold(
       backgroundColor: AppColors.offwhite,
       body: Column(
@@ -361,10 +367,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
   }
 
   Widget _buildMedicationList(List<Map<String, dynamic>> meds) {
-    print('DEBUG _buildMedicationList: meds count: ${meds.length}');
-    print('DEBUG _buildMedicationList: meds: $meds');
     if (meds.isEmpty) {
-      print('DEBUG _buildMedicationList: meds is empty, showing empty state');
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -404,30 +407,55 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       itemCount: meds.length,
       itemBuilder: (context, index) {
         final med = meds[index];
-        final medId = med['id']?.toString() ?? '';
-        final medName =
+        final Map? nestedMed = (med['medication'] as Map?) ??
+            (med['userMedication'] as Map?) ??
+            (med['user_medication'] as Map?) ??
+            (med['medication_entity'] as Map?);
+
+        final medId = (nestedMed?['id']?.toString()) ?? med['id']?.toString() ?? '';
+        final medName = (nestedMed?['name'] as String?) ??
+            (nestedMed?['medicationName'] as String?) ??
+            (nestedMed?['tradenameEn'] as String?) ??
+            (nestedMed?['tradenameTh'] as String?) ??
             (med['name'] as String?) ??
             (med['medicationName'] as String?) ??
             'ไม่ระบุชื่อ';
-        final boxMedImagePath = _resolveImagePath(
-          (med['imagePath'] as String?) ?? (med['image'] as String?),
-        );
+
+        final rawImagePath = (nestedMed?['imagePath'] as String?) ??
+            (nestedMed?['image'] as String?) ??
+            (nestedMed?['imageUrl'] as String?) ??
+            (nestedMed?['image_url'] as String?) ??
+            (med['imagePath'] as String?) ??
+            (med['image'] as String?) ??
+            (med['imageUrl'] as String?) ??
+            (med['image_url'] as String?);
+
+        final boxMedImagePath = _resolveImagePath(rawImagePath);
 
         // Try to find matching user medication for image
         UserMedication? userMed;
         try {
-          userMed = _allUserMedications.firstWhere((m) => m.id == medId);
+          userMed = _allUserMedications.firstWhere((m) {
+            if (medId.isNotEmpty && m.id == medId) return true;
+
+            final search = medName.trim().toLowerCase();
+            if (search.isEmpty) return false;
+
+            // Match by various name properties
+            final mName = m.name.trim().toLowerCase();
+            final mDisp = m.displayName.trim().toLowerCase();
+            final mTh = m.masterMedicationEntity?.tradenameTh?.trim().toLowerCase();
+            final mEn = m.masterMedicationEntity?.tradenameEn?.trim().toLowerCase();
+
+            return mName == search ||
+                mDisp == search ||
+                (mTh != null && mTh == search) ||
+                (mEn != null && mEn == search) ||
+                (mDisp.contains(search) && search.length > 5) ||
+                (search.contains(mDisp) && mDisp.length > 5);
+          });
         } catch (e) {
-          try {
-            userMed = _allUserMedications.firstWhere(
-              (m) =>
-                  m.displayName.trim().toLowerCase() ==
-                      medName.trim().toLowerCase() ||
-                  m.name.trim().toLowerCase() == medName.trim().toLowerCase(),
-            );
-          } catch (e2) {
-            userMed = null;
-          }
+          userMed = null;
         }
         final amountText = _formatAmountText(userMed);
         final mealTimes = userMed != null
@@ -644,7 +672,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
   }
 
   String? _resolveImagePath(String? path) {
-    if (path == null || path.isEmpty) return null;
+    if (path == null || path.isEmpty || path == 'null') return null;
     if (path.startsWith('http')) return path;
 
     // Check if it's an absolute local path
@@ -655,10 +683,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       return path;
     }
 
-    if (path.startsWith('uploads/')) {
-      return '${ApiConfig.baseUrl}/$path';
-    }
-
-    return '${ApiConfig.baseUrl}/$path';
+    final cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    return '${ApiConfig.baseUrl}/$cleanPath';
   }
 }

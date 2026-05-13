@@ -277,10 +277,7 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
       return path;
     }
 
-    if (path.startsWith('uploads/')) {
-      return '${ApiConfig.baseUrl}/$path';
-    }
-
-    return '${ApiConfig.baseUrl}/$path';
+    final cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    return '${ApiConfig.baseUrl}/$cleanPath';
   }
 }

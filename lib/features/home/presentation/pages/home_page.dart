@@ -17,6 +17,11 @@ import 'package:capyadoo/features/home/presentation/widgets/medicine_reminder_ca
 import 'package:capyadoo/features/caregivers/presentation/pages/caregivers_and_users_page.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:capyadoo/core/config/api_config.dart';
+import 'package:capyadoo/core/services/medication_service.dart';
+import 'package:capyadoo/core/model/user_medication.dart';
+import 'package:capyadoo/core/services/api_client.dart';
+import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -41,6 +46,7 @@ class _HomePageState extends State<HomePage> {
   List<MedicationBox> _boxes = [];
   Map<String, List<Map<String, dynamic>>> _boxDailyMedications = {};
   final PillBoxService _pillBoxService = PillBoxService();
+  List<UserMedication> _allUserMedications = [];
   bool _isLoading = true;
 
   @override
@@ -188,16 +194,26 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadSchedule({bool showLoading = true}) async {
     if (showLoading) setState(() => _isLoading = true);
     try {
-      final data = await MedicationScheduleService.getDailySchedule(
-        _selectedDate,
-      );
-      if (mounted) {
-        setState(() {
-          _schedule = data;
-          if (!showLoading) _isLoading = false;
-        });
+      final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
+      final response = await ApiClient.get('/daily-medication?date=$formattedDate');
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+        if (mounted) {
+          setState(() {
+            _schedule = data.map((json) => DailyIntake.fromJson(json)).toList();
+          });
+        }
+
+        final auth = context.read<AuthProvider>();
+        if (auth.user?.id != null) {
+          _allUserMedications = await MedicationService.getUserMedications(
+            auth.user!.id!,
+          );
+        }
+        await _loadBoxes();
+        if (!showLoading && mounted) setState(() => _isLoading = false);
       }
-      await _loadBoxes();
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -892,12 +908,61 @@ class _HomePageState extends State<HomePage> {
         final seenKeys = <String>{};
 
         for (final med in dailyMeds) {
-          final medicationObj = med['medication'] as Map<String, dynamic>?;
-          final medicationName =
-              (medicationObj?['name'] as String? ??
-                      med['medicationName'] as String? ??
-                      'ไม่ระบุชื่อ')
-                  .trim();
+          final Map? nestedMed = (med['medication'] as Map?) ??
+              (med['userMedication'] as Map?) ??
+              (med['user_medication'] as Map?) ??
+              (med['medication_entity'] as Map?);
+
+          final medicationName = (nestedMed?['name'] as String?) ??
+              (nestedMed?['medicationName'] as String?) ??
+              (nestedMed?['tradenameEn'] as String?) ??
+              (nestedMed?['tradenameTh'] as String?) ??
+              (med['medicationName'] as String?) ??
+              'ไม่ระบุชื่อ';
+
+          final rawImagePath = (nestedMed?['imagePath'] as String?) ??
+              (nestedMed?['image'] as String?) ??
+              (nestedMed?['imageUrl'] as String?) ??
+              (nestedMed?['image_url'] as String?) ??
+              (med['imagePath'] as String?) ??
+              (med['image'] as String?) ??
+              (med['imageUrl'] as String?) ??
+              (med['image_url'] as String?);
+
+          final medIdForMatch = (nestedMed?['id']?.toString()) ??
+              med['medicationId']?.toString() ??
+              '';
+
+          // Try to find matching user medication for image
+          String? resolvedImagePath = rawImagePath;
+          if (resolvedImagePath == null || resolvedImagePath.isEmpty) {
+            try {
+              final matched = _allUserMedications.firstWhere((m) {
+                if (medIdForMatch.isNotEmpty && m.id == medIdForMatch) {
+                  return true;
+                }
+                final search = medicationName.trim().toLowerCase();
+                if (search.isEmpty) return false;
+
+                final mName = m.name.trim().toLowerCase();
+                final mDisp = m.displayName.trim().toLowerCase();
+                final mTh =
+                    m.masterMedicationEntity?.tradenameTh?.trim().toLowerCase();
+                final mEn =
+                    m.masterMedicationEntity?.tradenameEn?.trim().toLowerCase();
+
+                return mName == search ||
+                    mDisp == search ||
+                    (mTh != null && mTh == search) ||
+                    (mEn != null && mEn == search) ||
+                    (mDisp.contains(search) && search.length > 5) ||
+                    (search.contains(mDisp) && mDisp.length > 5);
+              });
+              resolvedImagePath = matched.imagePath;
+            } catch (e) {
+              // Not found in user medications
+            }
+          }
 
           final intakeTime =
               med['intakeTime'] as String? ??
@@ -921,6 +986,7 @@ class _HomePageState extends State<HomePage> {
             'status': status,
             'dosage': med['dosage'] ?? 1,
             'unit': med['unit'] ?? 'เม็ด',
+            'imagePath': resolvedImagePath,
           });
         }
 
@@ -940,7 +1006,64 @@ class _HomePageState extends State<HomePage> {
           final fallbackSeen = <String>{};
 
           for (final med in box.medications) {
-            final medName = (med['name'] as String? ?? 'ไม่ระบุชื่อ').trim();
+            final Map? nestedMed = (med['medication'] as Map?) ??
+                (med['userMedication'] as Map?) ??
+                (med['user_medication'] as Map?) ??
+                (med['medication_entity'] as Map?);
+
+            final medName = (nestedMed?['name'] as String?) ??
+                (nestedMed?['medicationName'] as String?) ??
+                (nestedMed?['tradenameEn'] as String?) ??
+                (nestedMed?['tradenameTh'] as String?) ??
+                (med['name'] as String?) ??
+                'ไม่ระบุชื่อ';
+
+            final rawImagePath = (nestedMed?['imagePath'] as String?) ??
+                (nestedMed?['image'] as String?) ??
+                (nestedMed?['imageUrl'] as String?) ??
+                (nestedMed?['image_url'] as String?) ??
+                (med['imagePath'] as String?) ??
+                (med['image'] as String?) ??
+                (med['imageUrl'] as String?) ??
+                (med['image_url'] as String?);
+
+            final medIdForMatch = (nestedMed?['id']?.toString()) ??
+                med['id']?.toString() ??
+                '';
+
+            // Try to find matching user medication for image
+            String? resolvedImagePath = rawImagePath;
+            if (resolvedImagePath == null || resolvedImagePath.isEmpty) {
+              try {
+                final matched = _allUserMedications.firstWhere((m) {
+                  if (medIdForMatch.isNotEmpty && m.id == medIdForMatch) {
+                    return true;
+                  }
+                  final search = medName.trim().toLowerCase();
+                  if (search.isEmpty) return false;
+
+                  final mName = m.name.trim().toLowerCase();
+                  final mDisp = m.displayName.trim().toLowerCase();
+                  final mTh = m.masterMedicationEntity?.tradenameTh
+                      ?.trim()
+                      .toLowerCase();
+                  final mEn = m.masterMedicationEntity?.tradenameEn
+                      ?.trim()
+                      .toLowerCase();
+
+                  return mName == search ||
+                      mDisp == search ||
+                      (mTh != null && mTh == search) ||
+                      (mEn != null && mEn == search) ||
+                      (mDisp.contains(search) && search.length > 5) ||
+                      (search.contains(mDisp) && mDisp.length > 5);
+                });
+                resolvedImagePath = matched.imagePath;
+              } catch (e) {
+                // Not found
+              }
+            }
+
             final scheduledTime = _getDefaultTimeForPeriod(period);
             final key = '${medName.toLowerCase()}|$scheduledTime';
 
@@ -948,12 +1071,13 @@ class _HomePageState extends State<HomePage> {
             fallbackSeen.add(key);
 
             fallbackMeds.add({
-              'id': med['id'] ?? '',
+              'id': (nestedMed?['id']?.toString()) ?? med['id'] ?? '',
               'medicationName': medName,
               'dosage': med['dosage'] ?? med['quantity'] ?? 1,
               'unit': med['unit'] ?? 'เม็ด',
               'status': 'PENDING',
               'scheduledTime': scheduledTime,
+              'imagePath': resolvedImagePath,
             });
           }
           fallbackMeds.sort(
@@ -1049,7 +1173,7 @@ class _HomePageState extends State<HomePage> {
       final medDosage = med['dosage'] as num?;
       final unitRaw = (med['unit'] as String?)?.trim() ?? '';
       final medUnit = unitRaw.isEmpty ? 'เม็ด' : unitRaw;
-      final medImagePath = (med['imagePath'] as String?)?.trim();
+      final medImagePath = _resolveImagePath((med['imagePath'] as String?)?.trim());
       final dosageText = medDosage != null
           ? (medDosage == medDosage.roundToDouble()
                 ? '${medDosage.toInt()} $medUnit'
@@ -1074,7 +1198,7 @@ class _HomePageState extends State<HomePage> {
 
     return MedicineBoxReminderCard(
       boxName: box.name,
-      boxImagePath: box.imagePath,
+      boxImagePath: _resolveImagePath(box.imagePath),
       medicines: medicineItems,
       scheduledTime: scheduledAt,
       intakeTimingLabel: toThaiIntakeTimingLabel(box.intakeTiming),
@@ -1203,7 +1327,7 @@ class _HomePageState extends State<HomePage> {
     return MedicineReminderCard(
       medicineName: item.medicationName,
       dosage: '1 เม็ด',
-      imagePath: item.imagePath,
+      imagePath: _resolveImagePath(item.imagePath),
       scheduledTime: DateTime(
         _selectedDate.year,
         _selectedDate.month,
@@ -1368,5 +1492,21 @@ class _HomePageState extends State<HomePage> {
       (a, b) => a.medicationName.trim().compareTo(b.medicationName.trim()),
     );
     return filtered;
+  }
+
+  String? _resolveImagePath(String? path) {
+    if (path == null || path.isEmpty || path == 'null') return null;
+    if (path.startsWith('http')) return path;
+
+    // Check if it's an absolute local path
+    if (path.contains(':') ||
+        path.startsWith('/') ||
+        path.contains('Documents/') ||
+        path.contains('data/user/')) {
+      return path;
+    }
+
+    final cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    return '${ApiConfig.baseUrl}/$cleanPath';
   }
 }
