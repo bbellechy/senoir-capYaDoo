@@ -367,19 +367,27 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile & Logo Header
-            _buildHeader(user),
-
-            // Date Picker Section
-            _buildDatePicker(),
-            const SizedBox(height: 12),
-
-            // Main Content Card (always fills to bottom)
-            Expanded(child: _buildContentCard()),
+        child: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverToBoxAdapter(child: _buildHeader(user)),
+            SliverToBoxAdapter(child: _buildDatePicker()),
           ],
+          body: RefreshIndicator(
+            onRefresh: _loadData,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: _buildContentCard(),
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -578,10 +586,12 @@ class _HomePageState extends State<HomePage> {
           topRight: Radius.circular(40),
         ),
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+            padding: const EdgeInsets.only(bottom: 16),
             child: Row(
               children: [
                 Expanded(
@@ -616,63 +626,49 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: _loadData,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-                children: [
-                  if (_isLoading)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 24),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  else ...[
-                    _buildTimeSection(
-                      'เช้า',
-                      '${_getFilteredSchedule("morning").length} รายการ',
-                      AppColors.morning,
-                      AppColors.morningBorder,
-                      AppColors.morningIcon,
-                      Icons.wb_sunny_outlined,
-                      _getFilteredSchedule('morning'),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTimeSection(
-                      'กลางวัน',
-                      '${_getFilteredSchedule("afternoon").length} รายการ',
-                      AppColors.noon,
-                      AppColors.noonBorder,
-                      AppColors.noonIcon,
-                      Icons.wb_sunny,
-                      _getFilteredSchedule('afternoon'),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTimeSection(
-                      'เย็น',
-                      '${_getFilteredSchedule("evening").length} รายการ',
-                      AppColors.dinner,
-                      AppColors.dinnerBorder,
-                      AppColors.primaryBlue,
-                      Icons.cloud_outlined,
-                      _getFilteredSchedule('evening'),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTimeSection(
-                      'ก่อนนอน',
-                      '${_getFilteredSchedule("night").length} รายการ',
-                      AppColors.sleep,
-                      AppColors.sleepBorder,
-                      AppColors.sleepIcon,
-                      Icons.nightlight_round_outlined,
-                      _getFilteredSchedule('night'),
-                    ),
-                  ],
-                ],
-              ),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else ...[
+            _buildTimeSection(
+              'เช้า',
+              '${_getFilteredSchedule("morning").length} รายการ',
+              AppColors.morning,
+              AppColors.morningBorder,
+              AppColors.morningIcon,
+              Icons.wb_sunny_outlined,
+              _getFilteredSchedule('morning'),
             ),
-          ),
+            const SizedBox(height: 16),
+            _buildTimeSection(
+              'กลางวัน',
+              '${_getFilteredSchedule("afternoon").length} รายการ',
+              AppColors.noon,
+              AppColors.noonBorder,
+              AppColors.noonIcon,
+              Icons.wb_sunny,
+              _getFilteredSchedule('afternoon'),
+            ),
+            const SizedBox(height: 16),
+            _buildTimeSection(
+              'เย็น',
+              '${_getFilteredSchedule("evening").length} รายการ',
+              AppColors.dinner,
+              AppColors.dinnerBorder,
+              AppColors.primaryBlue,
+              Icons.cloud_outlined,
+              _getFilteredSchedule('evening'),
+            ),
+            const SizedBox(height: 16),
+            _buildTimeSection(
+              'ก่อนนอน',
+              '${_getFilteredSchedule("night").length} รายการ',
+              AppColors.sleep,
+              AppColors.sleepBorder,
+              AppColors.sleepIcon,
+              Icons.nightlight_round_outlined,
+              _getFilteredSchedule('night'),
+            ),
+          ],
         ],
       ),
     );
