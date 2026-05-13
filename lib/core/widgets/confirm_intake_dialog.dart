@@ -18,7 +18,7 @@ Future<bool> showConfirmIntakeDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
         child: SizedBox(
-          width: 360.w,
+          width: 320.w,
           child: Padding(
             padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 20.h),
             child: Column(

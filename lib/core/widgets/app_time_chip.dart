@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 enum TimeOfDay { morning, noon, evening, bedtime }
@@ -71,23 +72,24 @@ class AppTimeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(10.r),
       child: Container(
-        width: width ?? 72,
-        height: 24,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        width: width?.w ?? 72.w,
+        height: 24.h,
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
         decoration: BoxDecoration(
           color: _backgroundColor,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _borderColor, width: 1.5),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: _borderColor, width: 1.5.w),
         ),
         child: Center(
           child: Text(
             _label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
               color: _textColor,
+              fontFamily: 'Sarabun',
             ),
           ),
         ),

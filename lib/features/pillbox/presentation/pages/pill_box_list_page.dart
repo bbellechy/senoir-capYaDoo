@@ -186,13 +186,20 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
           Padding(
             padding: EdgeInsets.all(24.r),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'กล่องยาทั้งหมด',
-                  style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600),
+                Expanded(
+                  child: Text(
+                    'กล่องยาทั้งหมด',
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Sarabun',
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                const Spacer(),
                 GestureDetector(
                   onTap: _navigateToAddPage,
                   child: Container(
@@ -201,20 +208,22 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
                       vertical: 6.h,
                     ),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           'สร้างกล่องยา',
                           style: TextStyle(
                             color: AppColors.primaryBlue,
                             fontWeight: FontWeight.w600,
-                            fontSize: 22.sp,
+                            fontSize: 16.sp,
+                            fontFamily: 'Sarabun',
                           ),
                         ),
                         SizedBox(width: 4.w),
                         Icon(
                           Icons.add_circle,
                           color: AppColors.primaryBlue,
-                          size: 24.sp,
+                          size: 20.sp,
                         ),
                       ],
                     ),

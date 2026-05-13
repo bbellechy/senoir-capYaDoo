@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 class AppTextField extends StatelessWidget {
@@ -54,17 +55,17 @@ class AppTextField extends StatelessWidget {
             children: [
               Text(
                 label!,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Sarabun',
                 ),
               ),
               if (isRequired)
-                const Text(
+                Text(
                   ' *',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.error,
                     fontFamily: 'Sarabun',
@@ -72,7 +73,7 @@ class AppTextField extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
         ],
         TextFormField(
           controller: controller,
@@ -96,47 +97,49 @@ class AppTextField extends StatelessWidget {
                       return null;
                     }
                   : null),
+          style: TextStyle(fontSize: 16.sp, fontFamily: 'Sarabun'),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: TextStyle(fontSize: 16.sp, color: Colors.grey[400], fontFamily: 'Sarabun'),
             errorText: errorText,
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             filled: true,
             fillColor: enabled ? Colors.white : Colors.grey[100],
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: AppColors.primaryBlue, width: 2.w),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
               borderSide: const BorderSide(color: Colors.red),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: Colors.red, width: 2.w),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 16.w,
+              vertical: 16.h,
             ),
             counterText: '',
           ),
         ),
         if (maxLength != null) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Align(
             alignment: Alignment.centerRight,
             child: Text(
               '${controller?.text.length ?? 0}/$maxLength',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
             ),
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 class AppRadioButton<T> extends StatelessWidget {
@@ -21,24 +22,29 @@ class AppRadioButton<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onChanged != null ? () => onChanged!(value) : null,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        padding: EdgeInsets.symmetric(vertical: 4.h),
         child: Row(
           children: [
-            Radio<T>(
-              value: value,
-              groupValue: groupValue,
-              onChanged: onChanged,
-              activeColor: activeColor ?? AppColors.primaryBlue,
+            SizedBox(
+              width: 40.w,
+              height: 40.h,
+              child: Radio<T>(
+                value: value,
+                groupValue: groupValue,
+                onChanged: onChanged,
+                activeColor: activeColor ?? AppColors.primaryBlue,
+              ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 4.w),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w400,
+                  fontFamily: 'Sarabun',
                 ),
               ),
             ),
@@ -73,9 +79,13 @@ class AppRadioGroup<T> extends StatelessWidget {
         if (title != null) ...[
           Text(
             title!,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Sarabun',
+            ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
         ],
         ...options.map(
           (option) => AppRadioButton<T>(

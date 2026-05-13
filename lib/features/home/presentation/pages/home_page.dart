@@ -33,7 +33,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   DateTime _selectedDate = DateTime.now();
-  static const double _dateItemExtent = 58;
   ScrollController? _dateScrollController;
 
   // ── Collapsible header ──────────────────────────────────────────────────────
@@ -88,7 +87,7 @@ class _HomePageState extends State<HomePage> {
     final todayIndex = todayDate.difference(minDate).inDays;
     final initialIndex = (todayIndex - 2).clamp(0, 1000000);
     _dateScrollController = ScrollController(
-      initialScrollOffset: initialIndex * _dateItemExtent,
+      initialScrollOffset: initialIndex * 58.w,
     );
     return _dateScrollController!;
   }

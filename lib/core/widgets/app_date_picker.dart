@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -58,80 +59,80 @@ class AppDatePicker extends StatelessWidget {
       ),
       styleDatePicker: MaterialRoundedDatePickerStyle(
         // Year display style (when showing year selection)
-        textStyleYearButton: const TextStyle(
-          fontSize: 20,
+        textStyleYearButton: TextStyle(
+          fontSize: 20.sp,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
         // Day display in header (large number)
-        textStyleDayButton: const TextStyle(
-          fontSize: 48,
+        textStyleDayButton: TextStyle(
+          fontSize: 48.sp,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
         // Current day in calendar
         textStyleCurrentDayOnCalendar: TextStyle(
-          fontSize: 14,
+          fontSize: 14.sp,
           color: AppColors.primaryBlue,
           fontWeight: FontWeight.bold,
         ),
         // Regular days in calendar
-        textStyleDayOnCalendar: const TextStyle(
-          fontSize: 14,
+        textStyleDayOnCalendar: TextStyle(
+          fontSize: 14.sp,
           color: Colors.black,
         ),
         // Selected day in calendar
-        textStyleDayOnCalendarSelected: const TextStyle(
-          fontSize: 14,
+        textStyleDayOnCalendarSelected: TextStyle(
+          fontSize: 14.sp,
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
         // Disabled days
         textStyleDayOnCalendarDisabled: TextStyle(
-          fontSize: 14,
+          fontSize: 14.sp,
           color: Colors.grey[400],
         ),
         // Month and year in header (above calendar)
         textStyleMonthYearHeader: TextStyle(
-          fontSize: 14,
+          fontSize: 14.sp,
           fontWeight: FontWeight.w600,
           color: AppColors.primaryBlue,
         ),
         // Weekday labels style
         textStyleDayHeader: TextStyle(
-          fontSize: 12,
+          fontSize: 12.sp,
           fontWeight: FontWeight.w500,
           color: Colors.grey[700],
         ),
         // Padding and spacing
-        paddingDatePicker: const EdgeInsets.all(0),
-        paddingMonthHeader: const EdgeInsets.symmetric(
-          vertical: 12,
-          horizontal: 16,
+        paddingDatePicker: EdgeInsets.zero,
+        paddingMonthHeader: EdgeInsets.symmetric(
+          vertical: 12.h,
+          horizontal: 16.w,
         ),
-        paddingActionBar: const EdgeInsets.all(16),
-        paddingDateYearHeader: const EdgeInsets.all(20),
+        paddingActionBar: EdgeInsets.all(16.r),
+        paddingDateYearHeader: EdgeInsets.all(20.r),
         // Arrow styling
-        sizeArrow: 24,
+        sizeArrow: 24.sp,
         colorArrowNext: AppColors.primaryBlue,
         colorArrowPrevious: AppColors.primaryBlue,
-        marginLeftArrowPrevious: 12,
-        marginTopArrowPrevious: 12,
-        marginTopArrowNext: 12,
-        marginRightArrowNext: 12,
+        marginLeftArrowPrevious: 12.w,
+        marginTopArrowPrevious: 12.h,
+        marginTopArrowNext: 12.h,
+        marginRightArrowNext: 12.w,
         // Button styling
         textStyleButtonAction: TextStyle(
-          fontSize: 14,
+          fontSize: 14.sp,
           color: AppColors.primaryBlue,
           fontWeight: FontWeight.w600,
         ),
         textStyleButtonPositive: TextStyle(
-          fontSize: 14,
+          fontSize: 14.sp,
           color: AppColors.primaryBlue,
           fontWeight: FontWeight.w600,
         ),
-        textStyleButtonNegative: const TextStyle(
-          fontSize: 14,
+        textStyleButtonNegative: TextStyle(
+          fontSize: 14.sp,
           color: Colors.grey,
           fontWeight: FontWeight.w600,
         ),
@@ -172,55 +173,57 @@ class AppDatePicker extends StatelessWidget {
             children: [
               Text(
                 label!,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
+                  fontFamily: 'Sarabun',
                 ),
               ),
               if (isRequired)
-                const Text(
+                Text(
                   ' *',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.red,
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
         ],
         InkWell(
           onTap: enabled ? () => _selectDate(context) : null,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             decoration: BoxDecoration(
               color: enabled ? Colors.white : Colors.grey[100],
               border: Border.all(
-                color: errorText != null ? Colors.red : Colors.grey[300]!,
-                width: errorText != null ? 2 : 1,
+                color: errorText != null ? Colors.red : AppColors.textSublest,
+                width: errorText != null ? 1.5.w : 1.w,
               ),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.calendar_today,
                   color: enabled ? AppColors.primaryBlue : Colors.grey,
-                  size: 20,
+                  size: 20.sp,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
                     selectedDate != null
                         ? _formatDate(selectedDate!)
                         : hint ?? 'เลือกวันที่',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       color: selectedDate != null
-                          ? Colors.black
+                          ? AppColors.textPrimary
                           : AppColors.textSub,
+                      fontFamily: 'Sarabun',
                     ),
                   ),
                 ),
@@ -229,12 +232,16 @@ class AppDatePicker extends StatelessWidget {
           ),
         ),
         if (errorText != null) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Padding(
-            padding: const EdgeInsets.only(left: 16),
+            padding: EdgeInsets.only(left: 16.w),
             child: Text(
               errorText!,
-              style: const TextStyle(fontSize: 12, color: Colors.red),
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.red,
+                fontFamily: 'Sarabun',
+              ),
             ),
           ),
         ],
@@ -333,41 +340,46 @@ class AppDateRangePicker extends StatelessWidget {
         if (label != null) ...[
           Text(
             label!,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Sarabun',
+            ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
         ],
         InkWell(
           onTap: enabled ? () => _selectDateRange(context) : null,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             decoration: BoxDecoration(
               color: enabled ? Colors.white : Colors.grey[100],
               border: Border.all(
-                color: errorText != null ? Colors.red : Colors.grey[300]!,
-                width: errorText != null ? 2 : 1,
+                color: errorText != null ? Colors.red : AppColors.textSublest,
+                width: errorText != null ? 1.5.w : 1.w,
               ),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.date_range,
                   color: enabled ? AppColors.primaryBlue : Colors.grey,
-                  size: 20,
+                  size: 20.sp,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
                     selectedRange != null
                         ? _formatDateRange(selectedRange!)
                         : hint ?? 'เลือกช่วงวันที่',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       color: selectedRange != null
-                          ? Colors.black
-                          : Colors.grey[600],
+                          ? AppColors.textPrimary
+                          : AppColors.textSub,
+                      fontFamily: 'Sarabun',
                     ),
                   ),
                 ),
@@ -376,12 +388,16 @@ class AppDateRangePicker extends StatelessWidget {
           ),
         ),
         if (errorText != null) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Padding(
-            padding: const EdgeInsets.only(left: 16),
+            padding: EdgeInsets.only(left: 16.w),
             child: Text(
               errorText!,
-              style: const TextStyle(fontSize: 12, color: Colors.red),
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.red,
+                fontFamily: 'Sarabun',
+              ),
             ),
           ),
         ],

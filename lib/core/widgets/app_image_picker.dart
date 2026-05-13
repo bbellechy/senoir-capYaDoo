@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
@@ -23,7 +24,7 @@ class AppImagePicker extends StatelessWidget {
     this.label,
     this.hint,
     this.errorText,
-    this.height = 200,
+    this.height,
     this.width,
     this.enabled = true,
   });
@@ -34,8 +35,8 @@ class AppImagePicker extends StatelessWidget {
     final result = await showModalBottomSheet<ImageSource>(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       builder: (context) => Container(
         constraints: BoxConstraints(
@@ -43,71 +44,80 @@ class AppImagePicker extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+            padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 8.w),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
+                  width: 40.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 20.h),
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
                 ListTile(
                   leading: Icon(
                     Icons.camera_alt,
                     color: AppColors.primaryBlue,
-                    size: 32,
+                    size: 32.sp,
                   ),
-                  title: const Text(
+                  title: Text(
                     'แตะเพื่อถ่ายภาพหรือเลือกจากอัลบั้ม',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Sarabun',
+                    ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 24.w,
+                    vertical: 8.h,
                   ),
                   onTap: () => Navigator.pop(context, ImageSource.camera),
                 ),
-                const Divider(height: 1),
+                Divider(height: 1.h),
                 ListTile(
                   leading: Icon(
                     Icons.photo_library,
                     color: AppColors.primaryBlue,
-                    size: 32,
+                    size: 32.sp,
                   ),
-                  title: const Text(
+                  title: Text(
                     'เลือกจากอัลบั้ม',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Sarabun',
+                    ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 24.w,
+                    vertical: 8.h,
                   ),
                   onTap: () => Navigator.pop(context, ImageSource.gallery),
                 ),
                 if (imageFile != null ||
                     (imageUrl != null && imageUrl!.isNotEmpty)) ...[
-                  const Divider(height: 1),
+                  Divider(height: 1.h),
                   ListTile(
-                    leading: const Icon(
+                    leading: Icon(
                       Icons.delete,
                       color: Colors.red,
-                      size: 32,
+                      size: 32.sp,
                     ),
-                    title: const Text(
+                    title: Text(
                       'ลบรูปภาพ',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.w500,
+                        fontFamily: 'Sarabun',
                       ),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 8,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 24.w,
+                      vertical: 8.h,
                     ),
                     onTap: () {
                       Navigator.pop(context);
@@ -115,7 +125,7 @@ class AppImagePicker extends StatelessWidget {
                     },
                   ),
                 ],
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
               ],
             ),
           ),
@@ -130,7 +140,6 @@ class AppImagePicker extends StatelessWidget {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      // ขอ permission ก่อน
       if (source == ImageSource.camera &&
           (Platform.isAndroid || Platform.isIOS)) {
         final status = await Permission.camera.request();
@@ -164,34 +173,42 @@ class AppImagePicker extends StatelessWidget {
         if (label != null) ...[
           Text(
             label!,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Sarabun',
+            ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
         ],
         InkWell(
           onTap: enabled ? () => _showImageSourceDialog(context) : null,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           child: Container(
-            height: height,
+            height: height ?? 200.h,
             width: width ?? double.infinity,
             decoration: BoxDecoration(
               color: imageFile != null ? Colors.black : Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: errorText != null ? Colors.red : Colors.grey[300]!,
-                width: errorText != null ? 2 : 1,
+                color: errorText != null ? Colors.red : AppColors.textSublest,
+                width: errorText != null ? 1.5.w : 1.w,
               ),
             ),
             child: _buildImageContent(),
           ),
         ),
         if (errorText != null) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Padding(
-            padding: const EdgeInsets.only(left: 16),
+            padding: EdgeInsets.only(left: 16.w),
             child: Text(
               errorText!,
-              style: const TextStyle(fontSize: 12, color: Colors.red),
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.red,
+                fontFamily: 'Sarabun',
+              ),
             ),
           ),
         ],
@@ -202,7 +219,7 @@ class AppImagePicker extends StatelessWidget {
   Widget _buildImageContent() {
     if (imageFile != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Image.file(
           imageFile!,
           fit: BoxFit.cover,
@@ -220,7 +237,7 @@ class AppImagePicker extends StatelessWidget {
 
     if (imageUrl != null && imageUrl!.isNotEmpty) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Image.network(
           imageUrl!,
           fit: BoxFit.cover,
@@ -237,11 +254,15 @@ class AppImagePicker extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.camera_alt, size: 48, color: Colors.grey[600]),
-        const SizedBox(height: 12),
+        Icon(Icons.camera_alt, size: 48.sp, color: Colors.grey[600]),
+        SizedBox(height: 12.h),
         Text(
           hint ?? 'ถ่ายรูป',
-          style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+          style: TextStyle(
+            fontSize: 16.sp,
+            color: Colors.grey[700],
+            fontFamily: 'Sarabun',
+          ),
         ),
       ],
     );
@@ -251,9 +272,16 @@ class AppImagePicker extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.broken_image, size: 48, color: Colors.grey[400]),
-        const SizedBox(height: 12),
-        Text(message, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+        Icon(Icons.broken_image, size: 48.sp, color: Colors.grey[400]),
+        SizedBox(height: 12.h),
+        Text(
+          message,
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: Colors.grey[600],
+            fontFamily: 'Sarabun',
+          ),
+        ),
       ],
     );
   }
@@ -265,7 +293,7 @@ class AppMultiImagePicker extends StatelessWidget {
   final String? label;
   final String? hint;
   final int maxImages;
-  final double imageHeight;
+  final double? imageHeight;
   final bool enabled;
 
   const AppMultiImagePicker({
@@ -275,7 +303,7 @@ class AppMultiImagePicker extends StatelessWidget {
     this.label,
     this.hint,
     this.maxImages = 5,
-    this.imageHeight = 120,
+    this.imageHeight,
     this.enabled = true,
   });
 
@@ -283,7 +311,12 @@ class AppMultiImagePicker extends StatelessWidget {
     if (!enabled || onImagesChanged == null) return;
     if (imageFiles.length >= maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('สามารถเลือกรูปได้สูงสุด $maxImages รูป')),
+        SnackBar(
+          content: Text(
+            'สามารถเลือกรูปได้สูงสุด $maxImages รูป',
+            style: TextStyle(fontFamily: 'Sarabun'),
+          ),
+        ),
       );
       return;
     }
@@ -291,8 +324,8 @@ class AppMultiImagePicker extends StatelessWidget {
     final result = await showModalBottomSheet<ImageSource>(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       builder: (context) => Container(
         constraints: BoxConstraints(
@@ -302,50 +335,55 @@ class AppMultiImagePicker extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle indicator
               Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
+                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.symmetric(vertical: 16.h),
                 child: Column(
                   children: [
                     ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 8,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 24.w,
+                        vertical: 8.h,
                       ),
                       leading: Icon(
                         Icons.camera_alt,
                         color: AppColors.primaryBlue,
-                        size: 32,
+                        size: 32.sp,
                       ),
-                      title: const Text(
+                      title: Text(
                         'ถ่ายรูป',
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontFamily: 'Sarabun',
+                        ),
                       ),
                       onTap: () => Navigator.pop(context, ImageSource.camera),
                     ),
-                    Divider(height: 1, indent: 24, endIndent: 24),
+                    Divider(height: 1.h, indent: 24.w, endIndent: 24.w),
                     ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 8,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 24.w,
+                        vertical: 8.h,
                       ),
                       leading: Icon(
                         Icons.photo_library,
                         color: AppColors.primaryBlue,
-                        size: 32,
+                        size: 32.sp,
                       ),
-                      title: const Text(
+                      title: Text(
                         'เลือกจากอัลบั้ม',
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontFamily: 'Sarabun',
+                        ),
                       ),
                       onTap: () => Navigator.pop(context, ImageSource.gallery),
                     ),
@@ -365,7 +403,6 @@ class AppMultiImagePicker extends StatelessWidget {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      // ขอ permission ก่อน
       if (source == ImageSource.camera &&
           (Platform.isAndroid || Platform.isIOS)) {
         final status = await Permission.camera.request();
@@ -403,34 +440,38 @@ class AppMultiImagePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final h = imageHeight ?? 120.h;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
           Text(
             label!,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Sarabun',
+            ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
         ],
         SizedBox(
-          height: imageHeight,
+          height: h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount:
                 imageFiles.length + (imageFiles.length < maxImages ? 1 : 0),
             itemBuilder: (context, index) {
               if (index == imageFiles.length) {
-                // Add button
                 return InkWell(
                   onTap: enabled ? () => _showImageSourceDialog(context) : null,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                   child: Container(
-                    width: imageHeight,
-                    margin: const EdgeInsets.only(right: 8),
+                    width: h,
+                    margin: EdgeInsets.only(right: 8.w),
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(color: Colors.grey[300]!),
                     ),
                     child: Column(
@@ -438,15 +479,16 @@ class AppMultiImagePicker extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.add_photo_alternate,
-                          size: 40,
+                          size: 40.sp,
                           color: Colors.grey[600],
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Text(
                           '${imageFiles.length}/$maxImages',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: Colors.grey[700],
+                            fontFamily: 'Sarabun',
                           ),
                         ),
                       ],
@@ -455,35 +497,34 @@ class AppMultiImagePicker extends StatelessWidget {
                 );
               }
 
-              // Image item
               return Container(
-                width: imageHeight,
-                margin: const EdgeInsets.only(right: 8),
+                width: h,
+                margin: EdgeInsets.only(right: 8.w),
                 child: Stack(
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                       child: Image.file(
                         imageFiles[index],
                         fit: BoxFit.cover,
-                        width: imageHeight,
-                        height: imageHeight,
+                        width: h,
+                        height: h,
                       ),
                     ),
                     Positioned(
-                      top: 4,
-                      right: 4,
+                      top: 4.h,
+                      right: 4.w,
                       child: InkWell(
                         onTap: () => _removeImage(index),
                         child: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: EdgeInsets.all(4.r),
                           decoration: const BoxDecoration(
                             color: Colors.red,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.close,
-                            size: 16,
+                            size: 16.sp,
                             color: Colors.white,
                           ),
                         ),

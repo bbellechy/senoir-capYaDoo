@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 class AppCheckbox extends StatelessWidget {
@@ -21,24 +22,30 @@ class AppCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onChanged != null ? () => onChanged!(!value) : null,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        padding: EdgeInsets.symmetric(vertical: 4.h),
         child: Row(
           children: [
-            Checkbox(
-              value: value,
-              onChanged: onChanged,
-              activeColor: activeColor ?? AppColors.primaryBlue,
-              tristate: tristate,
+            SizedBox(
+              width: 40.w,
+              height: 40.h,
+              child: Checkbox(
+                value: value,
+                onChanged: onChanged,
+                activeColor: activeColor ?? AppColors.primaryBlue,
+                tristate: tristate,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.r)),
+              ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 4.w),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w400,
+                  fontFamily: 'Sarabun',
                 ),
               ),
             ),
@@ -87,9 +94,13 @@ class AppCheckboxGroup extends StatelessWidget {
         if (title != null) ...[
           Text(
             title!,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Sarabun',
+            ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
         ],
         ...options.map(
           (option) => AppCheckbox(

@@ -127,9 +127,17 @@ class _MedicineListPageState extends State<MedicineListPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'รายการยาทั้งหมด',
-                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600),
+                Expanded(
+                  child: Text(
+                    'รายการยาทั้งหมด',
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Sarabun',
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -148,15 +156,16 @@ class _MedicineListPageState extends State<MedicineListPage> {
                         'เพิ่มข้อมูล',
                         style: TextStyle(
                           color: AppColors.primaryBlue,
-                          fontSize: 20.sp,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
+                          fontFamily: 'Sarabun',
                         ),
                       ),
                       SizedBox(width: 8.w),
                       Icon(
                         Icons.add_circle,
                         color: AppColors.primaryBlue,
-                        size: 24.sp,
+                        size: 20.sp,
                       ),
                     ],
                   ),

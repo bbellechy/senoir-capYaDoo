@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 class AppSearchableDropdown<T> extends StatefulWidget {
@@ -9,7 +10,7 @@ class AppSearchableDropdown<T> extends StatefulWidget {
   final String? hint;
   final String? errorText;
   final bool enabled;
-  final double maxDropdownHeight; // ความสูงของรายการ (~5 items)
+  final double? maxDropdownHeight;
   final bool isRequired;
   final bool allowCustomInput;
 
@@ -22,7 +23,7 @@ class AppSearchableDropdown<T> extends StatefulWidget {
     this.hint,
     this.errorText,
     this.enabled = true,
-    this.maxDropdownHeight = 320, // ประมาณ 5 รายการ
+    this.maxDropdownHeight,
     this.isRequired = false,
     this.allowCustomInput = false,
   });
@@ -77,7 +78,7 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
         selectedValue: widget.value,
         searchController: _searchController,
         searchFocusNode: _searchFocusNode,
-        maxHeight: widget.maxDropdownHeight,
+        maxHeight: widget.maxDropdownHeight ?? 320.h,
         allowCustomInput: widget.allowCustomInput,
       ),
     );
@@ -105,17 +106,17 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
             children: [
               Text(
                 widget.label!,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Sarabun',
                 ),
               ),
               if (widget.isRequired)
-                const Text(
+                Text(
                   ' *',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.error,
                     fontFamily: 'Sarabun',
@@ -123,22 +124,25 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
         ],
         TextField(
           controller: _controller,
           readOnly: true,
           enabled: widget.enabled,
           onTap: _showSearchDialog,
+          style: TextStyle(fontSize: 16.sp, fontFamily: 'Sarabun'),
           decoration: InputDecoration(
             hintText: widget.hint ?? 'เลือกรายการ',
+            hintStyle: TextStyle(fontSize: 16.sp, color: Colors.grey[400], fontFamily: 'Sarabun'),
             suffixIcon: Icon(
               Icons.arrow_drop_down,
               color: widget.enabled ? AppColors.primaryBlue : Colors.grey,
+              size: 24.sp,
             ),
             errorText: widget.errorText,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
                 color: widget.errorText != null
                     ? Colors.red
@@ -146,7 +150,7 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
                 color: widget.errorText != null
                     ? Colors.red
@@ -154,23 +158,23 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
                 color: widget.errorText != null
                     ? Colors.red
                     : AppColors.primaryBlue,
-                width: 2,
+                width: 2.w,
               ),
             ),
             disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             filled: true,
             fillColor: widget.enabled ? Colors.white : Colors.grey[100],
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 16.w,
+              vertical: 16.h,
             ),
           ),
         ),
@@ -235,45 +239,46 @@ class _SearchDialogState<T> extends State<_SearchDialog<T>> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.6,
-          maxWidth: 400,
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+          maxWidth: 0.9.sw,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Search field
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.r),
               child: TextField(
                 controller: widget.searchController,
                 focusNode: widget.searchFocusNode,
+                style: TextStyle(fontSize: 16.sp, fontFamily: 'Sarabun'),
                 decoration: InputDecoration(
                   hintText: 'ค้นหา...',
-                  prefixIcon: Icon(Icons.search, color: AppColors.primaryBlue),
+                  prefixIcon: Icon(Icons.search, color: AppColors.primaryBlue, size: 24.sp),
                   suffixIcon: widget.searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: Icon(Icons.clear, size: 20.sp),
                           onPressed: () {
                             widget.searchController.clear();
                           },
                         )
                       : null,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide(
                       color: AppColors.primaryBlue,
-                      width: 2,
+                      width: 2.w,
                     ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
                   ),
                 ),
               ),
@@ -282,28 +287,26 @@ class _SearchDialogState<T> extends State<_SearchDialog<T>> {
             const Divider(height: 1),
 
             // List items (scroll ดูทั้งหมดได้)
-            // สลับไปแสดงปุ่ม "ใช้ค่าที่พิมพ์" ถ้าไม่เจอและ allowCustomInput
             if (_filteredItems.isEmpty) ...[
               if (widget.allowCustomInput &&
                   widget.searchController.text.isNotEmpty)
                 ListTile(
-                  leading: const Icon(Icons.add, color: AppColors.primaryBlue),
-                  title: Text('ใช้ "${widget.searchController.text}"'),
+                  leading: Icon(Icons.add, color: AppColors.primaryBlue, size: 24.sp),
+                  title: Text('ใช้ "${widget.searchController.text}"', style: TextStyle(fontSize: 16.sp)),
                   onTap: () {
                     final val = widget.searchController.text;
                     Navigator.pop(context, val as T);
                   },
                 )
               else
-                const Padding(
-                  padding: EdgeInsets.all(24),
+                Padding(
+                  padding: EdgeInsets.all(24.r),
                   child: Text(
                     'ไม่พบรายการ',
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Colors.grey, fontSize: 14.sp),
                   ),
                 ),
             ] else ...[
-              // แสดงหัวข้อ "ใช้ค่าที่พิมพ์" แม้จะมีรายการอื่น ถ้า allowCustomInput
               if (widget.allowCustomInput &&
                   widget.searchController.text.isNotEmpty &&
                   !_filteredItems.any(
@@ -312,8 +315,8 @@ class _SearchDialogState<T> extends State<_SearchDialog<T>> {
                         widget.searchController.text.toLowerCase(),
                   ))
                 ListTile(
-                  leading: const Icon(Icons.add, color: AppColors.primaryBlue),
-                  title: Text('ใช้ "${widget.searchController.text}"'),
+                  leading: Icon(Icons.add, color: AppColors.primaryBlue, size: 24.sp),
+                  title: Text('ใช้ "${widget.searchController.text}"', style: TextStyle(fontSize: 16.sp)),
                   onTap: () {
                     final val = widget.searchController.text;
                     Navigator.pop(context, val as T);
@@ -335,6 +338,7 @@ class _SearchDialogState<T> extends State<_SearchDialog<T>> {
                         title: Text(
                           item.label,
                           style: TextStyle(
+                            fontSize: 16.sp,
                             fontWeight: isSelected
                                 ? FontWeight.w600
                                 : FontWeight.normal,
@@ -346,12 +350,12 @@ class _SearchDialogState<T> extends State<_SearchDialog<T>> {
                         subtitle: item.subtitle != null
                             ? Text(
                                 item.subtitle!,
-                                style: const TextStyle(fontSize: 12),
+                                style: TextStyle(fontSize: 12.sp),
                               )
                             : null,
                         leading: item.icon,
                         trailing: isSelected
-                            ? Icon(Icons.check, color: AppColors.primaryBlue)
+                            ? Icon(Icons.check, color: AppColors.primaryBlue, size: 20.sp)
                             : null,
                         selected: isSelected,
                         selectedTileColor: AppColors.primaryBlue.withOpacity(
@@ -376,7 +380,7 @@ class SearchableDropdownItem<T> {
   final String label;
   final String? subtitle;
   final Widget? icon;
-  final List<String>? searchKeywords; // คำค้นหาเพิ่มเติม
+  final List<String>? searchKeywords;
 
   const SearchableDropdownItem({
     required this.value,

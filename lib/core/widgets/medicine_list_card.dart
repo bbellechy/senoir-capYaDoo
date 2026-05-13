@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/widgets/app_time_chip.dart' as time_chip;
@@ -36,38 +37,38 @@ class MedicineListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.blueBorder, width: 1.5),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.blueBorder, width: 1.5.w),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.r),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Medicine image
               Container(
-                width: 80,
-                height: 80,
+                width: 80.w,
+                height: 80.h,
                 decoration: BoxDecoration(
                   color: AppColors.dinner,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: _buildImage(),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
 
               // Content
               Expanded(
@@ -81,14 +82,15 @@ class MedicineListCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             name,
-                            style: const TextStyle(
-                              fontSize: 24,
+                            style: TextStyle(
+                              fontSize: 22.sp,
                               fontWeight: FontWeight.w600,
+                              fontFamily: 'Sarabun',
                             ),
                           ),
                         ),
                         if (onEdit != null || onDelete != null)
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                         if (onEdit != null)
                           _ActionButton(
                             icon: Icons.create_rounded,
@@ -96,7 +98,7 @@ class MedicineListCard extends StatelessWidget {
                             onTap: onEdit,
                           ),
                         if (onEdit != null && onDelete != null)
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                         if (onDelete != null)
                           _ActionButton(
                             icon: Icons.delete_rounded,
@@ -105,34 +107,50 @@ class MedicineListCard extends StatelessWidget {
                           ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
 
                     // Details
                     Text(
                       'ปริมาณ: $amount',
-                      style: TextStyle(fontSize: 16, color: AppColors.textSub),
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: AppColors.textSub,
+                        fontFamily: 'Sarabun',
+                      ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       'จำนวนครั้ง: $frequency ครั้ง',
-                      style: TextStyle(fontSize: 16, color: AppColors.textSub),
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: AppColors.textSub,
+                        fontFamily: 'Sarabun',
+                      ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       'รับประทาน: $mealTiming',
-                      style: TextStyle(fontSize: 16, color: AppColors.textSub),
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: AppColors.textSub,
+                        fontFamily: 'Sarabun',
+                      ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       'หมดอายุ: $expiryDate',
-                      style: TextStyle(fontSize: 16, color: AppColors.textSub),
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: AppColors.textSub,
+                        fontFamily: 'Sarabun',
+                      ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
 
                     // Time chips
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: 8.w,
+                      runSpacing: 8.h,
                       children: mealTimes.map((mealTime) {
                         final timeOfDay = _getTimeOfDay(mealTime);
                         if (timeOfDay != null) {

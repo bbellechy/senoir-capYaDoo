@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 class AppSlider extends StatelessWidget {
@@ -39,17 +40,17 @@ class AppSlider extends StatelessWidget {
             children: [
               Text(
                 label!,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Sarabun',
                 ),
               ),
               if (isRequired)
-                const Text(
+                Text(
                   ' *',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.error,
                     fontFamily: 'Sarabun',
@@ -57,13 +58,13 @@ class AppSlider extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
         ],
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.r),
           decoration: BoxDecoration(
             color: AppColors.offwhite,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
           child: Column(
             children: [
@@ -71,29 +72,31 @@ class AppSlider extends StatelessWidget {
                 Text(
                   value.toInt().toString(),
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 32.sp,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primaryBlue,
+                    fontFamily: 'Sarabun',
                   ),
                 ),
-              if (showValue) const SizedBox(height: 8),
+              if (showValue) SizedBox(height: 8.h),
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: AppColors.primaryBlue,
                   inactiveTrackColor: Colors.grey[300],
                   thumbColor: AppColors.primaryBlue,
                   overlayColor: AppColors.primaryBlue.withOpacity(0.2),
-                  trackHeight: 6.0,
-                  thumbShape: const RoundSliderThumbShape(
-                    enabledThumbRadius: 16.0,
+                  trackHeight: 6.0.h,
+                  thumbShape: RoundSliderThumbShape(
+                    enabledThumbRadius: 16.0.r,
                   ),
-                  overlayShape: const RoundSliderOverlayShape(
-                    overlayRadius: 28.0,
+                  overlayShape: RoundSliderOverlayShape(
+                    overlayRadius: 28.0.r,
                   ),
                   valueIndicatorColor: AppColors.primaryBlue,
-                  valueIndicatorTextStyle: const TextStyle(
+                  valueIndicatorTextStyle: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 14.sp,
+                    fontFamily: 'Sarabun',
                   ),
                 ),
                 child: Slider(
@@ -106,24 +109,26 @@ class AppSlider extends StatelessWidget {
               ),
               if (minLabel != null || maxLabel != null)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         minLabel ?? '',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           color: AppColors.primaryBlue,
                           fontWeight: FontWeight.w500,
+                          fontFamily: 'Sarabun',
                         ),
                       ),
                       Text(
                         maxLabel ?? '',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           color: AppColors.primaryBlue,
                           fontWeight: FontWeight.w500,
+                          fontFamily: 'Sarabun',
                         ),
                       ),
                     ],
@@ -175,17 +180,17 @@ class AppRangeSlider extends StatelessWidget {
             children: [
               Text(
                 label!,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Sarabun',
                 ),
               ),
               if (isRequired)
-                const Text(
+                Text(
                   ' *',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.error,
                     fontFamily: 'Sarabun',
@@ -193,13 +198,13 @@ class AppRangeSlider extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
         ],
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.r),
           decoration: BoxDecoration(
-            color: Colors.blue[50],
-            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFE3F2FD),
+            borderRadius: BorderRadius.circular(12.r),
           ),
           child: Column(
             children: [
@@ -210,49 +215,53 @@ class AppRangeSlider extends StatelessWidget {
                     Text(
                       values.start.toInt().toString(),
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryBlue,
+                        fontFamily: 'Sarabun',
                       ),
                     ),
-                    const Text(
+                    Text(
                       ' - ',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
+                        fontFamily: 'Sarabun',
                       ),
                     ),
                     Text(
                       values.end.toInt().toString(),
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryBlue,
+                        fontFamily: 'Sarabun',
                       ),
                     ),
                   ],
                 ),
-              if (showValues) const SizedBox(height: 8),
+              if (showValues) SizedBox(height: 8.h),
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: AppColors.primaryBlue,
                   inactiveTrackColor: Colors.grey[300],
                   thumbColor: AppColors.primaryBlue,
                   overlayColor: AppColors.primaryBlue.withOpacity(0.2),
-                  trackHeight: 6.0,
-                  thumbShape: const RoundSliderThumbShape(
-                    enabledThumbRadius: 16.0,
+                  trackHeight: 6.0.h,
+                  thumbShape: RoundSliderThumbShape(
+                    enabledThumbRadius: 16.0.r,
                   ),
-                  overlayShape: const RoundSliderOverlayShape(
-                    overlayRadius: 28.0,
+                  overlayShape: RoundSliderOverlayShape(
+                    overlayRadius: 28.0.r,
                   ),
-                  rangeThumbShape: const RoundRangeSliderThumbShape(
-                    enabledThumbRadius: 16.0,
+                  rangeThumbShape: RoundRangeSliderThumbShape(
+                    enabledThumbRadius: 16.0.r,
                   ),
                   valueIndicatorColor: AppColors.primaryBlue,
-                  valueIndicatorTextStyle: const TextStyle(
+                  valueIndicatorTextStyle: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 14.sp,
+                    fontFamily: 'Sarabun',
                   ),
                 ),
                 child: RangeSlider(
@@ -265,24 +274,26 @@ class AppRangeSlider extends StatelessWidget {
               ),
               if (minLabel != null || maxLabel != null)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         minLabel ?? '',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           color: AppColors.primaryBlue,
                           fontWeight: FontWeight.w500,
+                          fontFamily: 'Sarabun',
                         ),
                       ),
                       Text(
                         maxLabel ?? '',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           color: AppColors.primaryBlue,
                           fontWeight: FontWeight.w500,
+                          fontFamily: 'Sarabun',
                         ),
                       ),
                     ],
