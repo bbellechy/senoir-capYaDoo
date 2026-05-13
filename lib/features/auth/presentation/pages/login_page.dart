@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/widgets/app_input_text.dart';
@@ -73,40 +74,40 @@ class _LoginPageState extends State<LoginPage> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(48.0),
+              padding: EdgeInsets.all(48.0.r),
               child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Logo
-                    const AppLogo(size: 80),
-                    const SizedBox(height: 32),
+                    AppLogo(size: 80.sp),
+                    SizedBox(height: 32.h),
 
                     // Title
-                    const Text(
+                    Text(
                       'เข้าสู่ระบบ',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 28.sp,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryBlue,
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // Username Field
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'ชื่อผู้ใช้งาน',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryBlue,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         AppInputText(
                           controller: _usernameController,
                           hintText: 'กรอกชื่อผู้ใช้งาน',
@@ -119,21 +120,21 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
 
                     // Password Field
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'รหัสผ่าน',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryBlue,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         AppInputText(
                           controller: _passwordController,
                           hintText: 'กรอกรหัสผ่าน',
@@ -145,23 +146,23 @@ class _LoginPageState extends State<LoginPage> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: _handleForgotPassword,
-                            child: const Text(
+                            child: Text(
                               'ลืมรหัสผ่าน?',
                               style: TextStyle(
                                 color: AppColors.primaryBlue,
-                                fontSize: 16,
+                                fontSize: 16.sp,
                               ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Login Button
                     _isLoading
@@ -170,17 +171,17 @@ class _LoginPageState extends State<LoginPage> {
                             text: 'เข้าสู่ระบบ',
                             onPressed: _handleLogin,
                           ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Register Link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           'ยังไม่มีบัญชี? ',
                           style: TextStyle(
                             color: AppColors.textSub,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                           ),
                         ),
                         TextButton(
@@ -190,11 +191,11 @@ class _LoginPageState extends State<LoginPage> {
                             minimumSize: const Size(0, 0),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text(
+                          child: Text(
                             'ลงทะเบียน',
                             style: TextStyle(
                               color: AppColors.primaryBlue,
-                              fontSize: 16,
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

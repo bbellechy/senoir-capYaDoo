@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/widgets/medicine_list_card.dart';
@@ -51,12 +52,12 @@ class _MedicineListPageState extends State<MedicineListPage> {
         children: [
           // Header
           Container(
-            height: 160,
-            decoration: const BoxDecoration(
+            height: 160.h,
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -64,11 +65,11 @@ class _MedicineListPageState extends State<MedicineListPage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -76,11 +77,11 @@ class _MedicineListPageState extends State<MedicineListPage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -88,30 +89,30 @@ class _MedicineListPageState extends State<MedicineListPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.arrow_back_ios,
                             color: Colors.white,
-                            size: 24,
+                            size: 24.sp,
                           ),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'รายการยา',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 32,
+                              fontSize: 32.sp,
                               fontWeight: FontWeight.w500,
                               fontFamily: 'Sarabun',
                             ),
                           ),
                         ),
-                        const SizedBox(width: 48), // Balance the back button
+                        SizedBox(width: 48.w), // Balance the back button
                       ],
                     ),
                   ),
@@ -122,13 +123,13 @@ class _MedicineListPageState extends State<MedicineListPage> {
 
           // Section header
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24.r),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'รายการยาทั้งหมด',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -142,20 +143,20 @@ class _MedicineListPageState extends State<MedicineListPage> {
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Text(
                         'เพิ่มข้อมูล',
                         style: TextStyle(
                           color: AppColors.primaryBlue,
-                          fontSize: 20,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Icon(
                         Icons.add_circle,
                         color: AppColors.primaryBlue,
-                        size: 24,
+                        size: 24.sp,
                       ),
                     ],
                   ),
@@ -171,7 +172,7 @@ class _MedicineListPageState extends State<MedicineListPage> {
                 : _medicines.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
                     itemCount: _medicines.length,
                     itemBuilder: (context, index) {
                       final med = _medicines[index];
@@ -217,21 +218,22 @@ class _MedicineListPageState extends State<MedicineListPage> {
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: const Text('ยืนยันการลบ'),
-                              content: const Text(
+                              title: Text('ยืนยันการลบ', style: TextStyle(fontSize: 18.sp)),
+                              content: Text(
                                 'คุณต้องการลบข้อมูลยานี้ใช่หรือไม่?',
+                                style: TextStyle(fontSize: 16.sp),
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () =>
                                       Navigator.pop(context, false),
-                                  child: const Text('ยกเลิก'),
+                                  child: Text('ยกเลิก', style: TextStyle(fontSize: 16.sp)),
                                 ),
                                 TextButton(
                                   onPressed: () => Navigator.pop(context, true),
-                                  child: const Text(
+                                  child: Text(
                                     'ลบ',
-                                    style: TextStyle(color: Colors.red),
+                                    style: TextStyle(color: Colors.red, fontSize: 16.sp),
                                   ),
                                 ),
                               ],
@@ -260,31 +262,31 @@ class _MedicineListPageState extends State<MedicineListPage> {
   Widget _buildEmptyState() {
     return Center(
       child: Container(
-        width: 380,
-        margin: const EdgeInsets.symmetric(horizontal: 24),
-        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+        width: 380.w,
+        margin: EdgeInsets.symmetric(horizontal: 24.w),
+        padding: EdgeInsets.symmetric(vertical: 48.h, horizontal: 24.w),
         decoration: BoxDecoration(
           color: AppColors.whitelist,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.blueBorder, width: 1),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: AppColors.blueBorder, width: 1.w),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.medication, size: 80, color: Colors.grey[400]),
-            const SizedBox(height: 16),
+            Icon(Icons.medication, size: 80.sp, color: Colors.grey[400]),
+            SizedBox(height: 16.h),
             const Text(
               'ยังไม่มีรายการยา',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSub,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             const Text(
               'เพิ่มยาเพื่อเริ่มต้นใช้งาน',
-              style: TextStyle(fontSize: 14, color: AppColors.textSub),
+              style: TextStyle(fontSize: 14.sp, color: AppColors.textSub),
             ),
           ],
         ),

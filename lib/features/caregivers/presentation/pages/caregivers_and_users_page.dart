@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/model/care_models.dart';
 import 'package:capyadoo/core/config/api_config.dart';
@@ -176,13 +177,13 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
+        title: Text(
           'ยืนยันการลบ',
-          style: TextStyle(fontFamily: 'Sarabun'),
+          style: TextStyle(fontFamily: 'Sarabun', fontSize: 18.sp),
         ),
-        content: const Text(
+        content: Text(
           'คุณต้องการลบผู้ใช้งานคนนี้ใช่หรือไม่?',
-          style: TextStyle(fontFamily: 'Sarabun'),
+          style: TextStyle(fontFamily: 'Sarabun', fontSize: 16.sp),
         ),
         actions: [
           TextButton(
@@ -263,7 +264,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: const TextStyle(fontFamily: 'Sarabun')),
+        content: Text(message, style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -273,9 +274,9 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
+        title: Text(
           'สถานะการเชื่อมต่อ',
-          style: TextStyle(fontFamily: 'Sarabun'),
+          style: TextStyle(fontFamily: 'Sarabun', fontSize: 18.sp),
         ),
         content: Text(
           'baseUrl: ${ApiConfig.baseUrl}\n'
@@ -283,7 +284,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
           'patients: ${acceptedPatients.length}\n'
           'loading: $_isLoadingPatients\n'
           'isCaregiver: $isCaregiver',
-          style: const TextStyle(fontFamily: 'Sarabun'),
+          style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
         ),
         actions: [
           TextButton(
@@ -307,13 +308,13 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
         children: [
           // Premium Caregiver Header
           Container(
-            height: 160,
+            height: 160.h,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.success,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -322,11 +323,11 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                 children: [
                   // Decorative Circles (Green tint)
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -334,11 +335,11 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -347,12 +348,12 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                   ),
                   Positioned.fill(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 48),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 48.w),
                             child: Text(
                               'ผู้ดูแลและผู้ใช้งาน',
                               textAlign: TextAlign.center,
@@ -360,7 +361,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 32,
+                                fontSize: 32.sp,
                                 fontWeight: FontWeight.w700,
                                 fontFamily: 'Sarabun',
                                 letterSpacing: 0.4,
@@ -373,9 +374,10 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                             child: IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_back_ios,
                                 color: Colors.white,
+                                size: 24.sp,
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
@@ -392,34 +394,34 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
           // Content
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.r),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600),
+                  constraints: BoxConstraints(maxWidth: 600.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // ส่วนบทบาทของคุณ
                       RoleSection(isCaregiver: isCaregiver),
 
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
 
                       // ส่วนของผู้ใช้งาน - คำขอจากผู้ดูแล
                       if (caregiverRequests.isNotEmpty) ...[
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(16.r),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
                               color: AppColors.noonIcon,
-                              width: 1.5,
+                              width: 1.5.w,
                             ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.05),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                blurRadius: 8.r,
+                                offset: Offset(0, 2.h),
                               ),
                             ],
                           ),
@@ -428,24 +430,24 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.access_time,
                                     color: AppColors.noonIcon,
-                                    size: 20,
+                                    size: 20.sp,
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: 8.w),
                                   Text(
                                     'คำขอจากผู้ดูแล (${caregiverRequests.length})',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontFamily: 'Sarabun',
-                                      fontSize: 16,
+                                      fontSize: 16.sp,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12.h),
                               ...caregiverRequests.asMap().entries.map((entry) {
                                 final index = entry.key;
                                 final request = entry.value;
@@ -461,25 +463,25 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
                       ],
 
                       // ส่วนของผู้ดูแล - คำขอที่ส่งไปแล้ว (รอดำเนินการ)
                       if (showCaregiverUi && patientRequests.isNotEmpty) ...[
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(16.r),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
                               color: AppColors.noonIcon,
-                              width: 1.5,
+                              width: 1.5.w,
                             ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.05),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                blurRadius: 8.r,
+                                offset: Offset(0, 2.h),
                               ),
                             ],
                           ),
@@ -488,24 +490,24 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.access_time,
                                     color: AppColors.noonIcon,
-                                    size: 20,
+                                    size: 20.sp,
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: 8.w),
                                   Text(
                                     'คำขอที่รอดำเนินการ (${patientRequests.length})',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontFamily: 'Sarabun',
-                                      fontSize: 20,
+                                      fontSize: 20.sp,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12.h),
                               ...patientRequests.asMap().entries.map((entry) {
                                 final index = entry.key;
                                 final request = entry.value;
@@ -523,7 +525,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
                       ],
 
                       // ส่วนของผู้ดูแล - เพิ่มผู้ใช้งาน
@@ -532,22 +534,22 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                           controller: usernameController,
                           onSearch: _searchUser,
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
 
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(16.r),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
                               color: AppColors.blueBorder,
-                              width: 1.5,
+                              width: 1.5.w,
                             ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.05),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                blurRadius: 8.r,
+                                offset: Offset(0, 2.h),
                               ),
                             ],
                           ),
@@ -556,30 +558,30 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.people,
                                     color: AppColors.primaryBlue,
-                                    size: 20,
+                                    size: 20.sp,
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: 8.w),
                                   Text(
                                     acceptedPatients.isEmpty
                                         ? 'รายชื่อผู้ใช้งาน'
                                         : 'รายชื่อผู้ใช้งาน (${acceptedPatients.length} คน)',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontFamily: 'Sarabun',
-                                      fontSize: 20,
+                                      fontSize: 20.sp,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12.h),
                               if (_isLoadingPatients)
-                                const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16.0),
+                                Padding(
+                                  padding: EdgeInsets.all(16.r),
+                                  child: const Center(
                                     child: CircularProgressIndicator(),
                                   ),
                                 )
@@ -606,7 +608,7 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
                       ],
 
                       // ส่วนของผู้ใช้งาน - ถ้ายังไม่มีผู้ดูแล
@@ -619,10 +621,10 @@ class _CaregiversAndUsersPageState extends State<CaregiversAndUsersPage> {
                           buttonText: 'เพิ่มบทบาทผู้ดูแล',
                           onButtonPressed: _addCaregiverRole,
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
                       ],
 
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h),
                     ],
                   ),
                 ),

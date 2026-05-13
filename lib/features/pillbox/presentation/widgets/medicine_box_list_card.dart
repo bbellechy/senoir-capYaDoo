@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 /// List card สำหรับกล่องยา - มีไอคอน, ชื่อ, จำนวนรายการยา, ปุ่มแก้ไข/ลบ
@@ -31,29 +32,29 @@ class MedicineBoxListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.blueBorder, width: 1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.blueBorder, width: 1.w),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.r),
           child: Row(
             children: [
               // Icon
               _buildLeadingVisual(),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
 
               // Content
               Expanded(
@@ -62,25 +63,25 @@ class MedicineBoxListCard extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
-                        fontSize: 18,
+                      style: TextStyle(
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.w600,
                         color: AppColors.primaryBlue,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Row(
                       children: [
                         Icon(
                           Icons.medication,
-                          size: 16,
+                          size: 16.sp,
                           color: AppColors.textSub,
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Text(
                           '$medicineCount รายการยา',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             color: AppColors.textSub,
                           ),
                         ),
@@ -97,7 +98,7 @@ class MedicineBoxListCard extends StatelessWidget {
                   color: AppColors.textSub,
                   onTap: onEdit,
                 ),
-              if (onEdit != null && onDelete != null) const SizedBox(width: 8),
+              if (onEdit != null && onDelete != null) SizedBox(width: 8.w),
               if (onDelete != null)
                 _ActionButton(
                   icon: Icons.delete_rounded,
@@ -122,10 +123,10 @@ class MedicineBoxListCard extends StatelessWidget {
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       child: SizedBox(
-        width: 64,
-        height: 64,
+        width: 64.w,
+        height: 64.h,
         child: _isNetworkPath(path)
             ? Image.network(
                 path,
@@ -143,13 +144,13 @@ class MedicineBoxListCard extends StatelessWidget {
 
   Widget _buildFallbackIcon() {
     return Container(
-      width: 64,
-      height: 64,
+      width: 64.w,
+      height: 64.h,
       decoration: BoxDecoration(
         color: iconBackgroundColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
-      child: Icon(icon, size: 32, color: iconColor),
+      child: Icon(icon, size: 32.sp, color: iconColor),
     );
   }
 }
@@ -165,16 +166,16 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Container(
-        width: 36,
-        height: 36,
+        width: 36.w,
+        height: 36.h,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.blueBorder, width: 1),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: AppColors.blueBorder, width: 1.w),
         ),
-        child: Icon(icon, size: 20, color: color),
+        child: Icon(icon, size: 20.sp, color: color),
       ),
     );
   }

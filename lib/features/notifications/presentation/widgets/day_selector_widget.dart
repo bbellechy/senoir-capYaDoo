@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 class DaySelectorWidget extends StatefulWidget {
@@ -62,20 +63,20 @@ class _DaySelectorWidgetState extends State<DaySelectorWidget> {
         final isSelected = _selectedDays.contains(day['value']);
         return Expanded(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: EdgeInsets.symmetric(horizontal: 4.w),
             child: GestureDetector(
               onTap: () => _toggleDay(day['value']),
               child: Container(
-                height: 40,
+                height: 40.h,
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.primaryBlue : Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Center(
                   child: Text(
                     day['label'],
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                       color: isSelected ? Colors.white : AppColors.textSub,
                     ),

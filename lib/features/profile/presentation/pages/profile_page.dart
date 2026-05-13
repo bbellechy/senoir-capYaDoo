@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:capyadoo/core/providers/auth_provider.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
@@ -52,13 +53,13 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           // Premium Header
           Container(
-            height: 160,
+            height: 160.h,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -66,11 +67,11 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -78,24 +79,24 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
                       ),
                     ),
                   ),
-                  const Align(
+                  Align(
                     alignment: Alignment.center,
                     child: Text(
                       'โปรไฟล์',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 36,
+                        fontSize: 36.sp,
                         fontWeight: FontWeight.w700,
                         fontFamily: 'Sarabun',
                       ),
@@ -107,47 +108,47 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.r),
               child: Column(
                 children: [
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   CircleAvatar(
-                    radius: 48,
+                    radius: 48.r,
                     backgroundColor: AppColors.primaryBlue,
-                    child: const Icon(
+                    child: Icon(
                       Icons.person,
-                      size: 60,
+                      size: 60.sp,
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     user?.fullName ?? 'ผู้ใช้งาน',
-                    style: const TextStyle(
-                      fontSize: 24,
+                    style: TextStyle(
+                      fontSize: 24.sp,
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     user?.username ?? '—',
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: 16.sp,
                       color: AppColors.textSub,
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30.h),
                   _buildSettingsCard(),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
                   _buildLogoutButton(),
-                  const SizedBox(height: 10),
-                  const Text(
+                  SizedBox(height: 10.h),
+                  Text(
                     'เวอร์ชัน 1.0.0',
                     style: TextStyle(
                       fontFamily: 'Sarabun',
                       color: AppColors.textSub,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                   ),
                 ],
@@ -162,29 +163,29 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildSettingsCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.blueBorder),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.blueBorder, width: 1.w),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
             child: Text(
               'การตั้งค่า',
               style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
@@ -215,10 +216,10 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const _SettingsDivider(),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 10.h),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -226,17 +227,17 @@ class _ProfilePageState extends State<ProfilePage> {
                         'การแจ้งเตือน',
                         style: TextStyle(
                           fontFamily: 'Sarabun',
-                          fontSize: 20,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.w400,
                           color: AppColors.textSub,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      SizedBox(height: 2.h),
                       Text(
                         'เปิด/ปิด การแจ้งเตือน',
                         style: TextStyle(
                           fontFamily: 'Sarabun',
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.w400,
                           color: AppColors.textSub,
                         ),
@@ -250,9 +251,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   activeTrackColor: AppColors.primaryBlue,
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: AppColors.textSublest,
-                  trackOutlineColor: MaterialStateProperty.resolveWith((
-                    states,
-                  ) {
+                  trackOutlineColor: MaterialStateProperty.resolveWith((states) {
                     if (states.contains(MaterialState.selected)) {
                       return Colors.transparent;
                     }
@@ -272,21 +271,21 @@ class _ProfilePageState extends State<ProfilePage> {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 12.h),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Sarabun',
-                  fontSize: 20,
+                  fontSize: 20.sp,
                   color: AppColors.textSub,
                   fontWeight: FontWeight.w400,
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textSub),
+            Icon(Icons.chevron_right_rounded, color: AppColors.textSub, size: 24.sp),
           ],
         ),
       ),
@@ -297,7 +296,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         onTap: () async {
           final confirm = await showDeleteDialog(
             context,
@@ -315,19 +314,19 @@ class _ProfilePageState extends State<ProfilePage> {
         },
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [AppColors.red, AppColors.error],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
                 color: AppColors.error.withOpacity(0.25),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+                blurRadius: 12.r,
+                offset: Offset(0, 6.h),
               ),
             ],
           ),
@@ -335,27 +334,27 @@ class _ProfilePageState extends State<ProfilePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 32,
-                height: 32,
+                width: 32.w,
+                height: 32.h,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.18),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.logout_rounded,
-                  size: 18,
+                  size: 18.sp,
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(width: 10),
-              const Text(
+              SizedBox(width: 10.w),
+              Text(
                 'ออกจากระบบ',
                 style: TextStyle(
                   fontFamily: 'Sarabun',
                   fontWeight: FontWeight.w700,
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   color: Colors.white,
-                  letterSpacing: 0.2,
+                  letterSpacing: 0.2.w,
                 ),
               ),
             ],
@@ -371,9 +370,9 @@ class _SettingsDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 2),
-      child: Divider(height: 1, thickness: 1, color: AppColors.textSublest),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 2.h),
+      child: Divider(height: 1.h, thickness: 1.h, color: AppColors.textSublest),
     );
   }
 }

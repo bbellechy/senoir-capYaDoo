@@ -22,6 +22,7 @@ import 'package:capyadoo/core/services/medication_service.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
 import 'package:capyadoo/core/services/api_client.dart';
 import 'dart:convert';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,7 +38,7 @@ class _HomePageState extends State<HomePage> {
 
   // ── Collapsible header ──────────────────────────────────────────────────────
   // ความสูงของส่วน greeting + logo ที่จะซ่อนเมื่อ scroll ลง
-  static const double _greetingHeight = 120.0;
+  static final double _greetingHeight = 120.h;
   final ScrollController _contentScrollController = ScrollController();
   double _collapseProgress = 0.0; // 0 = full header, 1 = collapsed
   // ────────────────────────────────────────────────────────────────────────────
@@ -420,14 +421,14 @@ class _HomePageState extends State<HomePage> {
         // ── Date Picker (always visible, sticky) ──────────────────────────
         _buildDatePicker(),
 
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
       ],
     );
   }
 
   Widget _buildHeader(User? user) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 4),
+      padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 4.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -436,19 +437,19 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   'สวัสดี',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontFamily: 'Sarabun',
                   ),
                 ),
                 Text(
                   user?.fullName ?? '...',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 28,
+                    fontSize: 28.sp,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Sarabun',
                   ),
@@ -458,23 +459,24 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Image.asset(
             'assets/images/logo-white-png.png',
-            height: 100,
-            width: 100,
+            height: 100.h,
+            width: 100.w,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) {
               return Container(
-                height: 100,
-                width: 100,
+                height: 100.h,
+                width: 100.w,
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.image_not_supported,
                   color: Colors.white,
+                  size: 24.sp,
                 ),
               );
             },
@@ -522,12 +524,12 @@ class _HomePageState extends State<HomePage> {
             child: Opacity(
               opacity: dateLabelOpacity,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
                 child: Text(
                   thaiDateFormat.format(_selectedDate),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -538,27 +540,27 @@ class _HomePageState extends State<HomePage> {
 
         // Horizontal date strip (always visible)
         SizedBox(
-          height: 72,
+          height: 72.h,
           child: Row(
             children: [
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               GestureDetector(
                 onTap: openCalendar,
                 child: Container(
-                  width: 44,
-                  height: 44,
+                  width: 44.w,
+                  height: 44.h,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.calendar_today_outlined,
                     color: AppColors.primaryBlue,
-                    size: 20,
+                    size: 20.sp,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Expanded(
                 child: ListView.builder(
                   controller: _getDateScrollController(minDate, todayDateOnly),
@@ -580,9 +582,9 @@ class _HomePageState extends State<HomePage> {
                       },
                       child: Center(
                         child: Container(
-                          width: 50,
-                          height: 50,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: 50.w,
+                          height: 50.h,
+                          margin: EdgeInsets.symmetric(horizontal: 4.w),
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? Colors.white
@@ -591,7 +593,7 @@ class _HomePageState extends State<HomePage> {
                             border: isFutureDate && !isSelected
                                 ? Border.all(
                                     color: Colors.white.withOpacity(0.6),
-                                    width: 2,
+                                    width: 2.w,
                                   )
                                 : null,
                           ),
@@ -602,7 +604,7 @@ class _HomePageState extends State<HomePage> {
                                 color: isSelected
                                     ? AppColors.primaryBlue
                                     : Colors.white,
-                                fontSize: 18,
+                                fontSize: 18.sp,
                                 fontWeight: isSelected
                                     ? FontWeight.bold
                                     : FontWeight.normal,
@@ -615,7 +617,7 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
             ],
           ),
         ),
@@ -630,17 +632,17 @@ class _HomePageState extends State<HomePage> {
   Widget _buildContentCard() {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.offwhite,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(40),
-          topRight: Radius.circular(40),
+          topLeft: Radius.circular(40.r),
+          topRight: Radius.circular(40.r),
         ),
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+            padding: EdgeInsets.fromLTRB(24.w, 32.h, 24.w, 16.h),
             child: Row(
               children: [
                 Expanded(
@@ -657,7 +659,7 @@ class _HomePageState extends State<HomePage> {
                     ).then((_) => _loadData()),
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: _buildTopButton(
                     'ผู้ดูแล',
@@ -682,12 +684,12 @@ class _HomePageState extends State<HomePage> {
                 // ── เชื่อม controller สำหรับ collapse ──
                 controller: _contentScrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
                 children: [
                   if (_isLoading)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 24),
-                      child: Center(child: CircularProgressIndicator()),
+                    Padding(
+                      padding: EdgeInsets.only(top: 24.h),
+                      child: const Center(child: CircularProgressIndicator()),
                     )
                   else ...[
                     _buildTimeSection(
@@ -699,7 +701,7 @@ class _HomePageState extends State<HomePage> {
                       Icons.wb_sunny_outlined,
                       _getFilteredSchedule('morning'),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     _buildTimeSection(
                       'กลางวัน',
                       '${_getFilteredSchedule("afternoon").length} รายการ',
@@ -709,7 +711,7 @@ class _HomePageState extends State<HomePage> {
                       Icons.wb_sunny,
                       _getFilteredSchedule('afternoon'),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     _buildTimeSection(
                       'เย็น',
                       '${_getFilteredSchedule("evening").length} รายการ',
@@ -719,7 +721,7 @@ class _HomePageState extends State<HomePage> {
                       Icons.cloud_outlined,
                       _getFilteredSchedule('evening'),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     _buildTimeSection(
                       'ก่อนนอน',
                       '${_getFilteredSchedule("night").length} รายการ',
@@ -747,34 +749,34 @@ class _HomePageState extends State<HomePage> {
     VoidCallback onTap,
   ) {
     return Container(
-      height: 64,
+      height: 64.h,
       decoration: BoxDecoration(
         color: AppColors.whitelist,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.blueBorder, width: 2),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: AppColors.blueBorder, width: 2.w),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.r),
                 decoration: BoxDecoration(
                   color: bgColor,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: iconColor, size: 20),
+                child: Icon(icon, color: iconColor, size: 20.sp),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -813,43 +815,43 @@ class _HomePageState extends State<HomePage> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: bgColor.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: borderColor, width: 2),
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: borderColor, width: 2.w),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.r),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.r),
                 decoration: BoxDecoration(
                   color: bgColor,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(icon, color: iconColor, size: 24),
+                child: Icon(icon, color: iconColor, size: 24.sp),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                      fontSize: 20.sp,
                     ),
                   ),
                   Text(
                     '$totalCount รายการ',
-                    style: TextStyle(color: AppColors.textSub, fontSize: 16),
+                    style: TextStyle(color: AppColors.textSub, fontSize: 16.sp),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           if (items.isEmpty && boxItems.isEmpty)
             Center(
               child: Column(
@@ -857,12 +859,12 @@ class _HomePageState extends State<HomePage> {
                   Icon(
                     Icons.medication_outlined,
                     color: AppColors.textSub,
-                    size: 32,
+                    size: 32.sp,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     'ไม่มียาช่วงนี้',
-                    style: TextStyle(color: AppColors.textSub),
+                    style: TextStyle(color: AppColors.textSub, fontSize: 14.sp),
                   ),
                 ],
               ),

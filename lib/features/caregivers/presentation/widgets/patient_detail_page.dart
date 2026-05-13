@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/model/daily_intake.dart';
@@ -55,7 +56,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
     final todayIndex = todayDate.difference(minDate).inDays;
     final initialIndex = (todayIndex - 2).clamp(0, 1000000);
     _dateScrollController = ScrollController(
-      initialScrollOffset: initialIndex * _dateItemExtent,
+      initialScrollOffset: initialIndex * _dateItemExtent.w,
     );
     return _dateScrollController!;
   }
@@ -136,23 +137,23 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
       body: Stack(
         children: [
           Container(
-            height: 300,
+            height: 300.h,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.success,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
+                bottomLeft: Radius.circular(40.r),
+                bottomRight: Radius.circular(40.r),
               ),
             ),
             child: Stack(
               children: [
                 Positioned(
-                  right: -40,
-                  top: -40,
+                  right: -40.w,
+                  top: -40.h,
                   child: Container(
-                    width: 180,
-                    height: 180,
+                    width: 180.w,
+                    height: 180.h,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withOpacity(0.08),
@@ -160,11 +161,11 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                   ),
                 ),
                 Positioned(
-                  left: -20,
-                  bottom: -20,
+                  left: -20.w,
+                  bottom: -20.h,
                   child: Container(
-                    width: 120,
-                    height: 120,
+                    width: 120.w,
+                    height: 120.h,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withOpacity(0.08),
@@ -183,9 +184,9 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHeader(),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     _buildDatePicker(),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     _buildContentCard(),
                   ],
                 ),
@@ -199,7 +200,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
       child: Row(
         children: [
           Expanded(
@@ -211,25 +212,25 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'ข้อมูลการทานยาของ',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           fontFamily: 'Sarabun',
                         ),
                       ),
                       Text(
                         widget.patient.fullName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 28,
+                          fontSize: 28.sp,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Sarabun',
                         ),
@@ -276,39 +277,39 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Text(
             thaiDateFormat.format(_selectedDate),
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 18,
+              fontSize: 18.sp,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         SizedBox(
-          height: 80,
+          height: 80.h,
           child: Row(
             children: [
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               GestureDetector(
                 onTap: openCalendar,
                 child: Container(
-                  width: 48,
-                  height: 48,
+                  width: 48.w,
+                  height: 48.h,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: const Icon(
                     Icons.calendar_today_outlined,
                     color: AppColors.primaryBlue,
-                    size: 20,
+                    size: 20.sp,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Expanded(
                 child: ListView.builder(
                   controller: _getDateScrollController(minDate, todayDateOnly),
@@ -331,9 +332,9 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                       },
                       child: Center(
                         child: Container(
-                          width: 50,
-                          height: 50,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: 50.w,
+                          height: 50.h,
+                          margin: EdgeInsets.symmetric(horizontal: 4.w),
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? Colors.white
@@ -342,7 +343,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                             border: isFutureDate && !isSelected
                                 ? Border.all(
                                     color: Colors.white.withOpacity(0.6),
-                                    width: 2,
+                                    width: 2.w,
                                   )
                                 : null,
                           ),
@@ -353,7 +354,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                                 color: isSelected
                                     ? AppColors.primaryBlue
                                     : Colors.white,
-                                fontSize: 18,
+                                fontSize: 18.sp,
                                 fontWeight: isSelected
                                     ? FontWeight.bold
                                     : FontWeight.normal,
@@ -366,7 +367,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                   },
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
             ],
           ),
         ),
@@ -377,14 +378,14 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
   Widget _buildContentCard() {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.offwhite,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(40),
-          topRight: Radius.circular(40),
+          topLeft: Radius.circular(40.r),
+          topRight: Radius.circular(40.r),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
       child: Column(
         children: [
           if (_isLoading)
@@ -398,7 +399,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
               AppColors.morningIcon,
               Icons.wb_sunny_outlined,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _buildTimeSection(
               'กลางวัน',
               'afternoon',
@@ -407,7 +408,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
               AppColors.noonIcon,
               Icons.wb_sunny,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _buildTimeSection(
               'เย็น',
               'evening',
@@ -416,7 +417,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
               AppColors.primaryBlue,
               Icons.cloud_outlined,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _buildTimeSection(
               'ก่อนนอน',
               'night',
@@ -459,56 +460,56 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: bgColor.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: borderColor, width: 2),
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: borderColor, width: 2.w),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.r),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.r),
                 decoration: BoxDecoration(
                   color: bgColor,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(icon, color: iconColor, size: 24),
+                child: Icon(icon, color: iconColor, size: 24.sp),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                      fontSize: 20.sp,
                     ),
                   ),
                   Text(
                     '$totalCount รายการ',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSub,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           if (items.isEmpty && boxItems.isEmpty)
             Center(
               child: Column(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.medication_outlined,
                     color: AppColors.textSub,
-                    size: 32,
+                    size: 32.sp,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   const Text(
                     'ไม่มียาในช่วงนี้',
                     style: TextStyle(color: AppColors.textSub),

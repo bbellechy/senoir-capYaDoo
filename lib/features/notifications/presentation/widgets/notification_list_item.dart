@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/model/medication_notification.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'dart:io';
@@ -28,16 +29,16 @@ class NotificationListItem extends StatelessWidget {
         : AppColors.error.withOpacity(0.1);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.blueBorder, width: 1.5),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.blueBorder, width: 1.5.w),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            blurRadius: 4.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
@@ -45,42 +46,42 @@ class NotificationListItem extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: isDeleteMode ? null : onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.r),
             child: Row(
               children: [
                 if (isDeleteMode) ...[
                   GestureDetector(
                     onTap: onDelete,
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: 40.w,
+                      height: 40.h,
                       decoration: const BoxDecoration(
                         color: AppColors.error,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.delete_outline_rounded,
                         color: Colors.white,
-                        size: 20,
+                        size: 20.sp,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                 ],
 
                 // Icon or Image
                 Container(
-                  width: 64,
-                  height: 64,
+                  width: 64.w,
+                  height: 64.h,
                   decoration: BoxDecoration(
                     color: iconBgColor,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: notification.imagePath != null
                       ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                           child: (notification.imagePath!.startsWith('http')
                               ? Image.network(
                                   notification.imagePath!,
@@ -90,14 +91,9 @@ class NotificationListItem extends StatelessWidget {
                                   File(notification.imagePath!),
                                   fit: BoxFit.cover,
                                 )),
-                        )
-                      : Icon(
-                          Icons.access_time_filled,
-                          color: iconColor,
-                          size: 24,
                         ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
 
                 // Content
                 Expanded(
@@ -106,38 +102,38 @@ class NotificationListItem extends StatelessWidget {
                     children: [
                       Text(
                         notification.medicationName,
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: TextStyle(
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Row(
                         children: [
                           Icon(
                             Icons.access_time,
-                            size: 20,
+                            size: 20.sp,
                             color: AppColors.primaryBlue,
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4.w),
                           Text(
                             notification.times.isNotEmpty
                                 ? notification.getFormattedTimes().first + ' น.'
                                 : '',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               color: AppColors.textSub,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2.h),
                       Text(
                         notification.getDayNames().join(', '),
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           color: AppColors.textSub,
                         ),
                       ),
@@ -155,9 +151,9 @@ class NotificationListItem extends StatelessWidget {
                     inactiveTrackColor: AppColors.textSublest,
                   ),
                 ] else ...[
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_ios,
-                    size: 20,
+                    size: 20.sp,
                     color: AppColors.textSub,
                   ),
                 ],

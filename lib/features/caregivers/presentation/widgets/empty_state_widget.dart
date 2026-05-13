@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 /// Widget แสดงเมื่อไม่มีข้อมูล
@@ -26,27 +27,27 @@ class EmptyStateWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24.r),
       decoration: BoxDecoration(
         color: AppColors.whitelist,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: showBorder
-            ? Border.all(color: AppColors.blueBorder, width: 1.5)
+            ? Border.all(color: AppColors.blueBorder, width: 1.5.w)
             : null,
       ),
       child: Column(
         children: [
           Icon(
             icon,
-            size: buttonText != null ? 64 : 48,
+            size: buttonText != null ? 64.sp : 48.sp,
             color: Colors.grey[400],
           ),
-          SizedBox(height: buttonText != null ? 16 : 12),
+          SizedBox(height: buttonText != null ? 16.h : 12.h),
           Text(
             title,
             style: TextStyle(
               fontFamily: 'Sarabun',
-              fontSize: buttonText != null ? 18 : 16,
+              fontSize: buttonText != null ? 18.sp : 16.sp,
               fontWeight: buttonText != null
                   ? FontWeight.w600
                   : FontWeight.normal,
@@ -56,41 +57,41 @@ class EmptyStateWidget extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             subtitle,
             style: TextStyle(
               fontFamily: 'Sarabun',
-              fontSize: buttonText != null ? 14 : 12,
+              fontSize: buttonText != null ? 14.sp : 12.sp,
               color: AppColors.textSub,
             ),
             textAlign: TextAlign.center,
           ),
           if (buttonText != null && onButtonPressed != null) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             SizedBox(
-              width: 200,
-              height: 44,
+              width: 200.w,
+              height: 44.h,
               child: ElevatedButton(
                 onPressed: onButtonPressed,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4CAF50),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                   elevation: 0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.person_add, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(Icons.person_add, size: 20.sp),
+                    SizedBox(width: 8.w),
                     Text(
                       buttonText!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Sarabun',
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

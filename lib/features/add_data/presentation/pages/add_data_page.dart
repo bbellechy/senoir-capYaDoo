@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/widgets/medicine_list_card.dart';
@@ -73,7 +74,14 @@ class _AddDataPageState extends State<AddDataPage>
       if (success && mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('ลบข้อมูลยาสำเร็จ')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text(
+              'ลบข้อมูลยาสำเร็จ',
+              style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
+            ),
+          ),
+        );
         _loadData();
       }
     }
@@ -92,7 +100,14 @@ class _AddDataPageState extends State<AddDataPage>
       if (success && mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('ลบบันทึกอาการสำเร็จ')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text(
+              'ลบบันทึกอาการสำเร็จ',
+              style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
+            ),
+          ),
+        );
         _loadData();
       }
     }
@@ -116,13 +131,13 @@ class _AddDataPageState extends State<AddDataPage>
         children: [
           // Header with tabs
           Container(
-            height: 175,
+            height: 175.h,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -130,11 +145,11 @@ class _AddDataPageState extends State<AddDataPage>
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -142,11 +157,11 @@ class _AddDataPageState extends State<AddDataPage>
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -157,20 +172,20 @@ class _AddDataPageState extends State<AddDataPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
                         child: Text(
                           _headerTitle,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 36,
+                            fontSize: 36.sp,
                             fontWeight: FontWeight.w700,
                             fontFamily: 'Sarabun',
                           ),
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: TabBar(
                           controller: _tabController,
                           labelColor: Colors.white,
@@ -179,16 +194,16 @@ class _AddDataPageState extends State<AddDataPage>
                           indicatorSize: TabBarIndicatorSize.tab,
                           indicator: BoxDecoration(
                             border: Border(
-                              bottom: BorderSide(color: Colors.white, width: 2),
+                              bottom: BorderSide(color: Colors.white, width: 2.w),
                             ),
                           ),
-                          labelStyle: const TextStyle(
-                            fontSize: 20,
+                          labelStyle: TextStyle(
+                            fontSize: 20.sp,
                             fontWeight: FontWeight.w600,
                             fontFamily: 'Sarabun',
                           ),
-                          unselectedLabelStyle: const TextStyle(
-                            fontSize: 20,
+                          unselectedLabelStyle: TextStyle(
+                            fontSize: 20.sp,
                             fontWeight: FontWeight.w400,
                             fontFamily: 'Sarabun',
                           ),
@@ -222,13 +237,13 @@ class _AddDataPageState extends State<AddDataPage>
       children: [
         // Section header
         Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24.r),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'รายการยาทั้งหมด',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600),
               ),
               TextButton(
                 onPressed: () async {
@@ -240,20 +255,20 @@ class _AddDataPageState extends State<AddDataPage>
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text(
                       'เพิ่มข้อมูล',
                       style: TextStyle(
                         color: AppColors.primaryBlue,
-                        fontSize: 24,
+                        fontSize: 24.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Icon(
                       Icons.add_circle,
                       color: AppColors.primaryBlue,
-                      size: 24,
+                      size: 24.sp,
                     ),
                   ],
                 ),
@@ -269,7 +284,7 @@ class _AddDataPageState extends State<AddDataPage>
               : _medicines.isEmpty
               ? _buildEmptyState()
               : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
                   itemCount: _medicines.length,
                   itemBuilder: (context, index) {
                     final medicine = _medicines[index];
@@ -306,7 +321,7 @@ class _AddDataPageState extends State<AddDataPage>
 
   Widget _buildEmptyState() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
       child: Align(
         alignment: Alignment.topCenter,
         child: AppEmptyCard(
@@ -314,8 +329,8 @@ class _AddDataPageState extends State<AddDataPage>
           subtitle: 'เพิ่มยาเพื่อเริ่มต้นใช้งาน',
           iconColor: AppColors.textSublest,
           borderColor: AppColors.blueBorder,
-          borderRadius: 10,
-          borderWidth: 2,
+          borderRadius: 10.r,
+          borderWidth: 2.w,
         ),
       ),
     );
@@ -326,13 +341,13 @@ class _AddDataPageState extends State<AddDataPage>
       children: [
         // Section header
         Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24.r),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'บันทึกอาการทั้งหมด',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600),
               ),
               TextButton(
                 onPressed: () async {
@@ -344,20 +359,20 @@ class _AddDataPageState extends State<AddDataPage>
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text(
                       'เพิ่มข้อมูล',
                       style: TextStyle(
                         color: AppColors.primaryBlue,
-                        fontSize: 24,
+                        fontSize: 24.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Icon(
                       Icons.add_circle,
                       color: AppColors.primaryBlue,
-                      size: 24,
+                      size: 24.sp,
                     ),
                   ],
                 ),
@@ -373,7 +388,7 @@ class _AddDataPageState extends State<AddDataPage>
               : _symptoms.isEmpty
               ? _buildEmptySymptomState()
               : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
                   itemCount: _symptoms.length,
                   itemBuilder: (context, index) {
                     final symptom = _symptoms[index];
@@ -403,7 +418,7 @@ class _AddDataPageState extends State<AddDataPage>
 
   Widget _buildEmptySymptomState() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
       child: Align(
         alignment: Alignment.topCenter,
         child: AppEmptyCard(
@@ -412,8 +427,8 @@ class _AddDataPageState extends State<AddDataPage>
           subtitle: 'เริ่มบันทึกอาการเพื่อติดตามสุขภาพ',
           iconColor: AppColors.textSublest,
           borderColor: AppColors.blueBorder,
-          borderRadius: 10,
-          borderWidth: 2,
+          borderRadius: 10.r,
+          borderWidth: 2.w,
         ),
       ),
     );

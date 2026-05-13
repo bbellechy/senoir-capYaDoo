@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
@@ -76,37 +77,37 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
             child: Stack(
               children: [
                 SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                  padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 24.h),
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 760),
                       child: Form(
                         key: _formKey,
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 78),
+                          padding: EdgeInsets.only(top: 78.h),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'ลืมรหัสผ่าน',
                                 style: TextStyle(
                                   fontFamily: 'Sarabun',
-                                  fontSize: 28,
+                                  fontSize: 28.sp,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.textPrimary,
                                   height: 1.0,
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              SizedBox(height: 20.h),
                               _buildFieldLabel('เบอร์โทรศัพท์'),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               AppInputText(
                                 controller: _phoneController,
                                 hintText: 'กรอกเบอร์โทรศัพท์',
                                 keyboardType: TextInputType.phone,
                                 validator: PasswordValidation.validateThaiPhone,
                               ),
-                              const SizedBox(height: 18),
+                              SizedBox(height: 18.h),
                               SizedBox(
                                 width: double.infinity,
                                 child: AppButton(
@@ -125,14 +126,15 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
                   ),
                 ),
                 Positioned(
-                  left: 8,
-                  top: 4,
+                  left: 8.w,
+                  top: 4.h,
                   child: IconButton(
-                    padding: const EdgeInsets.all(18),
+                    padding: EdgeInsets.all(18.r),
                     constraints: const BoxConstraints(),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back_ios,
                       color: AppColors.primaryBlue,
+                      size: 24.sp,
                     ),
                     onPressed: () {
                       Navigator.pushReplacementNamed(
@@ -153,9 +155,9 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
   Widget _buildFieldLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'Sarabun',
-        fontSize: 16,
+        fontSize: 16.sp,
         fontWeight: FontWeight.w600,
         color: AppColors.primaryBlue,
       ),

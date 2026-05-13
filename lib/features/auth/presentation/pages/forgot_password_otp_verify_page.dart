@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
@@ -224,50 +225,50 @@ class _ForgotPasswordOtpVerifyPageState
             child: Stack(
               children: [
                 SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                  padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 24.h),
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 760),
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 78),
+                        padding: EdgeInsets.only(top: 78.h),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                             Text(
                               'กรอกรหัส OTP',
                               style: TextStyle(
                                 fontFamily: 'Sarabun',
-                                fontSize: 28,
+                                fontSize: 28.sp,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.textPrimary,
                                 height: 1.0,
                               ),
                             ),
-                            const SizedBox(height: 14),
+                            SizedBox(height: 14.h),
                             Text(
                               _phoneNumber == null
                                   ? ''
                                   : 'เราได้ส่ง OTP ไปที่ $_phoneNumber',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Sarabun',
-                                fontSize: 15,
+                                fontSize: 15.sp,
                                 color: AppColors.textSub,
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            SizedBox(height: 20.h),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: List.generate(_otpLength, (index) {
                                 return SizedBox(
-                                  width: 46,
+                                  width: 46.w,
                                   child: TextField(
                                     controller: _otpControllers[index],
                                     focusNode: _otpFocusNodes[index],
                                     keyboardType: TextInputType.number,
                                     textAlign: TextAlign.center,
                                     maxLength: 1,
-                                    style: const TextStyle(
-                                      fontSize: 22,
+                                    style: TextStyle(
+                                      fontSize: 22.sp,
                                       fontFamily: 'Sarabun',
                                       fontWeight: FontWeight.w700,
                                       color: AppColors.textPrimary,
@@ -277,26 +278,26 @@ class _ForgotPasswordOtpVerifyPageState
                                       filled: true,
                                       fillColor: Colors.white,
                                       contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            vertical: 12,
+                                          EdgeInsets.symmetric(
+                                            vertical: 12.h,
                                           ),
                                       border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(10.r),
                                         borderSide: const BorderSide(
                                           color: AppColors.textSublest,
                                         ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(10.r),
                                         borderSide: const BorderSide(
                                           color: AppColors.textSublest,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                        borderSide: const BorderSide(
+                                        borderRadius: BorderRadius.circular(10.r),
+                                        borderSide: BorderSide(
                                           color: AppColors.primaryBlue,
-                                          width: 2,
+                                          width: 2.w,
                                         ),
                                       ),
                                     ),
@@ -306,14 +307,15 @@ class _ForgotPasswordOtpVerifyPageState
                                 );
                               }),
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                const Text(
+                                 Text(
                                   'ไม่ได้รับรหัส? ',
                                   style: TextStyle(
                                     fontFamily: 'Sarabun',
+                                    fontSize: 14.sp,
                                     color: AppColors.textSub,
                                   ),
                                 ),
@@ -324,20 +326,21 @@ class _ForgotPasswordOtpVerifyPageState
                                       : null,
                                   child: Text(
                                     _secondsLeft == 0
-                                        ? (_isResendingOtp
-                                              ? 'กำลังขอ...'
-                                              : 'ขอรหัส OTP อีกครั้ง')
-                                        : 'ขอรหัสใหม่ได้ใน ${_secondsLeft}s',
-                                    style: const TextStyle(
-                                      fontFamily: 'Sarabun',
-                                      color: AppColors.primaryBlue,
-                                      fontWeight: FontWeight.w700,
+                                          ? (_isResendingOtp
+                                                ? 'กำลังขอ...'
+                                                : 'ขอรหัส OTP อีกครั้ง')
+                                          : 'ขอรหัสใหม่ได้ใน ${_secondsLeft}s',
+                                      style: TextStyle(
+                                        fontFamily: 'Sarabun',
+                                        fontSize: 14.sp,
+                                        color: AppColors.primaryBlue,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
+                                ],
+                              ),
+                              SizedBox(height: 12.h),
                             SizedBox(
                               width: double.infinity,
                               child: AppButton(
@@ -355,14 +358,15 @@ class _ForgotPasswordOtpVerifyPageState
                   ),
                 ),
                 Positioned(
-                  left: 8,
-                  top: 4,
+                  left: 8.w,
+                  top: 4.h,
                   child: IconButton(
-                    padding: const EdgeInsets.all(18),
+                    padding: EdgeInsets.all(18.r),
                     constraints: const BoxConstraints(),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back_ios,
                       color: AppColors.primaryBlue,
+                      size: 24.sp,
                     ),
                     onPressed: () {
                       Navigator.pushReplacementNamed(

@@ -5,6 +5,8 @@ import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/providers/providers.dart';
 
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 class App extends StatelessWidget {
   final String initialRoute;
   const App({super.key, required this.initialRoute});
@@ -13,24 +15,39 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: appProviders,
-      child: MaterialApp(
-        title: 'CapYaDoo',
-        debugShowCheckedModeBanner: false,
-        onGenerateRoute: AppRouter.onGenerateRoute,
-        initialRoute: initialRoute,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('th', 'TH'), Locale('en', 'US')],
-        locale: const Locale('th', 'TH'),
-        theme: ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: AppColors.primaryBlue,
-          scaffoldBackgroundColor: AppColors.background,
-          fontFamily: 'Sarabun',
-        ),
+      child: ScreenUtilInit(
+        designSize: const Size(360, 800),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) {
+          return MaterialApp(
+            title: 'CapYaDoo',
+            debugShowCheckedModeBanner: false,
+            onGenerateRoute: AppRouter.onGenerateRoute,
+            initialRoute: initialRoute,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('th', 'TH'), Locale('en', 'US')],
+            locale: const Locale('th', 'TH'),
+            theme: ThemeData(
+              useMaterial3: true,
+              colorSchemeSeed: AppColors.primaryBlue,
+              scaffoldBackgroundColor: AppColors.background,
+              fontFamily: 'Sarabun',
+            ),
+            builder: (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: const TextScaler.linear(1.0),
+                ),
+                child: child!,
+              );
+            },
+          );
+        },
       ),
     );
   }

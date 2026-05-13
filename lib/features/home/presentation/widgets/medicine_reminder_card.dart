@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'medicine_confirmation_button.dart';
 
@@ -81,10 +82,10 @@ class MedicineReminderCard extends StatelessWidget {
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(10.r),
       child: SizedBox(
-        width: 44,
-        height: 44,
+        width: 44.w,
+        height: 44.h,
         child: _isNetworkPath(path)
             ? Image.network(
                 path,
@@ -102,13 +103,13 @@ class MedicineReminderCard extends StatelessWidget {
 
   Widget _buildFallbackImage() {
     return Container(
-      width: 44,
-      height: 44,
+      width: 44.w,
+      height: 44.h,
       decoration: BoxDecoration(
         color: AppColors.blueBorder.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
-      child: const Icon(Icons.medication, size: 22, color: AppColors.textSub),
+      child: Icon(Icons.medication, size: 22.sp, color: AppColors.textSub),
     );
   }
 
@@ -119,17 +120,17 @@ class MedicineReminderCard extends StatelessWidget {
         normalizedTiming != null && normalizedTiming.isNotEmpty;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: AppColors.whitelist,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.blueBorder, width: 1.5),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.blueBorder, width: 1.5.w),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
@@ -143,7 +144,7 @@ class MedicineReminderCard extends StatelessWidget {
                 Row(
                   children: [
                     _buildMedicineImage(),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,33 +153,33 @@ class MedicineReminderCard extends StatelessWidget {
                             medicineName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Sarabun',
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2.h),
                           Text(
                             dosage,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Sarabun',
-                              fontSize: 16,
+                              fontSize: 16.sp,
                               color: AppColors.textSub,
                             ),
                           ),
                           if (remainingQuantityText != null) ...[
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2.h),
                             Text(
                               remainingQuantityText!,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Sarabun',
-                                fontSize: 14,
+                                fontSize: 14.sp,
                                 color: AppColors.textSub,
                               ),
                             ),
@@ -188,24 +189,24 @@ class MedicineReminderCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Row(
                   children: [
                     Icon(
                       hasTimingLabel
                           ? Icons.restaurant_rounded
                           : Icons.access_time,
-                      size: 18,
+                      size: 18.sp,
                       color: AppColors.textSub,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4.w),
                     Text(
                       hasTimingLabel
                           ? normalizedTiming
                           : _formatTime(scheduledTime),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Sarabun',
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         color: AppColors.textSub,
                       ),
                     ),
@@ -214,7 +215,7 @@ class MedicineReminderCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           // ปุ่ม action
           MedicineConfirmationButton(
             status: _getConfirmationStatus(),

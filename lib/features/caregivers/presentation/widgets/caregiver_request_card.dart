@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/app_colors.dart';
 
 /// การ์ดแสดงคำขอจากผู้ดูแล
@@ -19,17 +20,17 @@ class CaregiverRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFFA726), width: 1.5),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFFFFA726), width: 1.5.w),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
@@ -37,15 +38,15 @@ class CaregiverRequestCard extends StatelessWidget {
         children: [
           // ไอคอนผู้ใช้
           Container(
-            width: 48,
-            height: 48,
+            width: 48.w,
+            height: 48.h,
             decoration: BoxDecoration(
               color: const Color(0xFFFFA726).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.person, color: Color(0xFFFFA726), size: 28),
+            child: Icon(Icons.person, color: const Color(0xFFFFA726), size: 28.sp),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
 
           // ข้อมูล
           Expanded(
@@ -54,27 +55,27 @@ class CaregiverRequestCard extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Sarabun',
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
                 Text(
                   username,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Sarabun',
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     color: AppColors.textSub,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text(
+                SizedBox(height: 4.h),
+                Text(
                   'ขอเข้าถึงข้อมูลของคุณ',
                   style: TextStyle(
                     fontFamily: 'Sarabun',
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     color: AppColors.noonIcon,
                   ),
                 ),
@@ -86,48 +87,48 @@ class CaregiverRequestCard extends StatelessWidget {
           Column(
             children: [
               SizedBox(
-                width: 80,
-                height: 36,
+                width: 80.w,
+                height: 36.h,
                 child: ElevatedButton(
                   onPressed: onAccept,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.success,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     padding: EdgeInsets.zero,
                     elevation: 0,
                   ),
-                  child: const Text(
+                  child: Text(
                     'ยอมรับ',
                     style: TextStyle(
                       fontFamily: 'Sarabun',
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               SizedBox(
-                width: 80,
-                height: 36,
+                width: 80.w,
+                height: 36.h,
                 child: OutlinedButton(
                   onPressed: onReject,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.error,
                     side: const BorderSide(color: AppColors.error),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     padding: EdgeInsets.zero,
                   ),
-                  child: const Text(
+                  child: Text(
                     'ปฏิเสธ',
                     style: TextStyle(
                       fontFamily: 'Sarabun',
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                     ),
                   ),

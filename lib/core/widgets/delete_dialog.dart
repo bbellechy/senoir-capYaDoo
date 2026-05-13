@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 Future<bool> showDeleteDialog(
@@ -15,27 +16,27 @@ Future<bool> showDeleteDialog(
       return Dialog(
         elevation: 0,
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
         child: SizedBox(
-          width: 360,
+          width: 360.w,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+            padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 20.h),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.warning_rounded,
                       color: AppColors.error,
-                      size: 30,
+                      size: 30.sp,
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: TextStyle(
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                           fontFamily: 'Sarabun',
@@ -44,26 +45,26 @@ Future<bool> showDeleteDialog(
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     message,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: 16.sp,
                       color: AppColors.textSub,
                       height: 1.4,
                       fontFamily: 'Sarabun',
                     ),
                   ),
                 ),
-                const SizedBox(height: 22),
+                SizedBox(height: 22.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     SizedBox(
-                      width: 96,
-                      height: 40,
+                      width: 96.w,
+                      height: 40.h,
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context, false),
                         style: OutlinedButton.styleFrom(
@@ -71,24 +72,24 @@ Future<bool> showDeleteDialog(
                           foregroundColor: AppColors.textSub,
                           side: const BorderSide(color: AppColors.blueBorder),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                           padding: EdgeInsets.zero,
                         ),
                         child: Text(
                           cancelText,
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: TextStyle(
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.w700,
                             fontFamily: 'Sarabun',
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     SizedBox(
-                      width: 72,
-                      height: 40,
+                      width: 72.w,
+                      height: 40.h,
                       child: ElevatedButton(
                         onPressed: () => Navigator.pop(context, true),
                         style: ElevatedButton.styleFrom(
@@ -96,14 +97,14 @@ Future<bool> showDeleteDialog(
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                           padding: EdgeInsets.zero,
                         ),
                         child: Text(
                           confirmText,
-                          style: const TextStyle(
-                            fontSize: 20,
+                          style: TextStyle(
+                            fontSize: 20.sp,
                             fontWeight: FontWeight.w700,
                             fontFamily: 'Sarabun',
                           ),

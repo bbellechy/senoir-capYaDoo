@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 class AppNavBar extends StatelessWidget {
@@ -21,15 +22,15 @@ class AppNavBar extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: const Offset(0, -4),
+            blurRadius: 15.r,
+            offset: Offset(0, -4.h),
           ),
         ],
       ),
       child: SafeArea(
         child: Container(
-          height: 72, // Consistent height
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          height: 72.h, // Consistent height
+          padding: EdgeInsets.symmetric(horizontal: 12.0.w),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -84,9 +85,9 @@ class AppNavBar extends StatelessWidget {
     return Expanded(
       child: InkWell(
         onTap: () => onTap(index),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+          margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
           decoration: isSelected
               ? BoxDecoration(
                   gradient: LinearGradient(
@@ -97,12 +98,12 @@ class AppNavBar extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
                     BoxShadow(
                       color: primaryColor.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      blurRadius: 10.r,
+                      offset: Offset(0, 4.h),
                     ),
                   ],
                 )
@@ -114,14 +115,14 @@ class AppNavBar extends StatelessWidget {
               Icon(
                 isSelected ? selectedIcon : icon,
                 color: isSelected ? primaryColor : AppColors.textSub,
-                size: 28,
+                size: 28.sp,
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 label,
                 style: TextStyle(
                   color: isSelected ? primaryColor : AppColors.textSub,
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   fontFamily: 'Sarabun',
                   letterSpacing: 0.2,

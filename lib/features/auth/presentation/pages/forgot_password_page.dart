@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
@@ -141,30 +142,30 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             child: Stack(
               children: [
                 SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                  padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 24.h),
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 760),
                       child: Form(
                         key: _formKey,
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 78),
+                          padding: EdgeInsets.only(top: 78.h),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'ลืมรหัสผ่าน',
                                 style: TextStyle(
                                   fontFamily: 'Sarabun',
-                                  fontSize: 28,
+                                  fontSize: 28.sp,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.textPrimary,
                                   height: 1.0,
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              SizedBox(height: 20.h),
                               _buildFieldLabel('รหัสผ่านใหม่'),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               AppInputText(
                                 controller: _newPasswordController,
                                 hintText: 'กรอกรหัสผ่านใหม่',
@@ -181,12 +182,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                     ),
                               ),
                               if (_showNewRulesPanel) ...[
-                                const SizedBox(height: 10),
+                                SizedBox(height: 10.h),
                                 _buildInlineNewRulesPanel(),
                               ],
-                              const SizedBox(height: 18),
+                              SizedBox(height: 18.h),
                               _buildFieldLabel('ยืนยันรหัสผ่านใหม่'),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               AppInputText(
                                 controller: _confirmPasswordController,
                                 hintText: 'ยืนยันรหัสผ่านใหม่',
@@ -204,10 +205,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                     ),
                               ),
                               if (_showConfirmRulesPanel) ...[
-                                const SizedBox(height: 10),
+                                SizedBox(height: 10.h),
                                 _buildInlineConfirmRulesPanel(),
                               ],
-                              const SizedBox(height: 18),
+                              SizedBox(height: 18.h),
                               SizedBox(
                                 width: double.infinity,
                                 child: AppButton(
@@ -226,14 +227,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                 ),
                 Positioned(
-                  left: 8,
-                  top: 4,
+                  left: 8.w,
+                  top: 4.h,
                   child: IconButton(
-                    padding: const EdgeInsets.all(18),
+                    padding: EdgeInsets.all(18.r),
                     constraints: const BoxConstraints(),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back_ios,
                       color: AppColors.primaryBlue,
+                      size: 24.sp,
                     ),
                     onPressed: () {
                       Navigator.pushReplacementNamed(
@@ -254,9 +256,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Widget _buildFieldLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'Sarabun',
-        fontSize: 16,
+        fontSize: 16.sp,
         fontWeight: FontWeight.w600,
         color: AppColors.primaryBlue,
       ),
@@ -266,24 +268,24 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Widget _buildInlineNewRulesPanel() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: AppColors.subBlue,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'รหัสผ่านต้องประกอบไปด้วย',
             style: TextStyle(
               fontFamily: 'Sarabun',
-              fontSize: 17,
+              fontSize: 17.sp,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           _buildRuleItem('อย่างน้อย 8 ตัวอักษร', _hasMinLength),
           _buildRuleItem('ตัวอักษรพิเศษ อย่างน้อย 1 ตัว', _hasSpecial),
           _buildRuleItem('ตัวเลข 0-9 อย่างน้อย 1 ตัว', _hasDigit),
@@ -300,13 +302,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (mismatch)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 6),
+          Padding(
+            padding: EdgeInsets.only(bottom: 6.h),
             child: Text(
               'รหัสผ่านไม่ตรงกัน',
               style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w700,
                 color: AppColors.error,
               ),
@@ -314,24 +316,24 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
           decoration: BoxDecoration(
             color: AppColors.subBlue,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(10.r),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'รหัสผ่านต้องประกอบไปด้วย',
                 style: TextStyle(
                   fontFamily: 'Sarabun',
-                  fontSize: 17,
+                  fontSize: 17.sp,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               _buildRuleItem('อย่างน้อย 8 ตัวอักษร', _confirmHasMinLength),
               _buildRuleItem(
                 'ตัวอักษรพิเศษ อย่างน้อย 1 ตัว',
@@ -347,12 +349,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   Widget _buildRuleItem(String label, bool passed) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10.h),
       child: Row(
         children: [
           Container(
-            width: 24,
-            height: 24,
+            width: 24.w,
+            height: 24.h,
             decoration: BoxDecoration(
               color: passed
                   ? AppColors.success.withOpacity(0.2)
@@ -361,17 +363,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             ),
             child: Icon(
               passed ? Icons.check_rounded : Icons.close_rounded,
-              size: 16,
+              size: 16.sp,
               color: passed ? AppColors.success : AppColors.textSub,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               label,
               style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 15,
+                fontSize: 15.sp,
                 height: 1.2,
                 color: passed ? AppColors.textPrimary : AppColors.textSub,
                 fontWeight: passed ? FontWeight.w600 : FontWeight.w400,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 class TimeSelectorWidget extends StatefulWidget {
@@ -85,38 +86,38 @@ class _TimeSelectorWidgetState extends State<TimeSelectorWidget> {
         // Display selected times
         if (_selectedTimes.isNotEmpty) ...[
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 8.w,
+            runSpacing: 8.h,
             children: _selectedTimes.asMap().entries.map((entry) {
               final index = entry.key;
               final time = entry.value;
               return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 12.w,
+                  vertical: 8.h,
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       _formatTime(time),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     GestureDetector(
                       onTap: () => _removeTime(index),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close,
                         color: Colors.white,
-                        size: 16,
+                        size: 16.sp,
                       ),
                     ),
                   ],
@@ -124,22 +125,22 @@ class _TimeSelectorWidgetState extends State<TimeSelectorWidget> {
               );
             }).toList(),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
         ],
 
         // Add time button
         SizedBox(
           width: double.infinity,
-          height: 50,
+          height: 50.h,
           child: OutlinedButton.icon(
             onPressed: _addTime,
-            icon: const Icon(Icons.add),
-            label: const Text('เพิ่มเวลา'),
+            icon: Icon(Icons.add, size: 24.sp),
+            label: Text('เพิ่มเวลา', style: TextStyle(fontSize: 16.sp)),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primaryBlue,
-              side: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+              side: BorderSide(color: AppColors.primaryBlue, width: 1.5.w),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
             ),
           ),

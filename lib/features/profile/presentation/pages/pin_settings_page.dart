@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/features/profile/presentation/widgets/pin_service.dart';
 import 'package:capyadoo/features/profile/presentation/pages/pin_setup_page.dart';
@@ -71,13 +72,13 @@ class _PinSettingsPageState extends State<PinSettingsPage> {
       body: Column(
         children: [
           Container(
-            height: 160,
+            height: 160.h,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -85,11 +86,11 @@ class _PinSettingsPageState extends State<PinSettingsPage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -97,11 +98,11 @@ class _PinSettingsPageState extends State<PinSettingsPage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -112,10 +113,10 @@ class _PinSettingsPageState extends State<PinSettingsPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(
-                          left: 30,
-                          right: 30,
-                          bottom: 20,
+                        padding: EdgeInsets.only(
+                          left: 30.w,
+                          right: 30.w,
+                          bottom: 20.h,
                         ),
                         child: Row(
                           children: [
@@ -132,12 +133,12 @@ class _PinSettingsPageState extends State<PinSettingsPage> {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 32,
+                                  fontSize: 32.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 48),
+                            SizedBox(width: 48.w),
                           ],
                         ),
                       ),
@@ -152,18 +153,18 @@ class _PinSettingsPageState extends State<PinSettingsPage> {
           else
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.r),
                 child: Column(
                   children: [
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 10.h,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                         border: Border.all(color: AppColors.blueBorder),
                       ),
                       child: Row(
@@ -176,17 +177,17 @@ class _PinSettingsPageState extends State<PinSettingsPage> {
                                   'เปิดใช้งาน PIN',
                                   style: TextStyle(
                                     fontFamily: 'Sarabun',
-                                    fontSize: 20,
+                                    fontSize: 20.sp,
                                     fontWeight: FontWeight.w500,
                                     color: AppColors.textPrimary,
                                   ),
                                 ),
-                                SizedBox(height: 2),
+                                SizedBox(height: 2.h),
                                 Text(
                                   'ใช้ PIN เพื่อความปลอดภัย',
                                   style: TextStyle(
                                     fontFamily: 'Sarabun',
-                                    fontSize: 14,
+                                    fontSize: 14.sp,
                                     color: AppColors.textSub,
                                   ),
                                 ),
@@ -215,24 +216,24 @@ class _PinSettingsPageState extends State<PinSettingsPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18.h),
                     SizedBox(
                       width: double.infinity,
-                      height: 48,
+                      height: 48.h,
                       child: ElevatedButton(
                         onPressed: _savePinSetting,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryBlue,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'บันทึก',
                           style: TextStyle(
                             fontFamily: 'Sarabun',
-                            fontSize: 20,
+                            fontSize: 20.sp,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

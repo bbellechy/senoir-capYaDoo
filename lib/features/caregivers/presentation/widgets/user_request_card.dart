@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/app_colors.dart';
 
 /// การ์ดแสดงคำขอหรือการ้องของผู้ใช้งาน (สำหรับผู้ดูแล)
@@ -19,17 +20,17 @@ class UserRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: AppColors.whitelist,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.noonBorder, width: 1.5),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.noonBorder, width: 1.5.w),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
@@ -37,19 +38,19 @@ class UserRequestCard extends StatelessWidget {
         children: [
           // ไอคอนผู้ใช้
           Container(
-            width: 48,
-            height: 48,
+            width: 48.w,
+            height: 48.h,
             decoration: BoxDecoration(
               color: AppColors.noon,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person,
               color: AppColors.noonIcon,
-              size: 28,
+              size: 28.sp,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
 
           // ข้อมูล
           Expanded(
@@ -60,9 +61,9 @@ class UserRequestCard extends StatelessWidget {
                   name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Sarabun',
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
@@ -71,28 +72,28 @@ class UserRequestCard extends StatelessWidget {
                   username,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Sarabun',
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     color: AppColors.textSub,
                   ),
                 ),
                 if (isPending) ...[
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.access_time,
-                        size: 14,
+                        size: 14.sp,
                         color: AppColors.noonIcon,
                       ),
-                      const SizedBox(width: 4),
-                      const Expanded(
+                      SizedBox(width: 4.w),
+                      Expanded(
                         child: Text(
                           'รอการยอมรับจากผู้ใช้งาน...',
                           style: TextStyle(
                             fontFamily: 'Sarabun',
-                            fontSize: 14,
+                            fontSize: 14.sp,
                             color: AppColors.noonIcon,
                           ),
                           maxLines: 1,
@@ -107,11 +108,11 @@ class UserRequestCard extends StatelessWidget {
           ),
 
           // ปุ่ม
-          if (isPending && onCancel != null) const SizedBox(width: 8),
+          if (isPending && onCancel != null) SizedBox(width: 8.w),
           if (isPending && onCancel != null)
             SizedBox(
-              width: 80,
-              height: 36,
+              width: 80.w,
+              height: 36.h,
               child: OutlinedButton(
                 onPressed: onCancel,
                 style: OutlinedButton.styleFrom(
@@ -119,21 +120,21 @@ class UserRequestCard extends StatelessWidget {
                   foregroundColor: AppColors.textSub,
                   side: const BorderSide(color: AppColors.blueBorder),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.close, size: 16, color: AppColors.textSub),
-                    SizedBox(width: 4),
+                  children: [
+                    Icon(Icons.close, size: 16.sp, color: AppColors.textSub),
+                    SizedBox(width: 4.w),
                     Text(
                       'ยกเลิก',
                       style: TextStyle(
                         fontFamily: 'Sarabun',
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

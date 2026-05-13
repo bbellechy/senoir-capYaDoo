@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
@@ -95,10 +96,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
             'เปลี่ยนรหัสผ่านสำเร็จ',
-            style: TextStyle(fontFamily: 'Sarabun'),
+            style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
           ),
         ),
       );
@@ -107,10 +108,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text(
           'ไม่สามารถเปลี่ยนรหัสผ่านได้',
-          style: TextStyle(fontFamily: 'Sarabun'),
+          style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
         ),
       ),
     );
@@ -123,12 +124,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       body: Column(
         children: [
           Container(
-            height: 160,
-            decoration: const BoxDecoration(
+            height: 160.h,
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -136,11 +137,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -148,11 +149,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -163,32 +164,33 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(
-                          left: 30,
-                          right: 30,
-                          bottom: 20,
+                        padding: EdgeInsets.only(
+                          left: 30.w,
+                          right: 30.w,
+                          bottom: 20.h,
                         ),
                         child: Row(
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_back_ios,
                                 color: Colors.white,
+                                size: 24.sp,
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'เปลี่ยนรหัสผ่าน',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 32,
+                                  fontSize: 32.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 48),
+                            SizedBox(width: 48.w),
                           ],
                         ),
                       ),
@@ -200,42 +202,42 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+              padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 760),
+                  constraints: BoxConstraints(maxWidth: 760.w),
                   child: Form(
                     key: _formKey,
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(22),
+                      padding: EdgeInsets.all(22.r),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.blueBorder),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(color: AppColors.blueBorder, width: 1.5.w),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.03),
-                            blurRadius: 14,
-                            offset: const Offset(0, 6),
+                            blurRadius: 14.r,
+                            offset: Offset(0, 6.h),
                           ),
                         ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'เปลี่ยนรหัสผ่านของคุณ',
                             style: TextStyle(
                               fontFamily: 'Sarabun',
-                              fontSize: 28,
+                              fontSize: 28.sp,
                               fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
-                          const SizedBox(height: 18),
+                          SizedBox(height: 18.h),
                           _buildFieldLabel('รหัสผ่านปัจจุบัน'),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           AppInputText(
                             controller: _currentPasswordController,
                             hintText: 'กรอกรหัสผ่าน',
@@ -252,9 +254,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h),
                           _buildFieldLabel('รหัสผ่านใหม่'),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           AppInputText(
                             controller: _newPasswordController,
                             hintText: 'กรอกรหัสผ่าน',
@@ -280,12 +282,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                             },
                           ),
                           if (_showNewRulesPanel) ...[
-                            const SizedBox(height: 10),
+                            SizedBox(height: 10.h),
                             _buildInlineNewRulesPanel(),
                           ],
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h),
                           _buildFieldLabel('ยืนยันรหัสผ่านใหม่'),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           AppInputText(
                             controller: _confirmPasswordController,
                             hintText: 'กรอกรหัสผ่าน',
@@ -302,10 +304,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                                 ),
                           ),
                           if (_showConfirmRulesPanel) ...[
-                            const SizedBox(height: 10),
+                            SizedBox(height: 10.h),
                             _buildInlineConfirmRulesPanel(),
                           ],
-                          const SizedBox(height: 22),
+                          SizedBox(height: 22.h),
                           SizedBox(
                             width: double.infinity,
                             child: AppButton(
@@ -330,9 +332,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   Widget _buildFieldLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'Sarabun',
-        fontSize: 16,
+        fontSize: 16.sp,
         fontWeight: FontWeight.w600,
         color: AppColors.primaryBlue,
       ),
@@ -342,24 +344,24 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   Widget _buildInlineNewRulesPanel() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: AppColors.subBlue,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'รหัสผ่านต้องประกอบไปด้วย',
             style: TextStyle(
               fontFamily: 'Sarabun',
-              fontSize: 17,
+              fontSize: 17.sp,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           _buildRuleItem('อย่างน้อย 8 ตัวอักษร', _hasMinLength),
           _buildRuleItem('ตัวอักษรพิเศษ อย่างน้อย 1 ตัว', _hasSpecial),
           _buildRuleItem('ตัวเลข 0-9 อย่างน้อย 1 ตัว', _hasDigit),
@@ -376,13 +378,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (mismatch)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 6),
+          Padding(
+            padding: EdgeInsets.only(bottom: 6.h),
             child: Text(
               'รหัสผ่านไม่ตรงกัน',
               style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w700,
                 color: AppColors.error,
               ),
@@ -390,24 +392,24 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           ),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
           decoration: BoxDecoration(
             color: AppColors.subBlue,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(10.r),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'รหัสผ่านต้องประกอบไปด้วย',
                 style: TextStyle(
                   fontFamily: 'Sarabun',
-                  fontSize: 17,
+                  fontSize: 17.sp,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               _buildRuleItem('อย่างน้อย 8 ตัวอักษร', _confirmHasMinLength),
               _buildRuleItem(
                 'ตัวอักษรพิเศษ อย่างน้อย 1 ตัว',
@@ -423,12 +425,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   Widget _buildRuleItem(String label, bool passed) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10.h),
       child: Row(
         children: [
           Container(
-            width: 24,
-            height: 24,
+            width: 24.w,
+            height: 24.h,
             decoration: BoxDecoration(
               color: passed
                   ? AppColors.success.withOpacity(0.2)
@@ -437,17 +439,17 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             ),
             child: Icon(
               passed ? Icons.check_rounded : Icons.close_rounded,
-              size: 16,
+              size: 16.sp,
               color: passed ? AppColors.success : AppColors.textSub,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               label,
               style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 15,
+                fontSize: 15.sp,
                 height: 1.2,
                 color: passed ? AppColors.textPrimary : AppColors.textSub,
                 fontWeight: passed ? FontWeight.w600 : FontWeight.w400,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 class AppButton extends StatelessWidget {
@@ -30,15 +31,15 @@ class AppButton extends StatelessWidget {
 
     if (isOutlined) {
       return SizedBox(
-        height: 50,
-        width: width ?? double.infinity,
+        height: 50.h,
+        width: width?.w ?? double.infinity,
         child: OutlinedButton(
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.textSublest,
-            side: BorderSide(color: AppColors.textSublest, width: 2),
+            side: BorderSide(color: AppColors.textSublest, width: 2.w),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
           ),
           child: _buildButtonChild(AppColors.textSub),
@@ -47,8 +48,8 @@ class AppButton extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 50,
-      width: width ?? double.infinity,
+      height: 50.h,
+      width: width?.w ?? double.infinity,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
@@ -57,7 +58,7 @@ class AppButton extends StatelessWidget {
           disabledBackgroundColor: AppColors.textSublest,
           disabledForegroundColor: AppColors.textSub,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
         ),
         child: _buildButtonChild(txtColor),
       ),
@@ -67,10 +68,10 @@ class AppButton extends StatelessWidget {
   Widget _buildButtonChild(Color color) {
     if (isLoading) {
       return SizedBox(
-        height: 20,
-        width: 20,
+        height: 20.h,
+        width: 20.w,
         child: CircularProgressIndicator(
-          strokeWidth: 2,
+          strokeWidth: 2.w,
           valueColor: AlwaysStoppedAnimation<Color>(color),
         ),
       );
@@ -82,11 +83,11 @@ class AppButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           icon!,
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Text(
             text,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w500,
               color: color,
             ),
@@ -97,7 +98,7 @@ class AppButton extends StatelessWidget {
 
     return Text(
       text,
-      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: color),
+      style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500, color: color),
     );
   }
 }

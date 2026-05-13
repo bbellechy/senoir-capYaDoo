@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../service/voice_recorder.dart';
 import '../../data/voice_api.dart';
@@ -22,7 +23,12 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
     if (!status.isGranted) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('กรุณาอนุญาตการใช้ไมโครโฟน')),
+          SnackBar(
+            content: Text(
+              'กรุณาอนุญาตการใช้ไมโครโฟน',
+              style: TextStyle(fontSize: 14.sp),
+            ),
+          ),
         );
       }
       return;
@@ -47,12 +53,13 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.mic, color: Colors.white),
-                const SizedBox(width: 12),
-                const Expanded(
+                Icon(Icons.mic, color: Colors.white, size: 24.sp),
+                SizedBox(width: 12.w),
+                Expanded(
                   child: Text(
                     'กำลังฟังคำสั่ง... แตะเพื่อส่ง',
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 14.sp),
                   ),
                 ),
               ],
@@ -60,6 +67,7 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
             backgroundColor: Colors.redAccent,
             duration: const Duration(seconds: 60),
             behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(8.r),
           ),
         );
       }
@@ -81,9 +89,12 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
       if (path != null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('กำลังประมวลผลคำสั่ง...'),
-              duration: Duration(seconds: 1),
+            SnackBar(
+              content: Text(
+                'กำลังประมวลผลคำสั่ง...',
+                style: TextStyle(fontSize: 14.sp),
+              ),
+              duration: const Duration(seconds: 1),
             ),
           );
         }
@@ -99,7 +110,12 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
           print('API Error: $e');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('เกิดข้อผิดพลาดในการเชื่อมต่อ')),
+              SnackBar(
+                content: Text(
+                  'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+                  style: TextStyle(fontSize: 14.sp),
+                ),
+              ),
             );
           }
         }
@@ -119,15 +135,19 @@ class _VoiceAssistantButtonState extends State<VoiceAssistantButton> {
       onPressed: _isProcessing ? null : _handleVoiceCommand,
       backgroundColor: _isListening ? Colors.red : Colors.blue,
       child: _isProcessing
-          ? const SizedBox(
-              width: 24,
-              height: 24,
+          ? SizedBox(
+              width: 24.w,
+              height: 24.h,
               child: CircularProgressIndicator(
                 color: Colors.white,
-                strokeWidth: 2,
+                strokeWidth: 2.w,
               ),
             )
-          : Icon(_isListening ? Icons.stop : Icons.mic, color: Colors.white),
+          : Icon(
+              _isListening ? Icons.stop : Icons.mic,
+              color: Colors.white,
+              size: 24.sp,
+            ),
       heroTag: UniqueKey(),
     );
   }

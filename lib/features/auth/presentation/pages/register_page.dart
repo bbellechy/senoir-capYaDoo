@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/widgets/app_input_text.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
 import 'package:capyadoo/core/widgets/app_logo.dart';
@@ -111,40 +112,40 @@ class _RegisterPageState extends State<RegisterPage> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(48.0),
+              padding: EdgeInsets.all(48.0.r),
               child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Logo
-                    const AppLogo(size: 80),
-                    const SizedBox(height: 24),
+                    AppLogo(size: 80.sp),
+                    SizedBox(height: 24.h),
 
                     // Title
-                    const Text(
+                    Text(
                       'ลงทะเบียนเข้าใช้งาน',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryBlue,
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // First Name Field
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'ชื่อจริง',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryBlue,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         AppInputText(
                           controller: _firstNameController,
                           hintText: 'กรอกชื่อจริง',
@@ -157,21 +158,21 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Last Name Field
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'นามสกุล',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryBlue,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         AppInputText(
                           controller: _lastNameController,
                           hintText: 'กรอกนามสกุล',
@@ -184,21 +185,21 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Username Field
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'ชื่อผู้ใช้งาน',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryBlue,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         AppInputText(
                           controller: _usernameController,
                           hintText: 'กรอกชื่อผู้ใช้งาน',
@@ -211,21 +212,21 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Phone Field
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'เบอร์โทรศัพท์',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryBlue,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         AppInputText(
                           controller: _phoneNumberController,
                           hintText: 'กรอกเบอร์โทรศัพท์',
@@ -234,21 +235,21 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Password Field
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'รหัสผ่าน',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryBlue,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         AppInputText(
                           controller: _passwordController,
                           hintText: 'กรอกรหัสผ่าน',
@@ -262,26 +263,26 @@ class _RegisterPageState extends State<RegisterPage> {
                               PasswordValidation.validateRequiredPassword,
                         ),
                         if (_showPasswordRulesPanel) ...[
-                          const SizedBox(height: 10),
+                          SizedBox(height: 10.h),
                           _buildInlinePasswordRulesPanel(),
                         ],
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Confirm Password Field
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'ยืนยันรหัสผ่าน',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryBlue,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         AppInputText(
                           controller: _confirmPasswordController,
                           hintText: 'กรอกรหัสผ่านอีกครั้ง',
@@ -300,12 +301,12 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                         ),
                         if (_showConfirmRulesPanel) ...[
-                          const SizedBox(height: 10),
+                          SizedBox(height: 10.h),
                           _buildInlineConfirmRulesPanel(),
                         ],
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // Register Button
                     _isLoading
@@ -314,17 +315,17 @@ class _RegisterPageState extends State<RegisterPage> {
                             text: 'ลงทะเบียน',
                             onPressed: _handleRegister,
                           ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Login Link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           'มีบัญชีแล้ว? ',
                           style: TextStyle(
                             color: AppColors.textSub,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                           ),
                         ),
                         TextButton(
@@ -334,11 +335,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             minimumSize: const Size(0, 0),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text(
+                          child: Text(
                             'เข้าสู่ระบบ',
                             style: TextStyle(
                               color: AppColors.primaryBlue,
-                              fontSize: 16,
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -358,24 +359,24 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildInlinePasswordRulesPanel() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: AppColors.subBlue,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'รหัสผ่านต้องประกอบไปด้วย',
             style: TextStyle(
               fontFamily: 'Sarabun',
-              fontSize: 17,
+              fontSize: 17.sp,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           _buildRuleItem('อย่างน้อย 8 ตัวอักษร', _hasMinLength),
           _buildRuleItem('ตัวอักษรพิเศษ อย่างน้อย 1 ตัว', _hasSpecial),
           _buildRuleItem('ตัวเลข 0-9 อย่างน้อย 1 ตัว', _hasDigit),
@@ -392,13 +393,13 @@ class _RegisterPageState extends State<RegisterPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (mismatch)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 6),
+          Padding(
+            padding: EdgeInsets.only(bottom: 6.h),
             child: Text(
               'รหัสผ่านไม่ตรงกัน',
               style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w700,
                 color: AppColors.error,
               ),
@@ -406,24 +407,24 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
           decoration: BoxDecoration(
             color: AppColors.subBlue,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(10.r),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'รหัสผ่านต้องประกอบไปด้วย',
                 style: TextStyle(
                   fontFamily: 'Sarabun',
-                  fontSize: 17,
+                  fontSize: 17.sp,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               _buildRuleItem('อย่างน้อย 8 ตัวอักษร', _confirmHasMinLength),
               _buildRuleItem(
                 'ตัวอักษรพิเศษ อย่างน้อย 1 ตัว',
@@ -439,21 +440,21 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Widget _buildRuleItem(String text, bool isSatisfied) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Row(
         children: [
           Icon(
             isSatisfied ? Icons.check_circle : Icons.radio_button_unchecked,
             color: isSatisfied ? Colors.green : AppColors.textSublest,
-            size: 20,
+            size: 20.sp,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 15,
+                fontSize: 15.sp,
                 color: isSatisfied ? AppColors.textPrimary : AppColors.textSub,
                 fontWeight: isSatisfied ? FontWeight.w600 : FontWeight.w400,
               ),

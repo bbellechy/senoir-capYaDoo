@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/app_colors.dart';
 
 enum MedicineConfirmationStatus { pending, taken, overdue, taken_late }
@@ -21,22 +22,22 @@ class MedicineConfirmationButton extends StatelessWidget {
       case MedicineConfirmationStatus.pending:
         if (pendingText == 'รอทาน') {
           final waitingPill = Container(
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            height: 40.h,
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             decoration: BoxDecoration(
               color: AppColors.warning,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.access_time, color: Colors.white, size: 18),
-                SizedBox(width: 6),
+                Icon(Icons.access_time, color: Colors.white, size: 18.sp),
+                SizedBox(width: 6.w),
                 Text(
                   'รอทาน',
                   style: TextStyle(
                     fontFamily: 'Sarabun',
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
                     color: Colors.white,
                   ),
@@ -53,21 +54,21 @@ class MedicineConfirmationButton extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: onConfirm,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
               child: waitingPill,
             ),
           );
         }
 
         return SizedBox(
-          height: 40,
+          height: 40.h,
           child: ElevatedButton(
             onPressed: onConfirm,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryBlue,
               foregroundColor: AppColors.whitelist,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               elevation: 0,
             ),
@@ -75,7 +76,7 @@ class MedicineConfirmationButton extends StatelessWidget {
               pendingText,
               style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -84,27 +85,27 @@ class MedicineConfirmationButton extends StatelessWidget {
 
       case MedicineConfirmationStatus.taken:
         return Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 18),
+          height: 40.h,
+          padding: EdgeInsets.symmetric(horizontal: 18.w),
           decoration: BoxDecoration(
             color: AppColors.success,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.check_circle_outline,
                 color: Colors.white,
-                size: 18,
+                size: 18.sp,
               ),
-              const SizedBox(width: 6),
-              const Text(
+              SizedBox(width: 6.w),
+              Text(
                 'ทานแล้ว',
                 style: TextStyle(
                   fontFamily: 'Sarabun',
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w500,
                   color: Colors.white,
                 ),
@@ -115,18 +116,18 @@ class MedicineConfirmationButton extends StatelessWidget {
 
       case MedicineConfirmationStatus.overdue:
         final overduePill = Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          height: 40.h,
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
           decoration: BoxDecoration(
             color: AppColors.red,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
-          child: const Center(
+          child: Center(
             child: Text(
               'เกินกำหนด',
               style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w500,
                 color: Colors.white,
               ),
@@ -142,30 +143,30 @@ class MedicineConfirmationButton extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onConfirm,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             child: overduePill,
           ),
         );
 
       case MedicineConfirmationStatus.taken_late:
         return Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 18),
+          height: 40.h,
+          padding: EdgeInsets.symmetric(horizontal: 18.w),
           decoration: BoxDecoration(
             color: AppColors.noonIcon,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
-              SizedBox(width: 6),
+              Icon(Icons.check_circle_outline, color: Colors.white, size: 18.sp),
+              SizedBox(width: 6.w),
               Text(
                 'ทานล่าช้า',
                 style: TextStyle(
                   fontFamily: 'Sarabun',
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w500,
                   color: Colors.white,
                 ),

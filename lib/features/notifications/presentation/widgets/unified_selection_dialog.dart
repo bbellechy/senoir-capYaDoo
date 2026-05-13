@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/model/medication.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
@@ -208,9 +209,9 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(24.r),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,14 +221,14 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
               children: [
                 Text(
                   widget.title ?? 'เพิ่มยา',
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: TextStyle(
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close, size: 24.sp),
                 ),
               ],
             ),
@@ -242,9 +243,9 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
                   Tab(text: 'กล่องยา'),
                 ],
               ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             SizedBox(
-              height: 350,
+              height: 350.h,
               child: TabBarView(
                 controller: _tabController,
                 physics: widget.showBoxes
@@ -258,7 +259,7 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Row(
               children: [
                 Expanded(
@@ -269,14 +270,14 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
                       foregroundColor: Colors.black,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    child: const Text('ยกเลิก'),
+                    child: Text('ยกเลิก', style: TextStyle(fontSize: 16.sp)),
                   ),
                 ),
                 if (widget.allowFreeText) ...[
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _onManualSubmit,
@@ -285,10 +286,10 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
-                      child: const Text('บันทึก'),
+                      child: Text('บันทึก', style: TextStyle(fontSize: 16.sp)),
                     ),
                   ),
                 ],
@@ -309,25 +310,30 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
           child: TextField(
             controller: _searchController,
             onChanged: _onSearchChanged,
+            style: TextStyle(fontSize: 16.sp),
             decoration: InputDecoration(
               hintText: 'ค้นหายา...',
               filled: true,
               fillColor: Colors.blue[50],
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: Icon(Icons.search, size: 24.sp),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide.none,
               ),
               suffixIcon: _isSearching
-                  ? const Padding(
-                      padding: EdgeInsets.all(12.0),
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                  ? Padding(
+                      padding: EdgeInsets.all(12.r),
+                      child: SizedBox(
+                        width: 20.w,
+                        height: 20.h,
+                        child: CircularProgressIndicator(strokeWidth: 2.w),
+                      ),
                     )
                   : null,
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Expanded(
           child: _medSuggestions.isEmpty && !_isSearching
               ? Center(
@@ -336,6 +342,7 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
                         ? 'ไม่พบยา "${_searchController.text}"'
                         : 'กรุณาค้นหาชื่อยาหรือพิมพ์ชื่อยาที่ต้องการเพิ่ม',
                     textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14.sp),
                   ),
                 )
               : ListView.builder(
@@ -352,12 +359,12 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
                       subtitle = 'ยาของคุณ';
                     }
                     return ListTile(
-                      title: Text(name),
+                      title: Text(name, style: TextStyle(fontSize: 16.sp)),
                       subtitle: Text(
                         subtitle,
-                        style: const TextStyle(fontSize: 12),
+                        style: TextStyle(fontSize: 12.sp),
                       ),
-                      leading: const Icon(Icons.medication_outlined),
+                      leading: Icon(Icons.medication_outlined, size: 24.sp),
                       onTap: () => _onSelect(item),
                     );
                   },
@@ -369,16 +376,16 @@ class _UnifiedSelectionDialogState extends State<UnifiedSelectionDialog>
 
   Widget _buildBoxList() {
     if (_boxes.isEmpty) {
-      return const Center(child: Text('ไม่พบกล่องยา'));
+      return Center(child: Text('ไม่พบกล่องยา', style: TextStyle(fontSize: 14.sp)));
     }
     return ListView.builder(
       itemCount: _boxes.length,
       itemBuilder: (context, index) {
         final box = _boxes[index];
         return ListTile(
-          title: Text(box.name),
-          subtitle: Text(box.description ?? ''),
-          leading: const Icon(Icons.inventory_2_outlined),
+          title: Text(box.name, style: TextStyle(fontSize: 16.sp)),
+          subtitle: Text(box.description ?? '', style: TextStyle(fontSize: 14.sp)),
+          leading: Icon(Icons.inventory_2_outlined, size: 24.sp),
           onTap: () => _onSelect(box),
         );
       },

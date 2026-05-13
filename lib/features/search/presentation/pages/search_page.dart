@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import '../../../../core/model/medication.dart';
 import '../../../../features/notifications/data/medication_search_service.dart';
@@ -95,7 +96,10 @@ class _SearchPageState extends State<SearchPage> {
       if (mounted && currentSearchId == _lastSearchId) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('ค้นหาไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'),
+            content: Text(
+              'ค้นหาไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
+              style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -126,8 +130,8 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    const double headerHeight = 175;
-    const double searchBoxHeight = 80;
+    final double headerHeight = 175.h;
+    final double searchBoxHeight = 80.h;
     final query = _searchController.text.trim();
     final hasQuery = query.isNotEmpty;
     final hasCurrentSearch =
@@ -150,11 +154,11 @@ class _SearchPageState extends State<SearchPage> {
                   child: Stack(
                     children: [
                       Positioned(
-                        right: -50,
-                        top: -50,
+                        right: -50.w,
+                        top: -50.h,
                         child: Container(
-                          width: 200,
-                          height: 200,
+                          width: 200.w,
+                          height: 200.h,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white.withOpacity(0.08),
@@ -162,11 +166,11 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                       ),
                       Positioned(
-                        left: -30,
-                        bottom: -30,
+                        left: -30.w,
+                        bottom: -30.h,
                         child: Container(
-                          width: 140,
-                          height: 140,
+                          width: 140.w,
+                          height: 140.h,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white.withOpacity(0.08),
@@ -176,13 +180,13 @@ class _SearchPageState extends State<SearchPage> {
                       Positioned(
                         left: 0,
                         right: 0,
-                        bottom: (searchBoxHeight / 2) + 12,
+                        bottom: (searchBoxHeight / 2) + 12.h,
                         child: const Center(
                           child: Text(
                             'ค้นหายา',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 36,
+                              fontSize: 36.sp,
                               fontWeight: FontWeight.w700,
                               fontFamily: 'Sarabun',
                             ),
@@ -195,7 +199,7 @@ class _SearchPageState extends State<SearchPage> {
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(top: searchBoxHeight / 2 + 12),
+                  padding: EdgeInsets.only(top: searchBoxHeight / 2 + 12.h),
                   child: _buildContent(),
                 ),
               ),
@@ -203,18 +207,18 @@ class _SearchPageState extends State<SearchPage> {
           ),
           Positioned(
             top: headerHeight - (searchBoxHeight / 2),
-            left: 16,
-            right: 16,
+            left: 16.w,
+            right: 16.w,
             child: Container(
               height: searchBoxHeight,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.12),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    blurRadius: 8.r,
+                    offset: Offset(0, 2.h),
                   ),
                 ],
               ),
@@ -224,7 +228,7 @@ class _SearchPageState extends State<SearchPage> {
                 child: TextField(
                   controller: _searchController,
                   textAlignVertical: TextAlignVertical.center,
-                  style: const TextStyle(fontSize: 16, height: 1.2),
+                  style: TextStyle(fontSize: 16.sp, height: 1.2),
                   onChanged: (value) {
                     setState(() {});
                     if (value.isEmpty) {
@@ -241,16 +245,16 @@ class _SearchPageState extends State<SearchPage> {
                     hintText: 'ค้นหายาที่ต้องการ...',
                     hintStyle: TextStyle(
                       color: AppColors.textSub,
-                      fontSize: 20,
+                      fontSize: 20.sp,
                     ),
                     prefixIcon: Icon(
                       Icons.search,
                       color: AppColors.textSub,
-                      size: 26,
+                      size: 26.sp,
                     ),
-                    prefixIconConstraints: const BoxConstraints(
-                      minWidth: 56,
-                      minHeight: 80,
+                    prefixIconConstraints: BoxConstraints(
+                      minWidth: 56.w,
+                      minHeight: 80.h,
                     ),
                     suffixIcon: hasQuery
                         ? IconButton(
@@ -269,17 +273,17 @@ class _SearchPageState extends State<SearchPage> {
                                   : (hasCurrentSearch
                                         ? AppColors.textSub
                                         : AppColors.primaryBlue),
-                              size: 28,
+                              size: 28.sp,
                             ),
                           )
                         : null,
-                    suffixIconConstraints: const BoxConstraints(
-                      minWidth: 56,
-                      minHeight: 80,
+                    suffixIconConstraints: BoxConstraints(
+                      minWidth: 56.w,
+                      minHeight: 80.h,
                     ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
                       vertical: 0,
                     ),
                   ),
@@ -300,12 +304,12 @@ class _SearchPageState extends State<SearchPage> {
           children: [
             CircularProgressIndicator(
               color: AppColors.primaryBlue,
-              strokeWidth: 3,
+              strokeWidth: 3.w,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               'กำลังค้นหา...',
-              style: TextStyle(color: AppColors.textSub, fontSize: 14),
+              style: TextStyle(color: AppColors.textSub, fontSize: 14.sp),
             ),
           ],
         ),
@@ -314,7 +318,7 @@ class _SearchPageState extends State<SearchPage> {
 
     if (!hasSearched) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
         child: Align(
           alignment: Alignment.topCenter,
           child: AppEmptyCard(
@@ -323,8 +327,8 @@ class _SearchPageState extends State<SearchPage> {
             subtitle: 'ค้นหายาเพื่อดูข้อมูลรายละเอียด',
             iconColor: AppColors.textSublest,
             borderColor: AppColors.blueBorder,
-            borderRadius: 10,
-            borderWidth: 2,
+            borderRadius: 10.r,
+            borderWidth: 2.w,
           ),
         ),
       );
@@ -332,7 +336,7 @@ class _SearchPageState extends State<SearchPage> {
 
     if (results.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
         child: Align(
           alignment: Alignment.topCenter,
           child: AppEmptyCard(
@@ -341,15 +345,15 @@ class _SearchPageState extends State<SearchPage> {
             subtitle: 'ไม่พบยาที่คุณค้นหา กรุณาลองตรวจสอบชื่อยาอีกครั้ง',
             iconColor: AppColors.textSublest,
             borderColor: AppColors.blueBorder,
-            borderRadius: 10,
-            borderWidth: 2,
+            borderRadius: 10.r,
+            borderWidth: 2.w,
           ),
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.r),
       itemCount: results.length,
       itemBuilder: (context, index) {
         final item = results[index];
@@ -360,12 +364,12 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _buildMedicationCard(Medication medication) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       child: Material(
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: AppColors.blueBorder, width: 2),
+          borderRadius: BorderRadius.circular(12.r),
+          side: BorderSide(color: AppColors.blueBorder, width: 2.w),
         ),
         elevation: 1,
         shadowColor: Colors.black.withOpacity(0.05),
@@ -382,12 +386,12 @@ class _SearchPageState extends State<SearchPage> {
               );
             }
           },
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.r),
             child: Row(
               children: [
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -397,13 +401,13 @@ class _SearchPageState extends State<SearchPage> {
                           medication.tradenameTh,
                           medication.tradenameEn,
                         ),
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: TextStyle(
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       if (displayDoseForm(
                             medication.doseFormTh,
                             medication.doseFormEn,
@@ -412,18 +416,18 @@ class _SearchPageState extends State<SearchPage> {
                         Text(
                           'รูปแบบยา: ${displayDoseForm(medication.doseFormTh, medication.doseFormEn)}',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             color: AppColors.textSub,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2.h),
                       ],
                       Text(
                         'สรรพคุณ: ${medication.indication ?? "-"}',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           color: AppColors.textSub,
                         ),
                         maxLines: 1,
@@ -431,11 +435,11 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                       if (medication.categoryUse != null &&
                           medication.categoryUse!.isNotEmpty) ...[
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2.h),
                         Text(
                           'การใช้ประโยชน์: ${medication.categoryUse}',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             color: AppColors.textSub,
                           ),
                           maxLines: 1,
@@ -445,7 +449,7 @@ class _SearchPageState extends State<SearchPage> {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: AppColors.textSub, size: 24),
+                Icon(Icons.chevron_right, color: AppColors.textSub, size: 24.sp),
               ],
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/routing/app_router.dart';
 import 'package:capyadoo/core/widgets/app_logo.dart';
@@ -104,41 +105,41 @@ class _PinUnlockPageState extends State<PinUnlockPage> {
               ? const Center(child: CircularProgressIndicator())
               : Center(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(48.0),
+                    padding: EdgeInsets.all(48.r),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const AppLogo(size: 80),
-                        const SizedBox(height: 32),
-                        const Text(
+                        AppLogo(size: 80.sp),
+                        SizedBox(height: 32.h),
+                        Text(
                           'ใส่ PIN เพื่อเข้าใช้งาน',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 28.sp,
                             fontWeight: FontWeight.bold,
                             color: AppColors.primaryBlue,
                           ),
                         ),
-                        const SizedBox(height: 14),
-                        const Text(
+                        SizedBox(height: 14.h),
+                        Text(
                           'กรอกรหัส PIN 6 หลักเพื่อปลดล็อกแอป',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             color: AppColors.textSub,
                             fontFamily: 'Sarabun',
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: 32.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: List.generate(6, (index) {
                             final filled = index < _digits.length;
                             return AnimatedContainer(
                               duration: const Duration(milliseconds: 180),
-                              width: 18,
-                              height: 18,
-                              margin: const EdgeInsets.symmetric(horizontal: 6),
+                              width: 18.w,
+                              height: 18.h,
+                              margin: EdgeInsets.symmetric(horizontal: 6.w),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: filled
@@ -146,12 +147,13 @@ class _PinUnlockPageState extends State<PinUnlockPage> {
                                     : Colors.white,
                                 border: Border.all(
                                   color: AppColors.primaryBlue,
+                                  width: 1.w,
                                 ),
                               ),
                             );
                           }),
                         ),
-                        const SizedBox(height: 28),
+                        SizedBox(height: 28.h),
                         _PinKeyboard(
                           onDigitTap: _onDigitTap,
                           onBackspaceTap: _onBackspaceTap,
@@ -177,21 +179,21 @@ class _PinKeyboard extends StatelessWidget {
     return Column(
       children: [
         _buildNumberRow(['1', '2', '3']),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _buildNumberRow(['4', '5', '6']),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _buildNumberRow(['7', '8', '9']),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Expanded(child: SizedBox()),
             _buildKey(
-              child: const Text(
+              child: Text(
                 '0',
                 style: TextStyle(
                   fontFamily: 'Sarabun',
-                  fontSize: 28,
+                  fontSize: 28.sp,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primaryBlue,
                 ),
@@ -218,16 +220,16 @@ class _PinKeyboard extends StatelessWidget {
           _buildKey(
             child: Text(
               digits[i],
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 28,
+                fontSize: 28.sp,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primaryBlue,
               ),
             ),
             onTap: () => onDigitTap(digits[i]),
           ),
-          if (i < digits.length - 1) const SizedBox(width: 22),
+          if (i < digits.length - 1) SizedBox(width: 22.w),
         ],
       ],
     );
@@ -236,13 +238,13 @@ class _PinKeyboard extends StatelessWidget {
   Widget _buildKey({required Widget child, required VoidCallback onTap}) {
     return _PressableKey(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(40),
+      borderRadius: BorderRadius.circular(40.r),
       child: Container(
-        width: 86,
-        height: 86,
+        width: 86.w,
+        height: 86.h,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.primaryBlue),
+          border: Border.all(color: AppColors.primaryBlue, width: 1.w),
           color: Colors.transparent,
         ),
         alignment: Alignment.center,
@@ -254,15 +256,15 @@ class _PinKeyboard extends StatelessWidget {
   Widget _buildBackspaceKey({required VoidCallback onTap}) {
     return _PressableKey(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: const SizedBox(
-        width: 86,
-        height: 86,
+      borderRadius: BorderRadius.circular(16.r),
+      child: SizedBox(
+        width: 86.w,
+        height: 86.h,
         child: Center(
           child: Icon(
             Icons.backspace_outlined,
             color: AppColors.textSub,
-            size: 30,
+            size: 30.sp,
           ),
         ),
       ),

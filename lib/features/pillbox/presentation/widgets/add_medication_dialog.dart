@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/model/medication.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
@@ -108,9 +109,9 @@ class _AddMedicationDialogState extends State<AddMedicationDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(24.0.r),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,26 +119,26 @@ class _AddMedicationDialogState extends State<AddMedicationDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'เพิ่มยาในกล่อง',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close, size: 24.sp),
                 ),
               ],
             ),
             Text(
               'เลือกยาที่ต้องการเพิ่มในกล่อง "${widget.boxName}"',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: 24.h),
+            Text(
               'ชื่อยา',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             SpeechToTextField(
               controller: _searchController,
               onSearch: () => _performSearch(_searchController.text),
@@ -149,22 +150,22 @@ class _AddMedicationDialogState extends State<AddMedicationDialog> {
                   filled: true,
                   fillColor: Colors.blue[50],
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide.none,
                   ),
                   suffixIcon: _isSearching
-                      ? const Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                      ? Padding(
+                          padding: EdgeInsets.all(12.0.r),
+                          child: CircularProgressIndicator(strokeWidth: 2.w),
                         )
                       : null,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             if (_suggestions.isNotEmpty)
               ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 200),
+                constraints: BoxConstraints(maxHeight: 200.h),
                 child: ListView.builder(
                   shrinkWrap: true,
                   itemCount: _suggestions.length,
@@ -178,13 +179,16 @@ class _AddMedicationDialogState extends State<AddMedicationDialog> {
                     }
 
                     return ListTile(
-                      title: Text(name),
+                      title: Text(
+                        name,
+                        style: TextStyle(fontSize: 16.sp),
+                      ),
                       onTap: () => _onSelectMedication(suggestion),
                     );
                   },
                 ),
               ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             Row(
               children: [
                 Expanded(
@@ -195,13 +199,13 @@ class _AddMedicationDialogState extends State<AddMedicationDialog> {
                       foregroundColor: Colors.black,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    child: const Text('ยกเลิก'),
+                    child: Text('ยกเลิก', style: TextStyle(fontSize: 16.sp)),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _onManualSubmit,
@@ -210,10 +214,10 @@ class _AddMedicationDialogState extends State<AddMedicationDialog> {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    child: const Text('เพิ่มยา'),
+                    child: Text('เพิ่มยา', style: TextStyle(fontSize: 16.sp)),
                   ),
                 ),
               ],

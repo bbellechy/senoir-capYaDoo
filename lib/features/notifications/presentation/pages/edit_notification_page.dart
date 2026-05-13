@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/model/medication_notification.dart';
 import 'package:capyadoo/features/notifications/controller/notification_controller.dart';
@@ -49,29 +50,31 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
   void _showImageSourceSelector() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.camera_alt,
                 color: AppColors.primaryBlue,
+                size: 24.sp,
               ),
-              title: const Text('ถ่ายภาพ'),
+              title: Text('ถ่ายภาพ', style: TextStyle(fontSize: 16.sp)),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
               },
             ),
             ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.photo_library,
                 color: AppColors.primaryBlue,
+                size: 24.sp,
               ),
-              title: const Text('เลือกจากอัลบั้ม'),
+              title: Text('เลือกจากอัลบั้ม', style: TextStyle(fontSize: 16.sp)),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -223,7 +226,13 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.error),
+      SnackBar(
+        content: Text(
+          message,
+          style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
+        ),
+        backgroundColor: AppColors.error,
+      ),
     );
   }
 
@@ -234,12 +243,12 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
       body: Column(
         children: [
           Container(
-            height: 160,
-            decoration: const BoxDecoration(
+            height: 160.h,
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -247,11 +256,11 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -259,11 +268,11 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -274,27 +283,28 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(
-                          left: 30,
-                          right: 30,
-                          bottom: 20,
+                        padding: EdgeInsets.only(
+                          left: 30.w,
+                          right: 30.w,
+                          bottom: 20.h,
                         ),
                         child: Row(
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_back_ios,
                                 color: Colors.white,
+                                size: 24.sp,
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
-                            const Expanded(
+                             Expanded(
                               child: Text(
                                 'แก้ไขการแจ้งเตือน',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 32,
+                                  fontSize: 32.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -310,28 +320,28 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(24.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'แก้ไขรูปภาพยา (ถ่ายภาพหรือเลือกจากอัลบั้ม)',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   GestureDetector(
                     onTap: _showImageSourceSelector,
                     child: Container(
                       width: double.infinity,
-                      height: 180,
+                      height: 180.h,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(color: Colors.grey[300]!, width: 1.w),
                         image: _imagePath != null
                             ? DecorationImage(
                                 image: _imagePath!.startsWith('http')
@@ -347,13 +357,13 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                               children: [
                                 Icon(
                                   Icons.add_a_photo_outlined,
-                                  size: 48,
+                                  size: 48.sp,
                                   color: Colors.grey[400],
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: 8.h),
                                 Text(
                                   'แตะเพื่อเพิ่มรูปภาพ',
-                                  style: TextStyle(color: Colors.grey[500]),
+                                  style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
                                 ),
                               ],
                             )
@@ -366,16 +376,16 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                                   color: Colors.black54,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.edit,
                                   color: Colors.white,
-                                  size: 20,
+                                  size: 20.sp,
                                 ),
                               ),
                             ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   PillSelectionWidget(
                     initialValue: _medicationName,
                     onSelected: (name, _) {
@@ -384,28 +394,28 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                       });
                     },
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   Text(
                     'เวลา *',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                       color: Colors.grey[700],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   GestureDetector(
                     onTap: _selectTime,
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 12.h,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.grey[300]!, width: 1.w),
                       ),
                       child: Text(
                         _selectedTime != null
@@ -415,21 +425,21 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                           color: _selectedTime != null
                               ? Colors.black87
                               : Colors.grey[500],
-                          fontSize: 16,
+                          fontSize: 16.sp,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   Text(
                     'วันที่ต้องการแจ้งเตือน',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                       color: Colors.grey[700],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   DaySelectorWidget(
                     selectedDays: _selectedDays,
                     onDaysChanged: (days) {
@@ -438,33 +448,33 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                       });
                     },
                   ),
-                  const SizedBox(height: 48),
+                  SizedBox(height: 48.h),
                   Row(
                     children: [
                       Expanded(
                         child: SizedBox(
-                          height: 50,
+                          height: 50.h,
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.grey[600],
-                              side: BorderSide(color: Colors.grey[300]!),
+                              side: BorderSide(color: Colors.grey[300]!, width: 1.w),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(12.r),
                               ),
                               backgroundColor: Colors.grey[200],
                             ),
-                            child: const Text(
+                            child: Text(
                               'ยกเลิก',
-                              style: TextStyle(fontSize: 16),
+                              style: TextStyle(fontSize: 16.sp),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.w),
                       Expanded(
                         child: SizedBox(
-                          height: 50,
+                          height: 50.h,
                           child: ElevatedButton(
                             onPressed: _isSaving ? null : _updateNotification,
                             style: ElevatedButton.styleFrom(
@@ -472,22 +482,22 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(12.r),
                               ),
                             ),
                             child: _isSaving
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
+                                ? SizedBox(
+                                    width: 20.w,
+                                    height: 20.h,
                                     child: CircularProgressIndicator(
-                                      strokeWidth: 2,
+                                      strokeWidth: 2.w,
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text(
+                                : Text(
                                     'บันทึก',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 16.sp,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../service/voice_recorder.dart';
 import '../controller/voice_controller.dart';
 
@@ -27,7 +28,7 @@ class _VoiceButtonState extends State<VoiceButton> {
           controller.sendAndHandle(p);
         }
       },
-      child: const Icon(Icons.mic, size: 40),
+      child: Icon(Icons.mic, size: 40.sp),
     );
   }
 }

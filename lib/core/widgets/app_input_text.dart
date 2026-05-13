@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 
 class AppInputText extends StatefulWidget {
@@ -72,56 +73,59 @@ class _AppInputTextState extends State<AppInputText> {
                 }
               : null),
       obscureText: widget.isPassword ? _obscureText : false,
+      style: TextStyle(fontSize: 16.sp),
       decoration: InputDecoration(
         hintText: widget.hintText,
-        hintStyle: const TextStyle(color: AppColors.textSub),
+        hintStyle: TextStyle(color: AppColors.textSub, fontSize: 16.sp),
         labelText: widget.labelText != null && widget.isRequired
             ? '${widget.labelText} *'
             : widget.labelText,
-        labelStyle: widget.labelText != null && widget.isRequired
-            ? const TextStyle(color: AppColors.textSub)
-            : null,
+        labelStyle: TextStyle(
+          color: AppColors.textSub,
+          fontSize: 16.sp,
+        ),
         prefixIcon: widget.prefixIcon,
         suffixIcon: widget.isPassword
             ? IconButton(
                 icon: Icon(
                   _obscureText ? Icons.visibility : Icons.visibility_off,
                   color: AppColors.textSublest,
+                  size: 24.sp,
                 ),
                 onPressed: _toggleVisibility,
               )
             : widget.suffixIcon,
         filled: true,
         fillColor: widget.enabled ? AppColors.whitelist : AppColors.whitelist,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 14.h,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           borderSide: const BorderSide(color: AppColors.textSublest),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           borderSide: const BorderSide(color: AppColors.textSublest),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: AppColors.primaryBlue, width: 2.w),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           borderSide: const BorderSide(color: AppColors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.error, width: 2),
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: AppColors.error, width: 2.w),
         ),
         disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           borderSide: const BorderSide(color: AppColors.textSublest),
         ),
-        errorStyle: const TextStyle(fontSize: 12, height: 0.8),
+        errorStyle: TextStyle(fontSize: 12.sp, height: 0.8),
       ),
     );
   }

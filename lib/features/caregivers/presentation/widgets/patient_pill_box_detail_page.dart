@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
@@ -65,14 +66,14 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
         children: [
           _buildBoxHeader(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+            padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 12.h),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'รายการยาในกล่อง (${_groupedMedications.length})',
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: TextStyle(
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
@@ -92,12 +93,12 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
 
   Widget _buildBoxHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 24, 24),
-      decoration: const BoxDecoration(
+      padding: EdgeInsets.fromLTRB(12.w, 8.h, 24.w, 24.h),
+      decoration: BoxDecoration(
         color: AppColors.success,
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
+          bottomLeft: Radius.circular(32.r),
+          bottomRight: Radius.circular(32.r),
         ),
       ),
       child: SafeArea(
@@ -109,16 +110,16 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
               icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Expanded(
               child: Row(
                 children: [
                   Container(
-                    width: 88,
-                    height: 88,
+                    width: 88.w,
+                    height: 88.h,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20.r),
                       image: _resolveImagePath(widget.box.imagePath) != null
                           ? DecorationImage(
                               image:
@@ -143,31 +144,31 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
                           : null,
                     ),
                     child: _resolveImagePath(widget.box.imagePath) == null
-                        ? const Icon(
+                        ? Icon(
                             Icons.inventory_2,
-                            size: 44,
+                            size: 44.sp,
                             color: Colors.white,
                           )
                         : null,
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           widget.box.name,
-                          style: const TextStyle(
-                            fontSize: 22,
+                          style: TextStyle(
+                            fontSize: 22.sp,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Text(
                           widget.box.description ?? 'ไม่มีรายละเอียด',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             color: Colors.white.withOpacity(0.8),
                           ),
                         ),
@@ -229,13 +230,13 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
           _dailyMeds.isEmpty && !_isLoading
               ? 'ไม่พบข้อมูลยาในกล่องนี้'
               : 'กำลังโหลด...',
-          style: TextStyle(color: Colors.grey[600], fontSize: 16),
+          style: TextStyle(color: Colors.grey[600], fontSize: 16.sp),
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
       itemCount: _groupedMedications.length,
       itemBuilder: (context, index) {
         final g = _groupedMedications[index];
@@ -247,17 +248,17 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
         final mealTiming = _mealTimingLabel(widget.box.intakeTiming);
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(16),
+          margin: EdgeInsets.only(bottom: 16.h),
+          padding: EdgeInsets.all(16.r),
           decoration: BoxDecoration(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.blueBorder, width: 1.5),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: AppColors.blueBorder, width: 1.5.w),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                blurRadius: 10.r,
+                offset: Offset(0, 4.h),
               ),
             ],
           ),
@@ -267,11 +268,11 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
               Row(
                 children: [
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: 50.w,
+                    height: 50.h,
                     decoration: BoxDecoration(
                       color: const Color(0xFFE8F5E9),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                       image: resolvedPath != null && resolvedPath.isNotEmpty
                           ? DecorationImage(
                               image: resolvedPath.startsWith('http')
@@ -285,26 +286,26 @@ class _PatientPillBoxDetailPageState extends State<PatientPillBoxDetailPage> {
                         ? const Icon(Icons.medication, color: AppColors.success)
                         : null,
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           '$medName ($dosageText)',
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: TextStyle(
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
                           ),
                         ),
                         if (mealTiming.isNotEmpty) ...[
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Text(
                             mealTiming,
                             style: TextStyle(
                               color: Colors.grey[600],
-                              fontSize: 13,
+                              fontSize: 13.sp,
                             ),
                           ),
                         ],

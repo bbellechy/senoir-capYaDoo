@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/model/medication_box.dart';
 import 'package:capyadoo/core/widgets/app_button.dart';
@@ -159,7 +160,10 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_controller.error ?? 'เกิดข้อผิดพลาดในการบันทึก'),
+            content: Text(
+              _controller.error ?? 'เกิดข้อผิดพลาดในการบันทึก',
+              style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
+            ),
           ),
         );
       }
@@ -175,12 +179,12 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
       body: Column(
         children: [
           Container(
-            height: 160,
-            decoration: const BoxDecoration(
+            height: 160.h,
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -188,11 +192,11 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -200,11 +204,11 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -215,17 +219,18 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(
-                          left: 30,
-                          right: 30,
-                          bottom: 20,
+                        padding: EdgeInsets.only(
+                          left: 30.w,
+                          right: 30.w,
+                          bottom: 20.h,
                         ),
                         child: Row(
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_back_ios,
                                 color: Colors.white,
+                                size: 24.sp,
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
@@ -233,14 +238,14 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                               child: Text(
                                 isEditing ? 'แก้ไขกล่องยา' : 'เพิ่มกล่องยา',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 32,
+                                  fontSize: 32.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 48),
+                            SizedBox(width: 48.w),
                           ],
                         ),
                       ),
@@ -252,7 +257,7 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(24.0.r),
               child: Form(
                 key: _formKey,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -269,11 +274,11 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                             _imageFile = file;
                           });
                         },
-                        height: 200,
+                        height: 200.h,
                         width: double.infinity,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Name Field
                     AppTextField(
@@ -288,7 +293,7 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Description Field
                     AppTextField(
@@ -297,7 +302,7 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                       hint: 'รายละเอียดเพิ่มเติม',
                       maxLines: 3,
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // Days selector
                     FormField<List<int>>(
@@ -314,24 +319,24 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                           children: [
                             Row(
                               children: [
-                                const Text(
+                               Text(
                                   'วันที่ต้องทานยา',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                const Text(
+                                Text(
                                   ' *',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.w500,
                                     color: Colors.red,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             DaySelectorWidget(
                               selectedDays: _selectedDays,
                               onDaysChanged: (days) {
@@ -342,12 +347,12 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                               },
                             ),
                             if (field.hasError) ...[
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               Text(
                                 field.errorText ?? '',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.error,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -356,17 +361,17 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                         );
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Meal timing
-                    const Text(
+                    Text(
                       'รับประทาน',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Row(
                       children: [
                         Expanded(
@@ -413,8 +418,7 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Meal times
                     FormField<List<String>>(
@@ -444,24 +448,24 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                           children: [
                             Row(
                               children: [
-                                const Text(
+                               Text(
                                   'เวลารับประทาน',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                const Text(
+                                Text(
                                   ' *',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.w500,
                                     color: Colors.red,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             Column(
                               children: [
                                 Row(
@@ -525,12 +529,12 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                               ],
                             ),
                             if (field.hasError) ...[
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               Text(
                                 field.errorText ?? '',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.error,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -539,7 +543,7 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                         );
                       },
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // Buttons
                     Row(
@@ -552,7 +556,7 @@ class _PillBoxAddPageState extends State<PillBoxAddPage> {
                             onPressed: () => Navigator.pop(context),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16.w),
                         Expanded(
                           child: AppButton(
                             text: isEditing ? 'บันทึก' : 'สร้างกล่องยา',

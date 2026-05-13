@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/widgets/app_text_field.dart';
 import 'package:capyadoo/core/widgets/app_date_picker.dart';
@@ -128,12 +129,12 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
         children: [
           // Header
           Container(
-            height: 160,
-            decoration: const BoxDecoration(
+            height: 160.h,
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -141,11 +142,11 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -153,11 +154,11 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -168,17 +169,18 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(
-                          left: 30,
-                          right: 30,
-                          bottom: 20,
+                        padding: EdgeInsets.only(
+                          left: 30.w,
+                          right: 30.w,
+                          bottom: 20.h,
                         ),
                         child: Row(
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_back_ios,
                                 color: Colors.white,
+                                size: 24.sp,
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
@@ -188,15 +190,15 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                                     ? 'แก้ไขบันทึกอาการ'
                                     : 'เพิ่มบันทึกอาการ',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 32,
+                                  fontSize: 32.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
-                            const SizedBox(
-                              width: 48,
+                            SizedBox(
+                              width: 48.w,
                             ), // Balance the back button
                           ],
                         ),
@@ -211,20 +213,20 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
           // Form content
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // วันที่
-                  const Text(
+                  Text(
                     'วันที่',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
                       fontFamily: 'Sarabun',
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   AppDatePicker(
                     hint: 'เลือกวันที่',
                     selectedDate: _selectedDate,
@@ -234,41 +236,41 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                       });
                     },
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   // เวลา
-                  const Text(
+                  Text(
                     'เวลา',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
                       fontFamily: 'Sarabun',
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   InkWell(
                     onTap: () => _selectTime(context),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 14.h,
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.textSublest),
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(color: AppColors.textSublest, width: 1.w),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.access_time, color: AppColors.textSub),
-                          const SizedBox(width: 16),
+                          Icon(Icons.access_time, color: AppColors.textSub, size: 24.sp),
+                          SizedBox(width: 16.w),
                           Expanded(
                             child: Text(
                               _selectedTime != null
                                   ? _formatTime(_selectedTime!)
                                   : 'เลือกเวลา',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 color: _selectedTime != null
                                     ? AppColors.textSub
                                     : AppColors.textSub,
@@ -280,7 +282,7 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   // ชื่อยา
                   AppSearchableDropdown<String>(
@@ -300,7 +302,7 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                       });
                     },
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   // ระดับความรุนแรง
                   AppSlider(
@@ -318,23 +320,23 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                       });
                     },
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   // รายละเอียดอาการ
-                  const Text(
+                  Text(
                     'รายละเอียดอาการ',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Sarabun',
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   AppLongTextField(
                     controller: _descriptionController,
                     hint: 'กรอกรายละเอียดอาการ...',
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
 
                   // Action buttons
                   Row(
@@ -346,7 +348,7 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.w),
                       Expanded(
                         child: AppButton(
                           text: 'บันทึก',
@@ -371,7 +373,14 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
     if (_selectedMedicine == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('กรุณาเลือกชื่อยา')));
+      ).showSnackBar(
+        SnackBar(
+          content: Text(
+            'กรุณาเลือกชื่อยา',
+            style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
+          ),
+        ),
+      );
       return;
     }
 
@@ -404,7 +413,14 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('บันทึกอาการสำเร็จ')));
+          ).showSnackBar(
+            SnackBar(
+              content: Text(
+                'บันทึกอาการสำเร็จ',
+                style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
+              ),
+            ),
+          );
           Navigator.pop(context, true);
         }
       } else {
@@ -414,7 +430,14 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text(
+              'เกิดข้อผิดพลาด: $e',
+              style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/features/profile/presentation/widgets/pin_service.dart';
 
@@ -77,13 +78,13 @@ class _PinSetupPageState extends State<PinSetupPage> {
       body: Column(
         children: [
           Container(
-            height: 160,
+            height: 160.h,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -91,11 +92,11 @@ class _PinSetupPageState extends State<PinSetupPage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -103,11 +104,11 @@ class _PinSetupPageState extends State<PinSetupPage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -118,10 +119,10 @@ class _PinSetupPageState extends State<PinSetupPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(
-                          left: 30,
-                          right: 30,
-                          bottom: 20,
+                        padding: EdgeInsets.only(
+                          left: 30.w,
+                          right: 30.w,
+                          bottom: 20.h,
                         ),
                         child: Row(
                           children: [
@@ -138,12 +139,12 @@ class _PinSetupPageState extends State<PinSetupPage> {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 32,
+                                  fontSize: 32.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 48),
+                            SizedBox(width: 48.w),
                           ],
                         ),
                       ),
@@ -155,36 +156,36 @@ class _PinSetupPageState extends State<PinSetupPage> {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
+              padding: EdgeInsets.fromLTRB(16.w, 80.h, 16.w, 16.h),
               child: Column(
                 children: [
                   Text(
                     _isConfirmStep ? 'ยืนยันรหัส PIN' : 'ใส่รหัส PIN',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Sarabun',
-                      fontSize: 22,
+                      fontSize: 22.sp,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  SizedBox(height: 28.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(6, (index) {
                       final filled = index < _currentPin.length;
                       return Container(
-                        width: 18,
-                        height: 18,
-                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        width: 18.w,
+                        height: 18.h,
+                        margin: EdgeInsets.symmetric(horizontal: 6.w),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: filled ? AppColors.primaryBlue : Colors.white,
-                          border: Border.all(color: AppColors.primaryBlue),
+                          border: Border.all(color: AppColors.primaryBlue, width: 1.w),
                         ),
                       );
                     }),
                   ),
-                  const SizedBox(height: 26),
+                  SizedBox(height: 26.h),
                   Expanded(
                     child: _PinKeyboard(
                       onNumberTap: _onNumberTap,
@@ -213,33 +214,33 @@ class _PinKeyboard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         _buildNumberRow(['1', '2', '3']),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _buildNumberRow(['4', '5', '6']),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _buildNumberRow(['7', '8', '9']),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(width: 86),
+            SizedBox(width: 86.w),
             _buildKey(
-              child: const Text(
+              child: Text(
                 '0',
                 style: TextStyle(
                   fontFamily: 'Sarabun',
-                  fontSize: 28,
+                  fontSize: 28.sp,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textSub,
                 ),
               ),
               onTap: () => onNumberTap('0'),
             ),
-            const SizedBox(width: 22),
+            SizedBox(width: 22.w),
             _buildKey(
-              child: const Icon(
+              child: Icon(
                 Icons.backspace_outlined,
                 color: AppColors.textSub,
-                size: 30,
+                size: 30.sp,
               ),
               onTap: onBackspaceTap,
             ),
@@ -257,16 +258,16 @@ class _PinKeyboard extends StatelessWidget {
           _buildKey(
             child: Text(
               digits[i],
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Sarabun',
-                fontSize: 28,
+                fontSize: 28.sp,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSub,
               ),
             ),
             onTap: () => onNumberTap(digits[i]),
           ),
-          if (i < digits.length - 1) const SizedBox(width: 22),
+          if (i < digits.length - 1) SizedBox(width: 22.w),
         ],
       ],
     );
@@ -274,14 +275,14 @@ class _PinKeyboard extends StatelessWidget {
 
   Widget _buildKey({required Widget child, required VoidCallback onTap}) {
     return InkWell(
-      borderRadius: BorderRadius.circular(40),
+      borderRadius: BorderRadius.circular(40.r),
       onTap: onTap,
       child: Container(
-        width: 86,
-        height: 86,
+        width: 86.w,
+        height: 86.h,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.textSublest),
+          border: Border.all(color: AppColors.textSublest, width: 1.w),
           color: Colors.transparent,
         ),
         alignment: Alignment.center,

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/widgets/app_image_picker.dart';
@@ -68,12 +69,19 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
   }
 
   Future<void> _showMedicationSelectionDialog() async {
-    if (_userId == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('ไม่พบข้อมูลผู้ใช้')));
-      return;
-    }
+     if (_userId == null) {
+       ScaffoldMessenger.of(
+         context,
+       ).showSnackBar(
+         SnackBar(
+           content: Text(
+             'ไม่พบข้อมูลผู้ใช้',
+             style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
+           ),
+         ),
+       );
+       return;
+     }
 
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -314,12 +322,12 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
         children: [
           // Blue header
           Container(
-            height: 160,
-            decoration: const BoxDecoration(
+            height: 160.h,
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -327,11 +335,11 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -339,11 +347,11 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -354,17 +362,18 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(
-                          left: 30,
-                          right: 30,
-                          bottom: 20,
+                        padding: EdgeInsets.only(
+                          left: 30.w,
+                          right: 30.w,
+                          bottom: 20.h,
                         ),
                         child: Row(
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_back_ios,
                                 color: Colors.white,
+                                size: 24.sp,
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
@@ -372,15 +381,15 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                               child: Text(
                                 _isEditMode ? 'แก้ไขข้อมูลยา' : 'เพิ่มข้อมูลยา',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 32,
+                                  fontSize: 32.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
-                            const SizedBox(
-                              width: 48,
+                            SizedBox(
+                              width: 48.w,
                             ), // Balance the back button
                           ],
                         ),
@@ -395,7 +404,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
           // Content
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24.r),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -412,7 +421,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Medicine name with popup
                     Column(
@@ -420,38 +429,39 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                       children: [
                         Row(
                           children: [
-                            const Text(
+                            Text(
                               'ชื่อยา',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const Text(
+                            Text(
                               ' *',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.red,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         GestureDetector(
                           onTap: _showMedicationSelectionDialog,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 16.h,
                             ),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(12.r),
                               border: Border.all(
                                 color: _medicineName == null
                                     ? Colors.grey[300]!
                                     : AppColors.primaryBlue,
+                                width: 1.w,
                               ),
                             ),
                             child: Row(
@@ -476,7 +486,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Amount and Unit
                     Row(
@@ -495,7 +505,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                             },
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16.w),
                         Expanded(
                           child: AppSearchableDropdown<String>(
                             label: 'หน่วย',
@@ -546,7 +556,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Frequency per day
                     AppTextField(
@@ -560,29 +570,29 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Days of week selector
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           'วันที่ต้องทานยา',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const Text(
+                        Text(
                           ' *',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w500,
                             color: Colors.red,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     DaySelectorWidget(
                       selectedDays: _selectedDays,
                       onDaysChanged: (days) {
@@ -591,7 +601,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Total quantity
                     AppTextField(
@@ -604,7 +614,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         setState(() {});
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Start date
                     AppDatePicker(
@@ -622,7 +632,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // End date (optional)
                     AppDatePicker(
@@ -638,17 +648,17 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Meal timing
-                    const Text(
+                    Text(
                       'รับประทาน',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Row(
                       children: [
                         Expanded(
@@ -695,17 +705,17 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Meal times
-                    const Text(
+                    Text(
                       'เวลารับประทาน',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Column(
                       children: [
                         Row(
@@ -778,7 +788,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Expiry date
                     AppDatePicker(
@@ -794,17 +804,17 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Recommendations
-                    const Text(
+                    Text(
                       'ข้อแนะนำ',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     AppCheckboxGroup(
                       options: const [
                         AppCheckboxOption(
@@ -841,7 +851,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Additional notes
                     AppLongTextField(
@@ -854,7 +864,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // Action buttons
                     Row(
@@ -867,7 +877,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                             onPressed: () => Navigator.pop(context),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16.w),
                         Expanded(
                           child: AppButton(
                             text: 'บันทึก',
@@ -877,7 +887,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                   ],
                 ),
               ),

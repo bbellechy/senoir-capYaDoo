@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/config/api_config.dart';
 import 'package:capyadoo/core/model/user_medication.dart';
@@ -206,12 +207,12 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
         children: [
           // Header section: back arrow + box info in the same row
           Container(
-            padding: const EdgeInsets.fromLTRB(12, 8, 24, 24),
-            decoration: const BoxDecoration(
+            padding: EdgeInsets.fromLTRB(12.w, 8.h, 24.w, 24.h),
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -219,20 +220,20 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                   IconButton(
+                    icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 24.sp),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: Row(
                       children: [
                         Container(
-                          width: 88,
-                          height: 88,
+                          width: 88.w,
+                          height: 88.h,
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(20.r),
                             image: _currentBox.imagePath != null
                                 ? DecorationImage(
                                     image: FileImage(
@@ -243,34 +244,34 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
                                 : null,
                           ),
                           child: _currentBox.imagePath == null
-                              ? const Icon(
+                              ? Icon(
                                   Icons.inventory_2,
-                                  size: 44,
+                                  size: 44.sp,
                                   color: Colors.white,
                                 )
                               : null,
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16.w),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                _currentBox.name,
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                Text(
+                                  _currentBox.name,
+                                  style: TextStyle(
+                                    fontSize: 22.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _currentBox.description ?? 'ไม่มีรายละเอียด',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white.withOpacity(0.8),
+                                SizedBox(height: 8.h),
+                                Text(
+                                  _currentBox.description ?? 'ไม่มีรายละเอียด',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    color: Colors.white.withOpacity(0.8),
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -284,27 +285,28 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
 
           // Action Section: Title and Add Button
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+            padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 12.h),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'รายการยาในกล่อง (${_medicationsInBox.length})',
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: TextStyle(
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 TextButton.icon(
                   onPressed: _showAddMedicationPopup,
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.add_circle,
                     color: AppColors.primaryBlue,
+                    size: 24.sp,
                   ),
-                  label: const Text(
+                  label: Text(
                     'เพิ่มยา',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.w600,
                       color: AppColors.primaryBlue,
                     ),
@@ -327,11 +329,11 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
 
   Widget _buildBoxImage() {
     return Container(
-      width: 88,
-      height: 88,
+      width: 88.w,
+      height: 88.h,
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         image: _currentBox.imagePath != null
             ? DecorationImage(
                 image: FileImage(File(_currentBox.imagePath!)),
@@ -340,7 +342,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
             : null,
       ),
       child: _currentBox.imagePath == null
-          ? const Icon(Icons.inventory_2, size: 44, color: Colors.white)
+          ? Icon(Icons.inventory_2, size: 44.sp, color: Colors.white)
           : null,
     );
   }
@@ -351,16 +353,16 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       children: [
         Text(
           _currentBox.name,
-          style: const TextStyle(
-            fontSize: 22,
+          style: TextStyle(
+            fontSize: 22.sp,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           _currentBox.description ?? 'ไม่มีรายละเอียด',
-          style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
+          style: TextStyle(fontSize: 16.sp, color: Colors.white.withOpacity(0.8)),
         ),
       ],
     );
@@ -370,28 +372,28 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     if (meds.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: EdgeInsets.all(32.r),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24.r),
                 decoration: BoxDecoration(
                   color: Colors.blue[50],
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.medication_outlined,
-                  size: 64,
+                  size: 64.sp,
                   color: Colors.blue[200],
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               Text(
                 'เพิ่มยาเพื่อจัดการกล่องยาของคุณ',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   color: Colors.grey[600],
                   height: 1.5,
                 ),
@@ -403,7 +405,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
       itemCount: meds.length,
       itemBuilder: (context, index) {
         final med = meds[index];
@@ -547,14 +549,14 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
       }
 
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
         ),
         child: Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
         ),
       );
     }).toList();
@@ -593,30 +595,33 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
         final bool? shouldProceed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text(
+            title: Text(
               'คำเตือน: ปฏิกิริยาระหว่างยา',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.sp),
             ),
             content: Text(
               interactionResponse['message'] ??
                   'ยานี้อาจมีปฏิกิริยากับยาที่คุณกำลังทานอยู่',
+              style: TextStyle(fontSize: 16.sp),
             ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
             ),
             actions: [
-              TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text(
+                child: Text(
                   'ยกเลิก',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Colors.grey, fontSize: 16.sp),
                 ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text(
+                child: Text(
                   'เพิ่มยา',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: Colors.red, fontSize: 16.sp),
                 ),
               ),
             ],

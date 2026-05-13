@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'medicine_confirmation_button.dart';
 
@@ -98,10 +99,10 @@ class MedicineBoxReminderCard extends StatelessWidget {
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(10.r),
       child: SizedBox(
-        width: size,
-        height: size,
+        width: size.w,
+        height: size.h,
         child: _isNetworkPath(imagePath)
             ? Image.network(
                 imagePath,
@@ -121,13 +122,13 @@ class MedicineBoxReminderCard extends StatelessWidget {
 
   Widget _buildFallbackImage({required double size, required IconData icon}) {
     return Container(
-      width: size,
-      height: size,
+      width: size.w,
+      height: size.h,
       decoration: BoxDecoration(
         color: AppColors.blueBorder.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
-      child: Icon(icon, size: size * 0.52, color: AppColors.textSub),
+      child: Icon(icon, size: (size * 0.52).sp, color: AppColors.textSub),
     );
   }
 
@@ -141,19 +142,19 @@ class MedicineBoxReminderCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
+          margin: EdgeInsets.only(bottom: 12.h),
+          padding: EdgeInsets.all(16.r),
           decoration: BoxDecoration(
             color: AppColors.whitelist,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.blueBorder, width: 1.5),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: AppColors.blueBorder, width: 1.5.w),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                blurRadius: 8.r,
+                offset: Offset(0, 2.h),
               ),
             ],
           ),
@@ -168,21 +169,21 @@ class MedicineBoxReminderCard extends StatelessWidget {
                     size: 40,
                     fallbackIcon: Icons.inventory_2,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
                       boxName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Sarabun',
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.w600,
                         color: AppColors.primaryBlue,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   MedicineConfirmationButton(
                     status: _getConfirmationStatus(),
                     onConfirm: onConfirm,
@@ -190,18 +191,18 @@ class MedicineBoxReminderCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
 
               // รายการยาในกล่อง
               ...medicines.map(
                 (medicine) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
+                  padding: EdgeInsets.only(bottom: 4.h),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4.w),
                       _buildImage(medicine.imagePath, size: 28),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,20 +211,20 @@ class MedicineBoxReminderCard extends StatelessWidget {
                               medicine.name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Sarabun',
-                                fontSize: 18,
+                                fontSize: 18.sp,
                                 color: AppColors.textPrimary,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2.h),
                             Text(
                               '(${medicine.dosage})',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Sarabun',
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 color: AppColors.textSub,
                               ),
                             ),
@@ -235,27 +236,27 @@ class MedicineBoxReminderCard extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
 
               // เวลาและปุ่ม
               Row(
                 children: [
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Icon(
                     hasTimingLabel
                         ? Icons.restaurant_rounded
                         : Icons.access_time,
-                    size: 18,
+                    size: 18.sp,
                     color: AppColors.textSub,
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: 4.w),
                   Text(
                     hasTimingLabel
                         ? normalizedTiming
                         : _formatTime(scheduledTime),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Sarabun',
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       color: AppColors.textSub,
                     ),
                   ),

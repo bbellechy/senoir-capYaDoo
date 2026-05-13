@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/features/pillbox/controller/pill_box_controller.dart';
 import 'package:capyadoo/features/pillbox/presentation/pages/pill_box_add_page.dart';
@@ -64,12 +65,12 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('ยืนยันการลบ'),
-        content: const Text('คุณต้องการลบกล่องยานี้ใช่หรือไม่?'),
+        title: Text('ยืนยันการลบ', style: TextStyle(fontSize: 18.sp)),
+        content: Text('คุณต้องการลบกล่องยานี้ใช่หรือไม่?', style: TextStyle(fontSize: 16.sp)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('ยกเลิก'),
+            child: Text('ยกเลิก', style: TextStyle(fontSize: 16.sp)),
           ),
           TextButton(
             onPressed: () async {
@@ -81,13 +82,16 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(_controller.error ?? 'Error deleting box'),
+                      content: Text(
+                        _controller.error ?? 'Error deleting box',
+                        style: TextStyle(fontFamily: 'Sarabun', fontSize: 14.sp),
+                      ),
                     ),
                   );
                 }
               }
             },
-            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
+            child: Text('ลบ', style: TextStyle(color: Colors.red, fontSize: 16.sp)),
           ),
         ],
       ),
@@ -101,13 +105,13 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
       body: Column(
         children: [
           Container(
-            height: 160,
+            height: 160.h,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -115,11 +119,11 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -127,11 +131,11 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -142,33 +146,34 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(
-                          left: 30,
-                          right: 30,
-                          bottom: 20,
+                        padding: EdgeInsets.only(
+                          left: 30.w,
+                          right: 30.w,
+                          bottom: 20.h,
                         ),
                         child: Row(
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_back_ios,
                                 color: Colors.white,
+                                size: 24.sp,
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'กล่องยา',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 32,
+                                  fontSize: 32.sp,
                                   fontWeight: FontWeight.w700,
                                   fontFamily: 'Sarabun',
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 48),
+                            SizedBox(width: 48.w),
                           ],
                         ),
                       ),
@@ -179,21 +184,21 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24.r),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'กล่องยาทั้งหมด',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: _navigateToAddPage,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 6.h,
                     ),
                     child: Row(
                       children: [
@@ -202,14 +207,14 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
                           style: TextStyle(
                             color: AppColors.primaryBlue,
                             fontWeight: FontWeight.w600,
-                            fontSize: 22,
+                            fontSize: 22.sp,
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Icon(
                           Icons.add_circle,
                           color: AppColors.primaryBlue,
-                          size: 20,
+                          size: 24.sp,
                         ),
                       ],
                     ),
@@ -224,7 +229,7 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
               builder: (context, child) {
                 if (_controller.pillBoxes.isEmpty) {
                   return Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
                     child: Align(
                       alignment: Alignment.topCenter,
                       child: AppEmptyCard(
@@ -233,15 +238,15 @@ class _PillBoxListPageState extends State<PillBoxListPage> {
                         subtitle: 'สร้างกล่องยาใหม่เพื่อเริ่มต้นใช้งาน',
                         iconColor: AppColors.textSublest,
                         borderColor: AppColors.blueBorder,
-                        borderRadius: 10,
-                        borderWidth: 2,
+                        borderRadius: 10.r,
+                        borderWidth: 2.w,
                       ),
                     ),
                   );
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
                   itemCount: _controller.pillBoxes.length,
                   itemBuilder: (context, index) {
                     final box = _controller.pillBoxes[index];

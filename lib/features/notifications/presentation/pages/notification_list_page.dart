@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/model/medication_notification.dart';
 import 'package:capyadoo/features/notifications/controller/notification_controller.dart';
@@ -74,13 +75,13 @@ class _NotificationListPageState extends State<NotificationListPage> {
         children: [
           // Premium Header
           Container(
-            height: 160,
+            height: 160.h,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.primaryBlue,
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
+                bottomLeft: Radius.circular(32.r),
+                bottomRight: Radius.circular(32.r),
               ),
             ),
             child: SafeArea(
@@ -88,11 +89,11 @@ class _NotificationListPageState extends State<NotificationListPage> {
               child: Stack(
                 children: [
                   Positioned(
-                    right: -50,
-                    top: -50,
+                    right: -50.w,
+                    top: -50.h,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 200.w,
+                      height: 200.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
@@ -100,24 +101,24 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     ),
                   ),
                   Positioned(
-                    left: -30,
-                    bottom: -30,
+                    left: -30.w,
+                    bottom: -30.h,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 140.w,
+                      height: 140.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.08),
                       ),
                     ),
                   ),
-                  const Align(
+                  Align(
                     alignment: Alignment.center,
                     child: Text(
                       'การแจ้งเตือน',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 36,
+                        fontSize: 36.sp,
                         fontWeight: FontWeight.w700,
                         fontFamily: 'Sarabun',
                       ),
@@ -130,7 +131,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
 
           // Header Bar with Actions
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -139,19 +140,19 @@ class _NotificationListPageState extends State<NotificationListPage> {
                     onPressed: _toggleDeleteMode,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryBlue,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 10.h,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'เสร็จสิ้น',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -165,22 +166,22 @@ class _NotificationListPageState extends State<NotificationListPage> {
                       'ลบ',
                       style: TextStyle(
                         color: AppColors.textSub,
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                const SizedBox(width: 8),
-                const Expanded(
+                SizedBox(width: 8.w),
+                Expanded(
                   child: Text(
                     'การแจ้งเตือนทั้งหมด',
                     maxLines: 1,
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 TextButton(
                   onPressed: () => _navigateToAdd(context),
                   child: Row(
@@ -189,15 +190,15 @@ class _NotificationListPageState extends State<NotificationListPage> {
                         'เพิ่ม',
                         style: TextStyle(
                           color: AppColors.primaryBlue,
-                          fontSize: 20,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4.w),
                       Icon(
                         Icons.add_circle,
                         color: AppColors.primaryBlue,
-                        size: 20,
+                        size: 24.sp,
                       ),
                     ],
                   ),
@@ -248,7 +249,7 @@ class _NotificationListPageState extends State<NotificationListPage> {
 
     if (_controller.notifications.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
         child: Align(
           alignment: Alignment.topCenter,
           child: AppEmptyCard(
@@ -257,15 +258,15 @@ class _NotificationListPageState extends State<NotificationListPage> {
             subtitle: 'เพิ่มการแจ้งเตือนเพื่อไม่ให้พลาดการทานยา',
             iconColor: AppColors.textSublest,
             borderColor: AppColors.blueBorder,
-            borderRadius: 10,
-            borderWidth: 2,
+            borderRadius: 10.r,
+            borderWidth: 2.w,
           ),
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h),
       itemCount: _controller.notifications.length,
       itemBuilder: (context, index) {
         final notification = _controller.notifications[index];

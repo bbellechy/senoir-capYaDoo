@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/core/constants/app_colors.dart';
 import 'package:capyadoo/core/widgets/app_time_chip.dart' as time_chip;
 
@@ -32,22 +33,22 @@ class SimpleMedicineListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.blueBorder, width: 1.5),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.blueBorder, width: 1.5.w),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(12.r),
           child: Row(
             children: [
               // Icon
               _buildLeadingVisual(),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
 
               // Content
               Expanded(
@@ -56,23 +57,23 @@ class SimpleMedicineListCard extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                         color: AppColors.primaryBlue,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       amount,
-                      style: TextStyle(fontSize: 16, color: AppColors.textSub),
+                      style: TextStyle(fontSize: 16.sp, color: AppColors.textSub),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
 
                     // Time chips
                     Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
+                      spacing: 6.w,
+                      runSpacing: 6.h,
                       children: mealTimes.map((mealTime) {
                         final timeOfDay = _getTimeOfDay(mealTime);
                         if (timeOfDay != null) {
@@ -110,10 +111,10 @@ class SimpleMedicineListCard extends StatelessWidget {
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(10.r),
       child: SizedBox(
-        width: 56,
-        height: 56,
+        width: 56.w,
+        height: 56.h,
         child: _isNetworkPath(path)
             ? Image.network(
                 path,
@@ -131,13 +132,13 @@ class SimpleMedicineListCard extends StatelessWidget {
 
   Widget _buildFallbackIcon() {
     return Container(
-      width: 56,
-      height: 56,
+      width: 56.w,
+      height: 56.h,
       decoration: BoxDecoration(
         color: iconBackgroundColor,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
-      child: Icon(icon, size: 28, color: iconColor),
+      child: Icon(icon, size: 28.sp, color: iconColor),
     );
   }
 
@@ -168,16 +169,16 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Container(
-        width: 36,
-        height: 36,
+        width: 36.w,
+        height: 36.h,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.blueBorder, width: 1),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: AppColors.blueBorder, width: 1.w),
         ),
-        child: Icon(icon, size: 20, color: color),
+        child: Icon(icon, size: 20.sp, color: color),
       ),
     );
   }

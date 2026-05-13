@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:capyadoo/features/notifications/presentation/widgets/unified_selection_dialog.dart';
 import 'package:capyadoo/core/services/auth_service.dart';
 
@@ -89,7 +90,7 @@ class _PillSelectionWidgetState extends State<PillSelectionWidget> {
                     text: TextSpan(
                       text: 'เลือกยา/กล่องยา ',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.black,
                       ),
@@ -101,18 +102,18 @@ class _PillSelectionWidgetState extends State<PillSelectionWidget> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   GestureDetector(
                     onTap: _showSelectionDialog,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 12.h,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.grey[300]!, width: 1.w),
                       ),
                       child: Row(
                         children: [
@@ -126,11 +127,11 @@ class _PillSelectionWidgetState extends State<PillSelectionWidget> {
                                 color: _selectedName != null
                                     ? Colors.black87
                                     : Colors.grey[500],
-                                fontSize: 16,
+                                fontSize: 16.sp,
                               ),
                             ),
                           ),
-                          Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
+                          Icon(Icons.arrow_drop_down, color: Colors.grey[600], size: 24.sp),
                         ],
                       ),
                     ),
@@ -141,11 +142,11 @@ class _PillSelectionWidgetState extends State<PillSelectionWidget> {
           ],
         ),
         if (_selectedName != null) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             '*หากเลือกกล่องยาจะแจ้งเตือนสำหรับยาทุกตัวในกล่อง',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: Colors.grey[600],
               fontStyle: FontStyle.italic,
             ),
