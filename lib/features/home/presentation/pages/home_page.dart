@@ -29,6 +29,14 @@ class _HomePageState extends State<HomePage> {
   DateTime _selectedDate = DateTime.now();
   static const double _dateItemExtent = 58;
   ScrollController? _dateScrollController;
+
+  // ── Collapsible header ──────────────────────────────────────────────────────
+  // ความสูงของส่วน greeting + logo ที่จะซ่อนเมื่อ scroll ลง
+  static const double _greetingHeight = 120.0;
+  final ScrollController _contentScrollController = ScrollController();
+  double _collapseProgress = 0.0; // 0 = full header, 1 = collapsed
+  // ────────────────────────────────────────────────────────────────────────────
+
   List<DailyIntake> _schedule = [];
   List<MedicationBox> _boxes = [];
   Map<String, List<Map<String, dynamic>>> _boxDailyMedications = {};
@@ -39,18 +47,30 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     initializeDateFormatting('th_TH', null);
-    // เลื่อนโหลดข้อมูลไปหลัง build เสร็จ เพื่อไม่ให้ notifyListeners() ถูกเรียกระหว่าง build
+    _contentScrollController.addListener(_onContentScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
-    // HomePage อยู่ใน IndexedStack → ต้อง reload เมื่อกลับมาเป็นแท็บที่ active อีกครั้ง
     PageNavigationService().currentIndex.addListener(_onTabIndexChanged);
   }
 
   @override
   void dispose() {
+    _contentScrollController.removeListener(_onContentScroll);
+    _contentScrollController.dispose();
     PageNavigationService().currentIndex.removeListener(_onTabIndexChanged);
     _dateScrollController?.dispose();
     super.dispose();
   }
+
+  // ── Collapse logic ──────────────────────────────────────────────────────────
+  void _onContentScroll() {
+    if (!_contentScrollController.hasClients) return;
+    final offset = _contentScrollController.offset.clamp(0.0, _greetingHeight);
+    final progress = offset / _greetingHeight;
+    if ((progress - _collapseProgress).abs() > 0.005) {
+      setState(() => _collapseProgress = progress);
+    }
+  }
+  // ────────────────────────────────────────────────────────────────────────────
 
   ScrollController _getDateScrollController(
     DateTime minDate,
@@ -85,7 +105,7 @@ class _HomePageState extends State<HomePage> {
       }
     }
     await _loadSchedule(showLoading: false);
-    await _checkOverdueStatus(); // Check for late medications
+    await _checkOverdueStatus();
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -96,30 +116,16 @@ class _HomePageState extends State<HomePage> {
         (a, b) =>
             a.name.trim().toLowerCase().compareTo(b.name.trim().toLowerCase()),
       );
-      print('Loaded ${boxes.length} boxes');
       if (mounted) {
-        setState(() {
-          _boxes = boxes;
-        });
-        // Load daily medications for each box
+        setState(() => _boxes = boxes);
         for (final box in boxes) {
           if (box.id != null) {
-            print('Loading daily medications for box: ${box.name} (${box.id})');
-            print('Box intakePeriods: ${box.intakePeriods}');
             final dailyMeds = await _pillBoxService.getDailyMedicationsForBox(
               box.id!,
               _selectedDate,
             );
-            print(
-              'Loaded ${dailyMeds.length} daily medications for box ${box.name}',
-            );
-            if (dailyMeds.isNotEmpty) {
-              print('Sample medication: ${dailyMeds.first}');
-            }
             if (mounted) {
-              setState(() {
-                _boxDailyMedications[box.id!] = dailyMeds;
-              });
+              setState(() => _boxDailyMedications[box.id!] = dailyMeds);
             }
           }
         }
@@ -133,9 +139,7 @@ class _HomePageState extends State<HomePage> {
     try {
       bool hasChanges = false;
 
-      // 1. Check master medications schedule
       for (final item in _schedule) {
-        // Check items with valid UUID intakeId (from backend)
         if (item.status == IntakeStatus.PENDING &&
             !item.intakeId.contains('_') &&
             item.intakeId.isNotEmpty) {
@@ -146,7 +150,6 @@ class _HomePageState extends State<HomePage> {
         }
       }
 
-      // 2. Check medication boxes daily medications
       for (final boxId in _boxDailyMedications.keys) {
         final meds = _boxDailyMedications[boxId]!;
         for (final med in meds) {
@@ -167,7 +170,6 @@ class _HomePageState extends State<HomePage> {
         }
       }
 
-      // Reload if any changes might have happened
       if (hasChanges) {
         await _loadSchedule(showLoading: false);
       }
@@ -195,7 +197,6 @@ class _HomePageState extends State<HomePage> {
           if (!showLoading) _isLoading = false;
         });
       }
-      // Reload boxes for the new date
       await _loadBoxes();
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -235,7 +236,6 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    // Pass the name to show in the snackbar
     final result = await MedicationScheduleService.markAsTakenWithResponse(
       intakeId,
     );
@@ -253,7 +253,6 @@ class _HomePageState extends State<HomePage> {
             duration: const Duration(seconds: 2),
           ),
         );
-        // อัพเดทข้อมูลจากหลังบ้านเพื่อให้ UI ตรงกันเสมอ (แก้ปัญหา refresh แล้วกลับเป็นค่าเดิม)
         await _loadSchedule(showLoading: false);
       }
     } else {
@@ -293,9 +292,7 @@ class _HomePageState extends State<HomePage> {
           : 'คุณต้องการที่จะยืนยันการทานยาตัวนี้ใช่หรือไม่',
     );
 
-    if (!confirmed || !mounted) {
-      return;
-    }
+    if (!confirmed || !mounted) return;
 
     await _markAsTakenSmart(item, isLate: isLate);
   }
@@ -304,7 +301,6 @@ class _HomePageState extends State<HomePage> {
     DailyIntake item, {
     bool isLate = false,
   }) async {
-    // ยืนยันการทานธรรมดาได้เฉพาะวันนี้; ส่วนทานล่าช้ากดได้เสมอเมื่อเกินกำหนด
     if (!isLate && !_isSelectedDateToday()) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -317,7 +313,6 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    // ถ้าเป็น id แบบ generated (medId_date_time) ให้พยายาม resolve UUID จาก backend ก่อน
     String intakeId = item.intakeId;
 
     if (intakeId.isEmpty) {
@@ -345,7 +340,6 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    // ถ้ายัง resolve ไม่ได้ ให้แจ้งผู้ใช้ (ไม่ต้อง reload เพราะยังไม่มี intake ในระบบ)
     if (intakeId.contains('_')) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -361,23 +355,24 @@ class _HomePageState extends State<HomePage> {
     await _markAsTaken(intakeId, item.medicationName, isLate: isLate);
   }
 
+  // ════════════════════════════════════════════════════════════════════════════
+  // BUILD
+  // ════════════════════════════════════════════════════════════════════════════
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
+
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile & Logo Header
-            _buildHeader(user),
+            // ── Collapsible blue header (greeting + date picker) ──────────────
+            _buildCollapsibleHeader(user),
 
-            // Date Picker Section
-            _buildDatePicker(),
-            const SizedBox(height: 12),
-
-            // Main Content Card (always fills to bottom)
+            // ── White content card (fills rest of screen) ─────────────────────
             Expanded(child: _buildContentCard()),
           ],
         ),
@@ -385,15 +380,45 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ── Collapsible header ──────────────────────────────────────────────────────
+  Widget _buildCollapsibleHeader(User? user) {
+    // greeting + logo fade out ตาม collapseProgress
+    final greetingOpacity = (1.0 - _collapseProgress * 1.5).clamp(0.0, 1.0);
+    // ความสูงของ greeting section ค่อยๆ ลดลงเป็น 0
+    final greetingCurrentHeight = _greetingHeight * (1.0 - _collapseProgress);
+
+    return Column(
+      children: [
+        // ── Greeting + Logo (collapsible) ─────────────────────────────────
+        ClipRect(
+          child: AnimatedContainer(
+            duration: Duration.zero, // ไม่ต้องการ animation เพราะ driven by scroll
+            height: greetingCurrentHeight.clamp(0.0, _greetingHeight),
+            child: Opacity(
+              opacity: greetingOpacity,
+              child: _buildHeader(user),
+            ),
+          ),
+        ),
+
+        // ── Date Picker (always visible, sticky) ──────────────────────────
+        _buildDatePicker(),
+
+        const SizedBox(height: 12),
+      ],
+    );
+  }
+
   Widget _buildHeader(User? user) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
                   'สวัสดี',
@@ -420,13 +445,13 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(width: 16),
           Image.asset(
             'assets/images/logo-white-png.png',
-            height: 120,
-            width: 120,
+            height: 100,
+            width: 100,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) {
               return Container(
-                height: 120,
-                width: 120,
+                height: 100,
+                width: 100,
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue,
                   borderRadius: BorderRadius.circular(10),
@@ -451,6 +476,10 @@ class _HomePageState extends State<HomePage> {
     final maxDate = DateTime(now.year, now.month + 1, now.day);
     final itemCount = maxDate.difference(minDate).inDays + 1;
 
+    // เมื่อ collapsed เต็มที่ ให้ซ่อน Thai date label เพื่อประหยัดพื้นที่
+    final dateLabelOpacity = (1.0 - _collapseProgress * 2.5).clamp(0.0, 1.0);
+    final dateLabelHeight = 28.0 * (1.0 - _collapseProgress).clamp(0.0, 1.0);
+
     Future<void> openCalendar() async {
       final picked = await showDatePicker(
         context: context,
@@ -469,28 +498,39 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            thaiDateFormat.format(_selectedDate),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
+        // Thai date label (fade out เร็วกว่า)
+        ClipRect(
+          child: AnimatedContainer(
+            duration: Duration.zero,
+            height: dateLabelHeight,
+            child: Opacity(
+              opacity: dateLabelOpacity,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  thaiDateFormat.format(_selectedDate),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 12),
+
+        // Horizontal date strip (always visible)
         SizedBox(
-          height: 80,
+          height: 72,
           child: Row(
             children: [
               const SizedBox(width: 16),
               GestureDetector(
                 onTap: openCalendar,
                 child: Container(
-                  width: 48,
-                  height: 48,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
@@ -510,7 +550,8 @@ class _HomePageState extends State<HomePage> {
                   itemCount: itemCount,
                   itemBuilder: (context, index) {
                     final date = minDate.add(Duration(days: index));
-                    final dateOnly = DateTime(date.year, date.month, date.day);
+                    final dateOnly =
+                        DateTime(date.year, date.month, date.day);
                     final isSelected =
                         DateFormat('yyyy-MM-dd').format(dateOnly) ==
                         DateFormat('yyyy-MM-dd').format(_selectedDate);
@@ -518,9 +559,7 @@ class _HomePageState extends State<HomePage> {
 
                     return GestureDetector(
                       onTap: () {
-                        setState(() {
-                          _selectedDate = dateOnly;
-                        });
+                        setState(() => _selectedDate = dateOnly);
                         _loadData();
                       },
                       child: Center(
@@ -567,6 +606,10 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // CONTENT CARD  (เชื่อม _contentScrollController กับ ListView)
+  // ════════════════════════════════════════════════════════════════════════════
 
   Widget _buildContentCard() {
     return Container(
@@ -620,6 +663,8 @@ class _HomePageState extends State<HomePage> {
             child: RefreshIndicator(
               onRefresh: _loadData,
               child: ListView(
+                // ── เชื่อม controller สำหรับ collapse ──
+                controller: _contentScrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
                 children: [
@@ -733,15 +778,11 @@ class _HomePageState extends State<HomePage> {
     IconData icon,
     List<DailyIntake> items,
   ) {
-    // Get boxes for this period
-    // Map ภาษาไทยและภาษาอังกฤษไปยัง period
     final periodMap = {
-      // ภาษาไทย
       'เช้า': 'MORNING',
       'กลางวัน': 'NOON',
       'เย็น': 'EVENING',
       'ก่อนนอน': 'BEDTIME',
-      // ภาษาอังกฤษ (backup)
       'morning': 'MORNING',
       'afternoon': 'NOON',
       'evening': 'EVENING',
@@ -869,8 +910,6 @@ class _HomePageState extends State<HomePage> {
           final status = med['status'] as String? ?? 'PENDING';
           final intakeId = med['id'] as String? ?? '';
 
-          // De-duplicate by name only within the period (coarse deduplication)
-          // to ensure "trrrrr" only shows once in the box for "NOON"
           final dedupKey = medicationName.toLowerCase();
           if (seenKeys.contains(dedupKey)) continue;
           seenKeys.add(dedupKey);
@@ -897,7 +936,6 @@ class _HomePageState extends State<HomePage> {
           });
           result.add({'box': box, 'medications': convertedMeds});
         } else if (box.medications.isNotEmpty) {
-          // Fallback if no daily intakes loaded yet
           final fallbackMeds = <Map<String, dynamic>>[];
           final fallbackSeen = <String>{};
 
@@ -929,14 +967,14 @@ class _HomePageState extends State<HomePage> {
     }
 
     result.sort(
-      (a, b) => (a['box'] as MedicationBox).name.trim().toLowerCase().compareTo(
-        (b['box'] as MedicationBox).name.trim().toLowerCase(),
-      ),
+      (a, b) =>
+          (a['box'] as MedicationBox).name.trim().toLowerCase().compareTo(
+            (b['box'] as MedicationBox).name.trim().toLowerCase(),
+          ),
     );
     return result;
   }
 
-  // แปลงเวลา format "HH:mm:ss" หรือ "HH:mm" เป็น "HH:mm"
   String _formatTime(String timeStr) {
     if (timeStr.isEmpty) return '08:00';
     final parts = timeStr.split(':');
@@ -955,7 +993,6 @@ class _HomePageState extends State<HomePage> {
       case 'EVENING':
         return '18:00';
       case 'BEDTIME':
-        // Keep consistent with backend schedule (DailyMedicationService + box schedule uses 21:00)
         return '21:00';
       default:
         return '08:00';
@@ -967,16 +1004,12 @@ class _HomePageState extends State<HomePage> {
     List<Map<String, dynamic>> medications,
     String period,
   ) {
-    // Get time from first medication or use box default
     final firstMed = medications.isNotEmpty ? medications.first : null;
-    // รองรับทั้ง scheduledTime และ intakeTime
     final timeStr =
         firstMed?['scheduledTime'] as String? ??
         firstMed?['intakeTime'] as String? ??
         '08:00';
-    // แปลง format ถ้าเป็น "HH:mm:ss" เป็น "HH:mm"
     final formattedTime = _formatTime(timeStr);
-    // สถานะกล่อง: ถ้ายาทุกตัวในกล่องทานแล้ว = ทานแล้ว (กดยืนยันครั้งเดียวสำหรับทั้งกล่อง)
     final allStatuses = medications
         .map((m) => m['status'] as String? ?? 'PENDING')
         .toList();
@@ -1065,7 +1098,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// ยืนยันการทานยาทั้งกล่องของช่วงนั้นเท่านั้น (กดเช้า = มาร์กเฉพาะเช้า ไม่มาร์กกลางวัน/เย็น/ก่อนนอน)
   Future<void> _markWholeBoxAsTaken(
     MedicationBox box,
     String period, {
@@ -1102,9 +1134,7 @@ class _HomePageState extends State<HomePage> {
           : 'คุณต้องการที่จะยืนยันการทานยากล่องนี้ใช่หรือไม่',
     );
 
-    if (!confirmed || !mounted) {
-      return;
-    }
+    if (!confirmed || !mounted) return;
 
     final userId = context.read<AuthProvider>().user?.id;
     final success = await _pillBoxService.markBoxAsTaken(
@@ -1127,7 +1157,6 @@ class _HomePageState extends State<HomePage> {
             duration: const Duration(seconds: 2),
           ),
         );
-        // อัพเดทข้อมูลจากหลังบ้าน
         await _loadSchedule(showLoading: false);
       }
     } else {
@@ -1148,8 +1177,6 @@ class _HomePageState extends State<HomePage> {
     final bool isNotTaken = item.status == IntakeStatus.NOT_TAKEN;
     final bool isMissed = item.status == IntakeStatus.MISSED;
 
-    // Check if overdue: only for today and only if time has passed and status is PENDING
-    // Don't mark as overdue if already TAKEN or NOT_TAKEN
     final bool isOverdue =
         !isTaken &&
         !isLateIntake &&
@@ -1199,7 +1226,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Helper to check if a time string falls into a specific period range
   bool _isTimeInPeriod(String timeStr, String p) {
     if (timeStr.isEmpty) return false;
     final parts = timeStr.split(':');
@@ -1221,12 +1247,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Determine if a specific medication name is already in any box for this period
   bool _isMedicationInAnyBox(DailyIntake item, String period) {
     final searchName = item.medicationName.trim().toLowerCase();
     for (final box in _boxes) {
       if (box.intakePeriods.contains(period)) {
-        // 1. Check loaded daily intakes for this box
         final boxMeds = _boxDailyMedications[box.id] ?? [];
         for (final bm in boxMeds) {
           final bmName =
@@ -1237,18 +1261,14 @@ class _HomePageState extends State<HomePage> {
                   .toLowerCase();
 
           if (bmName == searchName) {
-            // Check if this specific intake in the box belongs to the same period
             final bmTime =
                 bm['intakeTime'] as String? ??
                 bm['scheduledTime'] as String? ??
                 '';
-            // If the box is assigned to this period and contains this med name,
-            // we treat it as being in the box for this period.
             if (bmTime.isEmpty || _isTimeInPeriod(bmTime, period)) return true;
           }
         }
 
-        // 2. Check box definition if daily intakes are empty
         if (boxMeds.isEmpty) {
           for (final m in box.medications) {
             final mName = (m['name'] as String? ?? '').trim().toLowerCase();
@@ -1260,8 +1280,6 @@ class _HomePageState extends State<HomePage> {
     return false;
   }
 
-  // Check if the scheduled time has passed
-  // Now handles past dates correctly: if the date is in the past, time always "passed"
   bool _isTimePassedForSelectedDate(String time) {
     try {
       final now = DateTime.now();
@@ -1272,17 +1290,9 @@ class _HomePageState extends State<HomePage> {
       );
       final todayOnly = DateTime(now.year, now.month, now.day);
 
-      // If selected date is in the past, all scheduled times have passed
-      if (selectedDateOnly.isBefore(todayOnly)) {
-        return true;
-      }
+      if (selectedDateOnly.isBefore(todayOnly)) return true;
+      if (selectedDateOnly.isAfter(todayOnly)) return false;
 
-      // If selected date is in the future, no scheduled times have passed yet
-      if (selectedDateOnly.isAfter(todayOnly)) {
-        return false;
-      }
-
-      // If selected date is today, check the specific time
       final timeParts = time.split(':');
       if (timeParts.length >= 2) {
         final hour = int.tryParse(timeParts[0]) ?? 0;
@@ -1349,11 +1359,7 @@ class _HomePageState extends State<HomePage> {
       }
 
       if (!timeMatch) return false;
-
-      // Hide if already in a box for this period
-      if (_isMedicationInAnyBox(item, periodKey)) {
-        return false;
-      }
+      if (_isMedicationInAnyBox(item, periodKey)) return false;
 
       return true;
     }).toList();
