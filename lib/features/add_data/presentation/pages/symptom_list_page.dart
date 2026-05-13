@@ -127,7 +127,7 @@ class _SymptomListPageState extends State<SymptomListPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'บันทึกอาการทั้งหมด',
                   style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w600),
                 ),
@@ -269,7 +269,7 @@ class _SymptomListPageState extends State<SymptomListPage> {
           children: [
             Icon(Icons.assignment, size: 80.sp, color: Colors.grey[400]),
             SizedBox(height: 16.h),
-            const Text(
+            Text(
               'ยังไม่มีบันทึกอาการ',
               style: TextStyle(
                 fontSize: 18.sp,
@@ -278,7 +278,7 @@ class _SymptomListPageState extends State<SymptomListPage> {
               ),
             ),
             SizedBox(height: 8.h),
-            const Text(
+            Text(
               'เริ่มบันทึกอาการเพื่อติดตามสุขภาพ',
               style: TextStyle(fontSize: 14.sp, color: AppColors.textSub),
             ),

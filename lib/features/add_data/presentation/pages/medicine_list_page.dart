@@ -127,7 +127,7 @@ class _MedicineListPageState extends State<MedicineListPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'รายการยาทั้งหมด',
                   style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600),
                 ),
@@ -275,7 +275,7 @@ class _MedicineListPageState extends State<MedicineListPage> {
           children: [
             Icon(Icons.medication, size: 80.sp, color: Colors.grey[400]),
             SizedBox(height: 16.h),
-            const Text(
+            Text(
               'ยังไม่มีรายการยา',
               style: TextStyle(
                 fontSize: 18.sp,
@@ -284,7 +284,7 @@ class _MedicineListPageState extends State<MedicineListPage> {
               ),
             ),
             SizedBox(height: 8.h),
-            const Text(
+            Text(
               'เพิ่มยาเพื่อเริ่มต้นใช้งาน',
               style: TextStyle(fontSize: 14.sp, color: AppColors.textSub),
             ),

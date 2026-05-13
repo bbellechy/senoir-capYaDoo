@@ -302,7 +302,7 @@ class _PatientDetailPageState extends State<PatientDetailPage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.calendar_today_outlined,
                     color: AppColors.primaryBlue,
                     size: 20.sp,

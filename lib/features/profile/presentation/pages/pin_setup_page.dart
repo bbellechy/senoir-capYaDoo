@@ -133,7 +133,7 @@ class _PinSetupPageState extends State<PinSetupPage> {
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'ตั้งค่า PIN',
                                 textAlign: TextAlign.center,

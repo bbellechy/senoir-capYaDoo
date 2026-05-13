@@ -181,7 +181,7 @@ class _SearchPageState extends State<SearchPage> {
                         left: 0,
                         right: 0,
                         bottom: (searchBoxHeight / 2) + 12.h,
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'ค้นหายา',
                             style: TextStyle(

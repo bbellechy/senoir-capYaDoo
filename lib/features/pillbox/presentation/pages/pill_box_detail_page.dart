@@ -611,6 +611,7 @@ class _PillBoxDetailPageState extends State<PillBoxDetailPage> {
               borderRadius: BorderRadius.circular(16.r),
             ),
             actions: [
+              TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: Text(
                   'ยกเลิก',

@@ -127,7 +127,7 @@ class _PinSettingsPageState extends State<PinSettingsPage> {
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'ตั้งค่า PIN',
                                 textAlign: TextAlign.center,
@@ -169,7 +169,7 @@ class _PinSettingsPageState extends State<PinSettingsPage> {
                       ),
                       child: Row(
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

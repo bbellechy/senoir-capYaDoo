@@ -91,6 +91,11 @@ class NotificationListItem extends StatelessWidget {
                                   File(notification.imagePath!),
                                   fit: BoxFit.cover,
                                 )),
+                        )
+                      : Icon(
+                          Icons.medication_rounded,
+                          color: iconColor,
+                          size: 32.sp,
                         ),
                 ),
                 SizedBox(width: 16.w),

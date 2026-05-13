@@ -177,7 +177,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                               ),
                               onPressed: () => Navigator.pop(context),
                             ),
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'ข้อมูลผู้ใช้งาน',
                                 textAlign: TextAlign.center,
